@@ -145,6 +145,11 @@ namespace EmberDeck.View
                     yield return Capture("05-map-after.png");
                 }
 
+                // Report the state the save should restore to, so a second launch can be
+                // checked against it rather than eyeballed.
+                var runInfo = FindFirstObjectByType<CombatView>();
+                Debug.Log($"[AutoCapture] STATE {(runInfo != null ? runInfo.DebugRunSummary() : "none")}");
+
                 yield return new WaitForSeconds(0.3f);
                 Application.Quit();
             }

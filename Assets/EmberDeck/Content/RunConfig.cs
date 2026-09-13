@@ -45,6 +45,16 @@ namespace EmberDeck.Content
         [Header("Reward pool — every card that can be offered after a victory")]
         public List<CardData> RewardPool = new();
 
+        [Tooltip("Every card in the game. A save file stores ids; this resolves them back.")]
+        public List<CardData> AllCards = new();
+
+        public CardData FindCard(string id)
+        {
+            foreach (var card in AllCards)
+                if (card != null && card.Id == id) return card;
+            return null;
+        }
+
         [Tooltip("Enemy HP gained per fight beyond the first, as a fraction.")]
         public float EnemyScalingPerFight = 0.18f;
 

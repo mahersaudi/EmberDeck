@@ -328,6 +328,7 @@ namespace EmberDeck.EditorTools
                 };
 
                 cfg.RewardPool = cards.FindAll(c => c.Rarity != CardRarity.Starter);
+                cfg.AllCards = new List<CardData>(cards);
                 cfg.EnemyScalingPerFight = 0.18f;
                 cfg.Relics = new List<RelicData> { emberCore };
                 cfg.Encounter = new List<EnemyData> { emberling, cinderRat, ashHound };

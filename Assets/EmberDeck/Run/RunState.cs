@@ -34,6 +34,13 @@ namespace EmberDeck.Run
 
         public void Heal(int amount) => Hp = System.Math.Min(MaxHp, Hp + amount);
 
+        /// <summary>
+        /// The reward roll for the current position. Derived rather than drawn from a running
+        /// stream, so reloading a save produces the same offer instead of a different one.
+        /// </summary>
+        public DeterministicRng RewardRng() =>
+            new(Seed ^ unchecked(FightNumber * 0x27D4EB2F) ^ (ActiveNode?.Row ?? 0) * 7919);
+
         public RunState(int seed, int maxHp)
         {
             Seed = seed;

@@ -224,7 +224,7 @@ namespace EmberDeck.View
             var again = UiFactory.TextButton(_overlay, "Again", "New Run", Palette.PanelRaised, Palette.Ink, 30);
             UiFactory.Place((RectTransform)again.transform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
                             new Vector2(0f, -70f), new Vector2(260f, 78f));
-            again.onClick.AddListener(StartNewCombat);
+            again.onClick.AddListener(() => { RunSave.Delete(); StartNewCombat(); });
 
             _overlay.gameObject.SetActive(false);
 
@@ -273,8 +273,19 @@ namespace EmberDeck.View
                 return;
             }
 
-            int runSeed = _useRandomSeed ? Random.Range(int.MinValue, int.MaxValue) : _fixedSeed;
-            _run = RunState.Start(_config, runSeed);
+            var resumed = RunSave.Read(_config);
+            if (resumed != null)
+            {
+                Debug.Log($"[EmberDeck] Resumed run: fight {resumed.FightNumber}, "
+                          + $"{resumed.Deck.Count} cards, {resumed.Hp}/{resumed.MaxHp} HP.");
+                _run = resumed;
+            }
+            else
+            {
+                int runSeed = _useRandomSeed ? Random.Range(int.MinValue, int.MaxValue) : _fixedSeed;
+                _run = RunState.Start(_config, runSeed);
+            }
+
             ShowMap();
         }
 
@@ -333,6 +344,9 @@ namespace EmberDeck.View
             _rewardPanel.gameObject.SetActive(false);
             _runLabel.text = $"Fight {_run.FightNumber}    Deck {_run.Deck.Count}    HP {_run.Hp}/{_run.MaxHp}";
             _mapView.Show(_run.Map);
+            // Saving here rather than on every state change means the file is only ever
+            // written at a point the game can actually be restarted from.
+            RunSave.Write(_run);
 
             // The map is opaque, so the run header has to be drawn after it. Health and deck
             // size are exactly what the choice between a Rest and an Elite turns on — hiding
@@ -374,6 +388,7 @@ namespace EmberDeck.View
         {
             if (!evt.PlayerWon)
             {
+                RunSave.Delete();
                 _overlay.gameObject.SetActive(true);
                 _overlayLabel.text = "DEFEAT";
                 _overlayLabel.color = Palette.Defeat;
@@ -392,7 +407,7 @@ namespace EmberDeck.View
                 if (view != null) Destroy(view.gameObject);
             _rewardViews.Clear();
 
-            var offers = RewardService.Roll(_config.RewardPool, _run.Rng.Rewards,
+            var offers = RewardService.Roll(_config.RewardPool, _run.RewardRng(),
                                             eliteOdds: _run.IsElite || _run.ActiveNode?.Type == NodeType.Treasure);
             _rewardTitle.text = title;
 
@@ -426,6 +441,7 @@ namespace EmberDeck.View
 
             if (_run.IsBoss)
             {
+                RunSave.Delete();
                 _overlay.gameObject.SetActive(true);
                 _overlayLabel.text = "RUN COMPLETE";
                 _overlayLabel.color = Palette.Victory;
@@ -466,6 +482,13 @@ namespace EmberDeck.View
         }
 
 #if DEVELOPMENT_BUILD || UNITY_EDITOR
+        /// <summary>Capture-harness only: a one-line description of the run, for save tests.</summary>
+        public string DebugRunSummary() =>
+            _run == null ? "none"
+                         : $"seed={_run.Seed} fight={_run.FightNumber} deck={_run.Deck.Count} "
+                           + $"hp={_run.Hp}/{_run.MaxHp} node={_run.Map?.Current?.Row},{_run.Map?.Current?.Column}";
+
+
         /// <summary>
         /// Capture-harness only: resolves the current fight as a win.
         ///
@@ -476,7 +499,18 @@ namespace EmberDeck.View
         /// </summary>
         public void DebugWinFight()
         {
-            if (_session == null || State.IsOver) return;
+            if (_session == null) return;
+
+            // Revive first when the harness already lost. Resuming a save at 19 HP and then
+            // playing one bad turn kills the player before the win can be forced, and the
+            // tool's job is to reach the reward screen, not to be fair about it.
+            if (State.IsOver)
+            {
+                if (State.PlayerWon) return;
+                State.Player.Hp = Mathf.Max(1, State.Player.Hp);
+                State.IsOver = false;
+                State.PlayerWon = false;
+            }
 
             foreach (var enemy in new System.Collections.Generic.List<Enemy>(State.LivingEnemies()))
                 Engine.LoseHp(enemy, enemy.Hp);
