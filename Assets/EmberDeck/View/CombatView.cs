@@ -41,6 +41,9 @@ namespace EmberDeck.View
         Image _playerBlockBadge;
         Text _playerStatusLabel;
         Text _energyLabel;
+        Image _heatFill;
+        Text _heatLabel;
+        Image _heatTrack;
         Text _turnLabel;
         Text _drawLabel;
         Text _discardLabel;
@@ -147,10 +150,31 @@ namespace EmberDeck.View
         void BuildHud()
         {
             var energyOrb = UiFactory.Panel(_root, "EnergyOrb", Palette.Energy);
+            // The bottom-left column is energy, then heat, then the player panel, stacked with
+            // a gap. The orb sat at y=190 and its 96px height ran into the heat panel above.
             UiFactory.Place(energyOrb, new Vector2(0f, 0f), new Vector2(0f, 0f),
-                            new Vector2(70f, 190f), new Vector2(96f, 96f));
+                            new Vector2(70f, 148f), new Vector2(96f, 96f));
             _energyLabel = UiFactory.Label(energyOrb, "EnergyText", "", 38, Palette.Background);
             UiFactory.Stretch(_energyLabel.rectTransform);
+
+            // Heat has to be on screen at all times. It accumulates across turns and costs
+            // HP past the threshold, so a player who cannot see it is being charged for a
+            // decision the game never showed them.
+            var heatPanel = UiFactory.Panel(_root, "HeatPanel", Palette.PanelDark);
+            UiFactory.Place(heatPanel, new Vector2(0f, 0f), new Vector2(0f, 0f),
+                            new Vector2(40f, 258f), new Vector2(320f, 62f));
+
+            var heatTitle = UiFactory.Label(heatPanel, "HeatTitle", "HEAT", 15, Palette.InkMuted, TextAnchor.UpperLeft);
+            UiFactory.Place(heatTitle.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f),
+                            new Vector2(12f, -6f), new Vector2(120f, 20f));
+
+            _heatFill = UiFactory.Bar(heatPanel, "HeatBar", Palette.HeatTrack, Palette.Energy,
+                                      new Vector2(292f, 22f), new Vector2(0f, -10f));
+            _heatTrack = _heatFill.transform.parent.GetComponent<Image>();
+
+            _heatLabel = UiFactory.Label(heatPanel, "HeatText", "", 17, Palette.Ink);
+            UiFactory.Place(_heatLabel.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
+                            new Vector2(0f, -10f), new Vector2(292f, 22f));
 
             _endTurnButton = UiFactory.TextButton(_root, "EndTurn", "End Turn", Palette.PanelRaised, Palette.Ink, 28);
             UiFactory.Place((RectTransform)_endTurnButton.transform, new Vector2(1f, 0f), new Vector2(1f, 0f),
@@ -306,6 +330,17 @@ namespace EmberDeck.View
             _playerStatusLabel.text = EnemyView.DescribeStatuses(player);
 
             _energyLabel.text = $"{State.Energy}/{State.EnergyPerTurn}";
+
+            int threshold = State.OverheatThreshold;
+            bool overheating = State.Heat > threshold;
+            // The bar fills to the threshold, then the whole thing turns red — the player
+            // needs to read "I am being damaged" instantly, not compute it from two numbers.
+            UiFactory.SetBarFill(_heatFill, threshold > 0 ? Mathf.Clamp01((float)State.Heat / threshold) : 0f);
+            _heatFill.color = overheating ? Palette.Overheat : Palette.Energy;
+            _heatTrack.color = overheating ? Palette.OverheatTrack : Palette.HeatTrack;
+            _heatLabel.text = overheating
+                ? $"{State.Heat} / {threshold}   OVERHEAT  −{State.Heat - threshold} HP"
+                : $"{State.Heat} / {threshold}";
             _turnLabel.text = $"Turn {State.TurnNumber}";
             _drawLabel.text = $"Draw {State.DrawPile.Count}";
             _discardLabel.text = $"Discard {State.DiscardPile.Count}" +

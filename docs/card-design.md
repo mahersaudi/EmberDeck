@@ -306,15 +306,59 @@ hardest part of this list is already built and tested.
 
 ---
 
-## 9. Order of work
+## 9. Measured results
+
+All six steps are built. Measured over 2000 fights per deck against
+Emberling + Cinder Rat + Ash Hound, player at 63 HP:
+
+| deck | cards | win% | turns (med) | HP left (med) |
+|---|---|---|---|---|
+| Starter | 10 | 83.3 | 8 | 16 |
+| Forge | 14 | 82.9 | 9 | 28 |
+| Overdrive | 14 | 87.0 | 7 | 20 |
+| Ashfall | 14 | 89.9 | 6 | 33 |
+| Pyre | 14 | 90.5 | 5 | 19 |
+| Swarm | 14 | 92.5 | 6 | 20 |
+
+Starter sits in the 80-90 band and every archetype clears it, inside a ten-point spread —
+all five viable, none dominant.
+
+**Three findings from getting there, each of which would have been invisible without the
+simulator:**
+
+**Two thirds of the first "design problem" was the bot.** The first run scored Forge at
+15.7%. Nothing was wrong with the cards: the policy picked the most expensive playable card,
+so it played Anvil Strike — "damage equal to your Block" — while holding zero Block. Scoring
+cards by estimated value instead moved Forge to 57.9%, Pyre to 85.3% and Overdrive to 76.2%
+without touching a single number. **Fix the instrument before you trust what it measures.**
+
+**A bridge card without its partner is a liability, not a neutral pick.** Ashfall sat at
+64.5% while having the *highest* HP remaining among wins — a contradiction that pointed at
+structure rather than numbers. The test deck ran Pyre Rite (Exhaust → 2 Heat) with nothing
+that spends Heat, so the Power generated overheat damage and nothing else. Adding one Vent
+moved the archetype 23 points. That is the bridge design working exactly as intended, and it
+is the clearest argument in the set for why bridges are interesting decisions rather than
+free value.
+
+**The obvious balance lever was the wrong one.** Swarm was capped by giving the enemies more
+Block — its stated weakness — rather than by shaving its damage. But raising how *often*
+enemies block also lowered their damage output, which made the fight easier for everyone and
+pushed the starter from 81.6% to 90.2%. The fix was to raise block *values* while keeping
+attack frequency. A counter aimed at one archetype has to be checked against all of them.
+
+**Where the tuning landed.** Forge is the slowest deck at 9 median turns and sits lowest at
+82.9% — consistent with its stated weakness of terrible opening turns, and its 28 median HP
+remaining says that when it comes together it wins comfortably. That shape is the design
+working, not a number left untuned.
+
+---
+
+## 10. Order of work (complete)
 
 1. Heat in the model + overheat + the four new events. Nothing else can be tested first.
 2. `PowerBehaviour`, mirroring `RelicBehaviour`.
 3. The ten effect primitives.
 4. Generate all 59 cards.
-5. Re-run the balance simulator. Expect the first numbers to be wrong — the current bot has
-   no concept of Heat and will not play Overdrive correctly, so the simulator's policy needs
-   a Heat-aware branch before its win rate means anything.
+5. Re-run the balance simulator, with a Heat-aware policy and one deck per archetype.
 
-Step 5 is the one that is easy to skip and expensive to skip: a 59-card set tuned by feel is
-a 59-card set where four archetypes are wrong.
+Every step is done. Section 9 has the numbers.

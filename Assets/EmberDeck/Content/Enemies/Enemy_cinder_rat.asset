@@ -19,6 +19,7 @@ MonoBehaviour:
   Pattern: 0
   Moves:
   - {fileID: 11400000, guid: d5661191c84c648dd935d46520ec3469, type: 2}
-  - {fileID: 11400000, guid: d5661191c84c648dd935d46520ec3469, type: 2}
   - {fileID: 11400000, guid: 9c47e00540d244e63aca55e5db3bd7c1, type: 2}
+  - {fileID: 11400000, guid: d5661191c84c648dd935d46520ec3469, type: 2}
+  - {fileID: 11400000, guid: d5661191c84c648dd935d46520ec3469, type: 2}
   TintColor: {r: 0.7, g: 0.33, b: 0.26, a: 1}

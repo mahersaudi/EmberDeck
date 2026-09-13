@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: RunConfig
   m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.RunConfig
   PlayerName: Ember
-  MaxHp: 65
+  MaxHp: 63
   EnergyPerTurn: 3
   CardsPerTurn: 5
   StarterDeck:

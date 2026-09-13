@@ -15,5 +15,5 @@ MonoBehaviour:
   Trigger: 0
   PerEnemy: 0
   Effects:
-  - {fileID: 11400000, guid: 280f37e2e1c2c43b0ad89ee3a16d0752, type: 2}
-  Text: At the start of each turn, gain 3 Block.
+  - {fileID: 11400000, guid: 315f3f74e1e004930b1d4ca31fdf1674, type: 2}
+  Text: At the start of each turn, gain 5 Block.

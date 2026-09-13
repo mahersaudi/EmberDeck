@@ -20,6 +20,6 @@ MonoBehaviour:
   Target: 0
   Exhaust: 0
   Effects:
-  - {fileID: 11400000, guid: 3e2c10e55048840029a4191c9f83ce51, type: 2}
+  - {fileID: 11400000, guid: a43d98839c6e24fc8891a5de343b0d85, type: 2}
   - {fileID: 11400000, guid: a563df4b9145b48f5a2862468735ba36, type: 2}
   TintColor: {r: 0.38, g: 0.6, b: 0.82, a: 1}

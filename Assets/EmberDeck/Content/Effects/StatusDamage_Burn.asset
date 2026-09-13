@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: StatusDamage_Burn
   m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.Effects.DamageFromStatusEffect
   Status: 4
-  Multiplier: 1
+  Multiplier: 1.5

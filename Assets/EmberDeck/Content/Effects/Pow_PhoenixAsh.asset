@@ -15,5 +15,5 @@ MonoBehaviour:
   Trigger: 6
   PerEnemy: 0
   Effects:
-  - {fileID: 11400000, guid: 9136fb06f3b8041dd849a53d95fc2426, type: 2}
-  Text: Whenever you Exhaust a card, heal 2 HP.
+  - {fileID: 11400000, guid: e32afc20c7b9240b0894b191c49e022f, type: 2}
+  Text: Whenever you Exhaust a card, heal 3 HP.

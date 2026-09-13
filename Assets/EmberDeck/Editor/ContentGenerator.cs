@@ -51,9 +51,9 @@ namespace EmberDeck.EditorTools
             var dmg6  = Damage("Dmg_6", 6);
             var dmg10 = Damage("Dmg_10", 10);
             var dmg22 = Damage("Dmg_22", 22);
-            var dmg4x2 = Damage("Dmg_4x2", 4, hits: 2);
+            var dmg3x2 = Damage("Dmg_3x2", 3, hits: 2);
             var dmg2x3 = Damage("Dmg_2x3", 2, hits: 3);
-            var dmg3x3 = Damage("Dmg_3x3", 3, hits: 3);
+            var dmg2x2All = Damage("Dmg_2x2_All", 2, hits: 2);
             var sparks = Damage("Dmg_2x4_Burn1", 2, hits: 4, burnPerHit: 1);
 
             var blk1  = Block("Blk_1", 1);
@@ -61,25 +61,27 @@ namespace EmberDeck.EditorTools
             var blk4  = Block("Blk_4", 4);
             var blk5  = Block("Blk_5", 5);
             var blk6  = Block("Blk_6", 6);
-            var blk12 = Block("Blk_12", 12);
+            var blk14 = Block("Blk_16", 16);
 
             var burn2 = Status("Burn_2", StatusType.Burn, 2);
-            var burn3 = Status("Burn_3", StatusType.Burn, 3);
+            var burn5a = Status("Burn_5_Kindle", StatusType.Burn, 5);
             var burn5 = Status("Burn_5", StatusType.Burn, 5);
+            var burn7 = Status("Burn_7", StatusType.Burn, 7);
             var vuln2 = Status("Vuln_2", StatusType.Vulnerable, 2);
             var weak2 = Status("Weak_2", StatusType.Weak, 2);
             var str1Self = Status("Str_1_Self", StatusType.Strength, 1, toSelf: true);
-            var str2Self = Status("Str_2_Self", StatusType.Strength, 2, toSelf: true);
-            var dex2Self = Status("Dex_2_Self", StatusType.Dexterity, 2, toSelf: true);
+            var str2Self = Status("Str_1_Whetstone", StatusType.Strength, 1, toSelf: true);
+            var dex2Self = Status("Dex_3_Self", StatusType.Dexterity, 3, toSelf: true);
 
             var draw1 = Draw("Draw_1", 1);
             var draw2 = Draw("Draw_2", 2);
             var energy1 = Asset<GainEnergyEffect>("Energy_1", e => e.Amount = 1);
-            var heal2 = Asset<HealEffect>("Heal_2", e => e.Amount = 2);
+            var heal2 = Asset<HealEffect>("Heal_3", e => e.Amount = 3);
             var heal6 = Asset<HealEffect>("Heal_6", e => e.Amount = 6);
 
             var heat1 = Heat("Heat_1", 1);
             var heat2 = Heat("Heat_2", 2);
+            var heat5 = Heat("Heat_5", 5);
             var heat3 = Heat("Heat_3", 3);
             var heat4 = Heat("Heat_4", 4);
 
@@ -98,33 +100,33 @@ namespace EmberDeck.EditorTools
             var strike    = Card(cards, "strike", "Strike", CardType.Attack, 1, TargetMode.SingleEnemy, CardRarity.Starter, dmg6);
             var guard     = Card(cards, "guard", "Guard", CardType.Skill, 1, TargetMode.Self, CardRarity.Starter, blk5);
             var emberLash = Card(cards, "ember_lash", "Ember Lash", CardType.Attack, 1, TargetMode.SingleEnemy, CardRarity.Starter, dmg5, burn2);
-            var stoke     = Card(cards, "stoke", "Stoke", CardType.Skill, 1, TargetMode.Self, CardRarity.Starter, heat3, draw1);
+            var stoke     = Card(cards, "stoke", "Stoke", CardType.Skill, 1, TargetMode.Self, CardRarity.Starter, heat4, draw1);
 
             // ── Common — Forge ──────────────────────────────────────────────────────
-            Card(cards, "bulwark", "Bulwark", CardType.Skill, 2, TargetMode.Self, CardRarity.Common, blk12);
+            Card(cards, "bulwark", "Bulwark", CardType.Skill, 2, TargetMode.Self, CardRarity.Common, blk14);
             Card(cards, "anvil_strike", "Anvil Strike", CardType.Attack, 1, TargetMode.SingleEnemy, CardRarity.Common,
-                 Asset<DamageFromBlockEffect>("BlockDamage_x1", e => { e.Multiplier = 1f; e.ConsumeBlock = false; }));
+                 Asset<DamageFromBlockEffect>("BlockDamage_x15", e => { e.Multiplier = 1.5f; e.ConsumeBlock = false; }));
             Card(cards, "brace", "Brace", CardType.Skill, 0, TargetMode.Self, CardRarity.Common, blk4);
             Card(cards, "temper", "Temper", CardType.Power, 1, TargetMode.Self, CardRarity.Common, dex2Self);
 
             // ── Common — Swarm ──────────────────────────────────────────────────────
-            Card(cards, "twin_fangs", "Twin Fangs", CardType.Attack, 1, TargetMode.SingleEnemy, CardRarity.Common, dmg4x2);
+            Card(cards, "twin_fangs", "Twin Fangs", CardType.Attack, 1, TargetMode.SingleEnemy, CardRarity.Common, dmg3x2);
             Card(cards, "whetstone", "Whetstone", CardType.Power, 1, TargetMode.Self, CardRarity.Common, str2Self);
             Card(cards, "flurry", "Flurry", CardType.Attack, 1, TargetMode.SingleEnemy, CardRarity.Common, dmg2x3);
             Card(cards, "quick_jab", "Quick Jab", CardType.Attack, 0, TargetMode.SingleEnemy, CardRarity.Common, dmg3);
 
             // ── Common — Pyre ───────────────────────────────────────────────────────
-            Card(cards, "kindle", "Kindle", CardType.Skill, 1, TargetMode.SingleEnemy, CardRarity.Common, burn3);
-            Card(cards, "scorch", "Scorch", CardType.Attack, 1, TargetMode.SingleEnemy, CardRarity.Common, dmg4, burn2);
+            Card(cards, "kindle", "Kindle", CardType.Skill, 1, TargetMode.SingleEnemy, CardRarity.Common, burn5a);
+            Card(cards, "scorch", "Scorch", CardType.Attack, 1, TargetMode.SingleEnemy, CardRarity.Common, dmg4, Status("Burn_3_Scorch", StatusType.Burn, 3));
             Card(cards, "fan_the_flames", "Fan the Flames", CardType.Skill, 0, TargetMode.AllEnemies, CardRarity.Common, burn2);
-            Exhausting(Card(cards, "smoulder", "Smoulder", CardType.Skill, 1, TargetMode.SingleEnemy, CardRarity.Common, burn5));
+            Exhausting(Card(cards, "smoulder", "Smoulder", CardType.Skill, 1, TargetMode.SingleEnemy, CardRarity.Common, burn7));
 
             // ── Common — Overdrive ──────────────────────────────────────────────────
-            Card(cards, "bellows", "Bellows", CardType.Skill, 0, TargetMode.Self, CardRarity.Common, heat2);
+            Card(cards, "bellows", "Bellows", CardType.Skill, 0, TargetMode.Self, CardRarity.Common, heat3);
             Card(cards, "vent", "Vent", CardType.Skill, 1, TargetMode.Self, CardRarity.Common,
                  Asset<SpendHeatEffect>("SpendHeat_Block", e => { e.Payout = HeatPayout.Block; e.Ratio = 1f; }));
             Card(cards, "flare", "Flare", CardType.Attack, 1, TargetMode.SingleEnemy, CardRarity.Common,
-                 Asset<ScaleWithHeatEffect>("ScaleHeat_Dmg3", e => { e.Payout = HeatPayout.Damage; e.Base = 3; }));
+                 Asset<ScaleWithHeatEffect>("ScaleHeat_Dmg4", e => { e.Payout = HeatPayout.Damage; e.Base = 4; }));
             Card(cards, "heat_sink", "Heat Sink", CardType.Skill, 1, TargetMode.Self, CardRarity.Common, heat3, blk5);
 
             // ── Common — Ashfall ────────────────────────────────────────────────────
@@ -143,12 +145,12 @@ namespace EmberDeck.EditorTools
             Card(cards, "counterweight", "Counterweight", CardType.Attack, 2, TargetMode.SingleEnemy, CardRarity.Uncommon,
                  Asset<DamageFromBlockEffect>("BlockDamage_x2_Consume", e => { e.Multiplier = 2f; e.ConsumeBlock = true; }));
             Card(cards, "ironhide", "Ironhide", CardType.Power, 1, TargetMode.Self, CardRarity.Uncommon,
-                 Power("Pow_Ironhide", PowerTrigger.TurnStart, "At the start of each turn, gain 3 Block.", false, blk3));
+                 Power("Pow_Ironhide", PowerTrigger.TurnStart, "At the start of each turn, gain 5 Block.", false, blk5));
             Card(cards, "forge_rite", "Forge Rite", CardType.Power, 2, TargetMode.Self, CardRarity.Uncommon,
                  Power("Pow_ForgeRite", PowerTrigger.BlockGained, "Whenever you gain Block, gain 1 Heat.", false, heat1));
 
             // ── Uncommon — Swarm ────────────────────────────────────────────────────
-            var cinderStorm = Card(cards, "cinder_storm", "Cinder Storm", CardType.Attack, 2, TargetMode.AllEnemies, CardRarity.Uncommon, dmg3x3);
+            var cinderStorm = Card(cards, "cinder_storm", "Cinder Storm", CardType.Attack, 2, TargetMode.AllEnemies, CardRarity.Uncommon, dmg2x2All);
             Card(cards, "rising_heat", "Rising Heat", CardType.Power, 2, TargetMode.Self, CardRarity.Uncommon,
                  Power("Pow_RisingHeat", PowerTrigger.AttackPlayed, "Whenever you play an Attack, gain 1 Heat.", false, heat1));
             Card(cards, "rain_of_sparks", "Rain of Sparks", CardType.Attack, 1, TargetMode.SingleEnemy, CardRarity.Uncommon, sparks);
@@ -161,7 +163,7 @@ namespace EmberDeck.EditorTools
                  }));
 
             // ── Uncommon — Pyre ─────────────────────────────────────────────────────
-            Card(cards, "wildfire", "Wildfire", CardType.Skill, 2, TargetMode.AllEnemies, CardRarity.Uncommon, burn5);
+            Card(cards, "wildfire", "Wildfire", CardType.Skill, 2, TargetMode.AllEnemies, CardRarity.Uncommon, Status("Burn_8_Wildfire", StatusType.Burn, 8));
             Card(cards, "bellows_blast", "Bellows Blast", CardType.Skill, 1, TargetMode.SingleEnemy, CardRarity.Uncommon,
                  Asset<MultiplyStatusEffect>("BurnMul_2", e => { e.Status = StatusType.Burn; e.Multiplier = 2; }));
             Card(cards, "slow_roast", "Slow Roast", CardType.Power, 1, TargetMode.Self, CardRarity.Uncommon,
@@ -171,7 +173,7 @@ namespace EmberDeck.EditorTools
                      e.Text = "Burn no longer decreases at the end of turn.";
                  }));
             Card(cards, "immolate", "Immolate", CardType.Attack, 2, TargetMode.SingleEnemy, CardRarity.Uncommon,
-                 Asset<DamageFromStatusEffect>("StatusDamage_Burn", e => { e.Status = StatusType.Burn; e.Multiplier = 1f; }));
+                 Asset<DamageFromStatusEffect>("StatusDamage_Burn", e => { e.Status = StatusType.Burn; e.Multiplier = 1.5f; }));
             Card(cards, "backdraft", "Backdraft", CardType.Skill, 1, TargetMode.AllEnemies, CardRarity.Uncommon,
                  Asset<SpendHeatEffect>("SpendHeat_BurnAll", e =>
                  {
@@ -185,7 +187,7 @@ namespace EmberDeck.EditorTools
                  Asset<SpendHeatEffect>("SpendHeat_Dmg2x", e => { e.Payout = HeatPayout.Damage; e.Ratio = 2f; }));
             Card(cards, "heat_shield", "Heat Shield", CardType.Skill, 1, TargetMode.Self, CardRarity.Uncommon,
                  Asset<ScaleWithHeatEffect>("ScaleHeat_Block", e => { e.Payout = HeatPayout.Block; e.Base = 0; }));
-            Card(cards, "overclock", "Overclock", CardType.Skill, 0, TargetMode.Self, CardRarity.Uncommon, heat4, draw2);
+            Card(cards, "overclock", "Overclock", CardType.Skill, 0, TargetMode.Self, CardRarity.Uncommon, heat5, draw2);
             Card(cards, "coolant", "Coolant", CardType.Skill, 1, TargetMode.Self, CardRarity.Uncommon,
                  Asset<SpendHeatEffect>("SpendHeat_Block6", e =>
                  {
@@ -204,13 +206,13 @@ namespace EmberDeck.EditorTools
             Card(cards, "pyre_rite", "Pyre Rite", CardType.Power, 1, TargetMode.Self, CardRarity.Uncommon,
                  Power("Pow_PyreRite", PowerTrigger.CardExhausted, "Whenever you Exhaust a card, gain 2 Heat.", false, heat2));
             Card(cards, "burnt_offering", "Burnt Offering", CardType.Attack, 1, TargetMode.SingleEnemy, CardRarity.Uncommon,
-                 exhaustHand, dmg10);
+                 exhaustHand, Damage("Dmg_16", 16));
             Exhausting(Card(cards, "ash_armor", "Ash Armor", CardType.Skill, 1, TargetMode.Self, CardRarity.Uncommon,
                  Asset<ScaleWithCounterEffect>("Counter_ExhaustBlock4", e =>
                  {
                      e.Counter = CombatCounter.CardsExhaustedThisCombat;
                      e.Payout = HeatPayout.Block;
-                     e.PerPoint = 4;
+                     e.PerPoint = 10;
                  })));
 
             // ── Rare ────────────────────────────────────────────────────────────────
@@ -258,7 +260,7 @@ namespace EmberDeck.EditorTools
             Card(cards, "ember_engine", "Ember Engine", CardType.Power, 2, TargetMode.Self, CardRarity.Rare,
                  Power("Pow_EmberEngine", PowerTrigger.HeatGained, "Whenever you gain Heat, gain 1 Block.", false, blk1));
             Card(cards, "phoenix_ash", "Phoenix Ash", CardType.Power, 2, TargetMode.Self, CardRarity.Rare,
-                 Power("Pow_PhoenixAsh", PowerTrigger.CardExhausted, "Whenever you Exhaust a card, heal 2 HP.", false, heal2));
+                 Power("Pow_PhoenixAsh", PowerTrigger.CardExhausted, "Whenever you Exhaust a card, heal 3 HP.", false, heal2));
             Card(cards, "cinder_trance", "Cinder Trance", CardType.Power, 2, TargetMode.Self, CardRarity.Rare,
                  Power("Pow_CinderTrance", PowerTrigger.TurnStart,
                        "At the start of your turn, exhaust the top card of your draw pile and gain 1 Energy.",
@@ -269,17 +271,17 @@ namespace EmberDeck.EditorTools
 
             // ── Enemies ─────────────────────────────────────────────────────────────
             var bite    = Move("Move_Bite", "Bite", IntentKind.Attack, 1, Damage("Dmg_Bite", 10));
-            var skitter = Move("Move_Skitter", "Skitter", IntentKind.Block, 1, Block("Blk_Skitter", 8));
+            var skitter = Move("Move_Skitter", "Skitter", IntentKind.Block, 1, Block("Blk_Skitter", 11));
             var maul    = Move("Move_Maul", "Maul", IntentKind.Attack, 3, Damage("Dmg_Maul", 14));
             var howl    = Move("Move_Howl", "Howl", IntentKind.Buff, 1,
                                Status("Str_Howl_Self", StatusType.Strength, 3, toSelf: true));
-            var brace   = Move("Move_Brace", "Brace", IntentKind.Block, 1, Block("Blk_Brace", 10));
+            var brace   = Move("Move_Brace", "Brace", IntentKind.Block, 1, Block("Blk_Brace", 13));
             var spark   = Move("Move_Spark", "Spark", IntentKind.Attack, 1, Damage("Dmg_Spark", 7));
             var ignite  = Move("Move_Ignite", "Ignite", IntentKind.Debuff, 1,
                                Damage("Dmg_Ignite", 4), Status("Weak_1_Enemy", StatusType.Weak, 1));
 
             var cinderRat = MakeEnemy("cinder_rat", "Cinder Rat", 20, 24, MovePattern.Sequence,
-                                      new Color(0.70f, 0.33f, 0.26f), bite, bite, skitter);
+                                      new Color(0.70f, 0.33f, 0.26f), bite, skitter, bite, bite);
             var ashHound = MakeEnemy("ash_hound", "Ash Hound", 30, 35, MovePattern.WeightedRandom,
                                      new Color(0.45f, 0.30f, 0.42f), maul, howl, brace);
             var emberling = MakeEnemy("emberling", "Emberling", 12, 15, MovePattern.Sequence,
@@ -297,7 +299,7 @@ namespace EmberDeck.EditorTools
             var config = CreateAsset<RunConfig>(ConfigPath, cfg =>
             {
                 cfg.PlayerName = "Ember";
-                cfg.MaxHp = 65;
+                cfg.MaxHp = 63;
                 cfg.EnergyPerTurn = 3;
                 cfg.CardsPerTurn = 5;
 

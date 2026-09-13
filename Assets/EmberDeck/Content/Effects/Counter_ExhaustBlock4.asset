@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.Effects.ScaleWithCounterEffect
   Counter: 1
   Payout: 1
-  PerPoint: 4
+  PerPoint: 10

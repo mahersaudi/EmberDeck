@@ -18,6 +18,9 @@ namespace EmberDeck.View
         public static readonly Color HealthTrack  = new(0.24f, 0.10f, 0.12f, 1f);
         public static readonly Color Block        = new(0.38f, 0.62f, 0.86f, 1f);
         public static readonly Color Energy       = new(0.95f, 0.68f, 0.25f, 1f);
+        public static readonly Color HeatTrack    = new(0.20f, 0.15f, 0.10f, 1f);
+        public static readonly Color Overheat     = new(0.90f, 0.30f, 0.22f, 1f);
+        public static readonly Color OverheatTrack = new(0.32f, 0.10f, 0.09f, 1f);
 
         public static readonly Color IntentAttack = new(0.92f, 0.42f, 0.35f, 1f);
         public static readonly Color IntentBlock  = new(0.45f, 0.70f, 0.90f, 1f);

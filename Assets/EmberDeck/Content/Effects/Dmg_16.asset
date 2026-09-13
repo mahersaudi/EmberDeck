@@ -9,8 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 362876f987e5d45dba3adac8b7b02ad9, type: 3}
-  m_Name: BlockDamage_x1
-  m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.Effects.DamageFromBlockEffect
-  Multiplier: 1
-  ConsumeBlock: 0
+  m_Script: {fileID: 11500000, guid: 814a6f0a37c6547c5836b9afbd39b15a, type: 3}
+  m_Name: Dmg_16
+  m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.Effects.DealDamageEffect
+  Amount: 16
+  Hits: 1
+  PerHitStatus: 4
+  PerHitStatusAmount: 0

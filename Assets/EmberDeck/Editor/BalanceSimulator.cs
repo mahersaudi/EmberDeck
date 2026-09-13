@@ -62,8 +62,8 @@ namespace EmberDeck.EditorTools
             }),
             ("Ashfall", new[]
             {
-                "strike:3", "guard:3", "cremate:2", "salvage:1", "smoulder:1",
-                "pyre_rite:1", "ash_armor:1", "burnt_offering:1", "phoenix_ash:1"
+                "strike:3", "guard:3", "cremate:1", "salvage:1", "smoulder:1",
+                "pyre_rite:1", "vent:1", "ash_armor:1", "burnt_offering:1", "phoenix_ash:1"
             }),
         };
 
