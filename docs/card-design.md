@@ -142,7 +142,7 @@ Overdrive, so the first reward screen has something to point at.
 | Second Wind | 1e | Gain 6 Block. Draw 1. | — |
 | Mend | 1e | Heal 6. Exhaust. | — |
 
-### Uncommon (20)
+### Uncommon (21)
 
 | Card | Cost | Effect | Line |
 |---|---|---|---|
@@ -166,6 +166,7 @@ Overdrive, so the first reward screen has something to point at.
 | Pyre Rite | 1e | **Power:** Whenever you Exhaust a card, gain 2 Heat. | Ashfall ★ Overdrive |
 | Burnt Offering | 1e | Exhaust a card in your hand. Deal 10 damage. | Ashfall |
 | Ash Armor | 1e | Gain 4 Block per card exhausted this combat. Exhaust. | Ashfall ★ Forge |
+| Backdraft | 1e | Apply Burn to ALL enemies equal to half your Heat. Lose all Heat. | Pyre ★ Overdrive |
 
 ### Rare (13)
 
@@ -185,7 +186,7 @@ Overdrive, so the first reward screen has something to point at.
 | Second Forge | 3e | **Power:** Gain 1 Energy at the start of each turn. | — |
 | Last Ember | 3e | Deal 22 damage. Exhaust. | — |
 
-**Totals:** 4 starter designs, 22 common, 20 uncommon, 13 rare = **59 cards**.
+**Totals:** 4 starter designs, 22 common, 21 uncommon, 13 rare = **60 cards**.
 
 ---
 
@@ -233,11 +234,13 @@ accumulates permanently across the whole fight → `Counterweight` cashes it for
            ASHFALL ──────────────────────────────────────────── OVERDRIVE
               
             SWARM ─── Rain of Sparks, Searing Blade ─── PYRE
-              └────── Rising Heat ────── OVERDRIVE
+              └────── Rising Heat ────── OVERDRIVE ─── Backdraft ─── PYRE
 ```
 
-Overdrive touches all four. That is deliberate: it is the hub, so almost any deck can pick up
-a Heat card and have it mean something, while a pure Overdrive deck is the most fragile of all.
+Overdrive touches all four — `Backdraft` exists specifically to close the Pyre gap, which the
+first draft of this map left open. That is deliberate: Overdrive is the hub, so almost any deck
+can pick up a Heat card and have it mean something, while a pure Overdrive deck is the most
+fragile of all.
 
 ---
 
