@@ -23,6 +23,12 @@ namespace EmberDeck.View
             string directory = ReadArg("-emberdeck-capture");
             if (string.IsNullOrEmpty(directory)) return;
 
+            // Unity halts the whole loop — Update and coroutines included — when the window
+            // is not focused and runInBackground is off. A capture run launched from a shell
+            // never gets focus, so without this the player loads the scene and then simply
+            // stops, with nothing in the log to say why.
+            Application.runInBackground = true;
+
             var host = new GameObject("[AutoCapture]");
             Object.DontDestroyOnLoad(host);
             host.AddComponent<Runner>().Directory = directory;
