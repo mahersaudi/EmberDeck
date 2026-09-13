@@ -16,5 +16,5 @@ MonoBehaviour:
   Kind: 3
   Weight: 1
   Effects:
-  - {fileID: 11400000, guid: 05112e7bad8d24412a24f62aedf0457c, type: 2}
-  - {fileID: 11400000, guid: eb4994c8599944a4c938eac49acd4e91, type: 2}
+  - {fileID: 11400000, guid: 686cb387b9c8d446b99982b2473005ee, type: 2}
+  - {fileID: 11400000, guid: 97c24e90f24a748a5b8570a804bef3e8, type: 2}

@@ -14,11 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.CardData
   Id: stoke
   DisplayName: Stoke
-  Type: 2
-  Rarity: 2
+  Type: 1
+  Rarity: 0
   Cost: 1
   Target: 0
   Exhaust: 0
   Effects:
-  - {fileID: 11400000, guid: 7580d59e79c45414c89a23ece5c10c72, type: 2}
-  TintColor: {r: 0.72, g: 0.52, b: 0.85, a: 1}
+  - {fileID: 11400000, guid: 9b7b4b29c722e4df2b88367d0d16ff25, type: 2}
+  - {fileID: 11400000, guid: 8c4a7604b772f4a0487fef1b7bee0aa4, type: 2}
+  TintColor: {r: 0.38, g: 0.6, b: 0.82, a: 1}

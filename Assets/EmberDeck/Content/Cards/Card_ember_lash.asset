@@ -15,11 +15,11 @@ MonoBehaviour:
   Id: ember_lash
   DisplayName: Ember Lash
   Type: 0
-  Rarity: 1
+  Rarity: 0
   Cost: 1
   Target: 1
   Exhaust: 0
   Effects:
-  - {fileID: 11400000, guid: 3da61e8cc0d82413b91a2325968f343f, type: 2}
-  - {fileID: 11400000, guid: 5dc228d331b8d426d94cde88c410f2c3, type: 2}
+  - {fileID: 11400000, guid: 8958b688437634b73b4acd2b30439d5f, type: 2}
+  - {fileID: 11400000, guid: da2b3ade17349465f847ec5cde1fa891, type: 2}
   TintColor: {r: 0.86, g: 0.42, b: 0.28, a: 1}

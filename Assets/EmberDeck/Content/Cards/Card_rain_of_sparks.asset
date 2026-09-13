@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b127717e197394e729d71394d4936d1f, type: 3}
+  m_Name: Card_rain_of_sparks
+  m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.CardData
+  Id: rain_of_sparks
+  DisplayName: Rain of Sparks
+  Type: 0
+  Rarity: 2
+  Cost: 1
+  Target: 1
+  Exhaust: 0
+  Effects:
+  - {fileID: 11400000, guid: c522783bd248f4cefb915874347bb8a5, type: 2}
+  TintColor: {r: 0.86, g: 0.42, b: 0.28, a: 1}
