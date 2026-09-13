@@ -47,6 +47,20 @@ namespace EmberDeck.View
         Text _overlayLabel;
         Button _endTurnButton;
 
+#if UNITY_EDITOR
+        /// <summary>
+        /// Editor-only binding used by ContentGenerator when it builds the scene.
+        ///
+        /// Assigns the field directly rather than going through SerializedObject: in batch
+        /// mode ApplyModifiedPropertiesWithoutUndo silently fails to write an object
+        /// reference — no exception, no false return, just a null in the saved scene. A
+        /// direct assignment is also compile-checked, where "_config" as a string is not.
+        /// </summary>
+        // public, not internal: the generator lives in Assembly-CSharp-Editor and this type
+        // in Assembly-CSharp, and internal does not cross an assembly boundary.
+        public void EditorBindConfig(RunConfig config) => _config = config;
+#endif
+
         void Start()
         {
             EnsureEventSystem();
@@ -232,7 +246,7 @@ namespace EmberDeck.View
 
         void OnCardClicked(CardView view)
         {
-            if (State.IsOver) return;
+            if (_session == null || State.IsOver) return;
 
             // Cards that need no target play on the first click; cards that do are selected
             // first and then aimed. One interaction model, no modes to explain.
@@ -250,7 +264,7 @@ namespace EmberDeck.View
 
         void OnEnemyClicked(EnemyView view)
         {
-            if (State.IsOver || _selectedCard == null || !view.Enemy.IsAlive) return;
+            if (_session == null || State.IsOver || _selectedCard == null || !view.Enemy.IsAlive) return;
 
             Engine.TryPlayCard(_selectedCard.Card, view.Enemy);
             _selectedCard = null;
@@ -259,7 +273,7 @@ namespace EmberDeck.View
 
         void OnEndTurnClicked()
         {
-            if (State.IsOver) return;
+            if (_session == null || State.IsOver) return;
             _selectedCard = null;
             Engine.EndPlayerTurn();
             Redraw();

@@ -29,6 +29,7 @@ namespace EmberDeck.EditorTools
         const string Root = "Assets/EmberDeck";
         const string ContentRoot = Root + "/Content";
         const string ScenePath = Root + "/Scenes/Combat.unity";
+        const string ConfigPath = ContentRoot + "/RunConfig.asset";
 
         [MenuItem("EmberDeck/Generate Content and Scene")]
         public static void Generate()
@@ -128,7 +129,7 @@ namespace EmberDeck.EditorTools
             });
 
             // ── Run config ───────────────────────────────────────────────────────────
-            var config = CreateAsset<RunConfig>($"{ContentRoot}/RunConfig.asset", cfg =>
+            var config = CreateAsset<RunConfig>(ConfigPath, cfg =>
             {
                 cfg.PlayerName = "Ember";
                 cfg.MaxHp = 65;
@@ -170,6 +171,13 @@ namespace EmberDeck.EditorTools
 
         static void CreateScene(RunConfig config)
         {
+            // Reload from disk. AssetDatabase.Refresh may have reimported the asset, which
+            // leaves the instance we created detached from its file — and assigning a
+            // detached object writes a null reference with no error at all. That failure is
+            // invisible until the built game starts with no content.
+            var reloaded = AssetDatabase.LoadAssetAtPath<RunConfig>(ConfigPath);
+            if (reloaded != null) config = reloaded;
+
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
             var cameraGo = new GameObject("Main Camera", typeof(Camera));
@@ -182,14 +190,27 @@ namespace EmberDeck.EditorTools
             var combatGo = new GameObject("Combat");
             var view = combatGo.AddComponent<CombatView>();
 
-            // _config is private and [SerializeField]; SerializedObject is the only supported
-            // way to write it without widening the field's visibility for the editor's sake.
-            var serialized = new SerializedObject(view);
-            serialized.FindProperty("_config").objectReferenceValue = config;
-            serialized.ApplyModifiedPropertiesWithoutUndo();
+            // Assign the field directly rather than through SerializedObject: in batch mode
+            // ApplyModifiedPropertiesWithoutUndo silently fails to write an object reference
+            // — no exception, no false return, just a null in the saved scene.
+            view.EditorBindConfig(config);
+            EditorUtility.SetDirty(view);
+            EditorSceneManager.MarkSceneDirty(scene);
 
             Directory.CreateDirectory(Path.GetDirectoryName(ScenePath)!);
             EditorSceneManager.SaveScene(scene, ScenePath);
+
+            // Verify against the SAVED file, not the in-memory object: what matters is what
+            // a build loads, and the in-memory check proved to be a false negative here.
+            var saved = AssetDatabase.LoadAssetAtPath<SceneAsset>(ScenePath);
+            bool bound = File.ReadAllText(ScenePath).Contains(AssetDatabase.AssetPathToGUID(ConfigPath));
+            Debug.Log($"[EmberDeck] Scene saved ({saved != null}); RunConfig reference present in file: {bound}");
+            if (!bound)
+            {
+                Debug.LogError("[EmberDeck] RunConfig is NOT bound in the saved scene — the build would start empty.");
+                EditorApplication.Exit(1);
+                return;
+            }
 
             var buildScenes = new List<EditorBuildSettingsScene>(EditorBuildSettings.scenes);
             if (!buildScenes.Exists(entry => entry.path == ScenePath))
