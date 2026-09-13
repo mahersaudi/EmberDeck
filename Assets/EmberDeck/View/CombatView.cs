@@ -42,7 +42,8 @@ namespace EmberDeck.View
         Text _playerStatusLabel;
         Text _energyLabel;
         Text _turnLabel;
-        Text _pilesLabel;
+        Text _drawLabel;
+        Text _discardLabel;
         Text _seedLabel;
         Text _overlayLabel;
         Button _endTurnButton;
@@ -107,7 +108,7 @@ namespace EmberDeck.View
 
             _handRow = UiFactory.Panel(_root, "Hand", new Color(0f, 0f, 0f, 0f));
             UiFactory.Place(_handRow, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
-                            new Vector2(0f, 24f), new Vector2(1400f, 300f));
+                            new Vector2(0f, 56f), new Vector2(1400f, 300f));
 
             BuildPlayerPanel();
             BuildHud();
@@ -160,9 +161,15 @@ namespace EmberDeck.View
             UiFactory.Place(_turnLabel.rectTransform, new Vector2(1f, 1f), new Vector2(1f, 1f),
                             new Vector2(-40f, -30f), new Vector2(300f, 30f));
 
-            _pilesLabel = UiFactory.Label(_root, "Piles", "", 19, Palette.InkMuted, TextAnchor.LowerLeft);
-            UiFactory.Place(_pilesLabel.rectTransform, new Vector2(0f, 0f), new Vector2(0f, 0f),
-                            new Vector2(40f, 40f), new Vector2(400f, 26f));
+            // Split to the two bottom corners. A single label on the left sat directly under
+            // the hand, and the lowest cards covered it.
+            _drawLabel = UiFactory.Label(_root, "DrawPile", "", 19, Palette.InkMuted, TextAnchor.LowerLeft);
+            UiFactory.Place(_drawLabel.rectTransform, new Vector2(0f, 0f), new Vector2(0f, 0f),
+                            new Vector2(40f, 30f), new Vector2(220f, 26f));
+
+            _discardLabel = UiFactory.Label(_root, "DiscardPile", "", 19, Palette.InkMuted, TextAnchor.LowerRight);
+            UiFactory.Place(_discardLabel.rectTransform, new Vector2(1f, 0f), new Vector2(1f, 0f),
+                            new Vector2(-40f, 30f), new Vector2(260f, 26f));
 
             _seedLabel = UiFactory.Label(_root, "Seed", "", 17, new Color(0.4f, 0.4f, 0.46f), TextAnchor.UpperLeft);
             UiFactory.Place(_seedLabel.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f),
@@ -300,8 +307,9 @@ namespace EmberDeck.View
 
             _energyLabel.text = $"{State.Energy}/{State.EnergyPerTurn}";
             _turnLabel.text = $"Turn {State.TurnNumber}";
-            _pilesLabel.text = $"Draw {State.DrawPile.Count}    Discard {State.DiscardPile.Count}" +
-                               (State.ExhaustPile.Count > 0 ? $"    Exhaust {State.ExhaustPile.Count}" : "");
+            _drawLabel.text = $"Draw {State.DrawPile.Count}";
+            _discardLabel.text = $"Discard {State.DiscardPile.Count}" +
+                                 (State.ExhaustPile.Count > 0 ? $"    Exhaust {State.ExhaustPile.Count}" : "");
             _endTurnButton.interactable = !State.IsOver;
 
             foreach (var cardView in _cardViews)
@@ -366,11 +374,15 @@ namespace EmberDeck.View
             for (int i = 0; i < count; i++)
             {
                 float centred = count > 1 ? (i - (count - 1) * 0.5f) / ((count - 1) * 0.5f) : 0f;
-                float lift = -Mathf.Abs(centred) * 26f;
+
+                // Arc UPWARD from the ends rather than dropping the ends downward, so no card
+                // ever sits lower than the row itself and the bottom edge stays predictable.
+                float lift = (1f - Mathf.Abs(centred)) * 22f;
                 var rect = (RectTransform)_cardViews[i].transform;
 
                 rect.SetSiblingIndex(i);
-                rect.localRotation = Quaternion.Euler(0f, 0f, -centred * 5f);
+                // Shallow: past about 3 degrees the rules text becomes noticeably harder to read.
+                rect.localRotation = Quaternion.Euler(0f, 0f, -centred * 3f);
                 _cardViews[i].SetRestPosition(new Vector2(startX + i * step, lift));
             }
         }

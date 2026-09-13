@@ -58,14 +58,19 @@ namespace EmberDeck.View
             _costLabel = UiFactory.Label(badge, "Cost", card.BaseCost.ToString(), 26, Palette.Background);
             UiFactory.Stretch(_costLabel.rectTransform);
 
-            _nameLabel = UiFactory.Label(rect, "Name", card.Data.DisplayName, 22, Palette.Ink);
+            // Sits in the gap to the right of the cost badge, with room for two lines so a
+            // long name wraps instead of colliding with the badge.
+            _nameLabel = UiFactory.Label(rect, "Name", card.Data.DisplayName, 19, Palette.Ink);
             UiFactory.Place(_nameLabel.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
-                            new Vector2(18f, -22f), new Vector2(Width - 70f, 34f));
+                            new Vector2(25f, -18f), new Vector2(124f, 46f));
 
+            // Centred in the body rather than pinned to the top: rules text is short and
+            // varies in length, and top-aligning it leaves the bottom half of every card
+            // visibly empty.
             _descriptionLabel = UiFactory.Label(rect, "Description", card.Data.BuildDescription(), 17,
-                                                Palette.InkMuted, TextAnchor.UpperCenter);
+                                                Palette.InkMuted);
             UiFactory.Place(_descriptionLabel.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
-                            new Vector2(0f, -18f), new Vector2(Width - 28f, Height - 120f));
+                            new Vector2(0f, -30f), new Vector2(Width - 28f, 170f));
 
             _button = gameObject.AddComponent<Button>();
             _button.targetGraphic = _background;
