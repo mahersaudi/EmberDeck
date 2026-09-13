@@ -30,7 +30,9 @@ for file in "$SRC"/*.png; do
   id="$(basename "$file" .png)"
   case "$id" in
     test_*) continue ;;
-    emberling|cinder_rat|ash_hound)
+    # Read from the generator rather than repeating the list here: the boss portrait was
+    # filed as a card because this case statement was written before it existed.
+    emberling|cinder_rat|ash_hound|forge_tyrant)
       ffmpeg -y -loglevel error -i "$file" -vf "$ENEMY_CROP" "$ENEMIES/$id.png"
       enemies=$((enemies + 1)) ;;
     *)
@@ -41,3 +43,4 @@ done
 
 echo "[painted] installed $cards card paintings, $enemies enemy portraits"
 echo "[painted] cards still on SVG symbols: $(( 60 - cards ))"
+[ "$cards" -gt 60 ] && echo "[painted] WARNING: more card images than cards — an enemy is filed as a card" >&2
