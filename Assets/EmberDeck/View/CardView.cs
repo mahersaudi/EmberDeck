@@ -19,6 +19,7 @@ namespace EmberDeck.View
         Image _costBadge;
         Text _nameLabel;
         Text _descriptionLabel;
+        Image _art;
         Button _button;
 
         Vector2 _restPosition;
@@ -67,10 +68,26 @@ namespace EmberDeck.View
             // Centred in the body rather than pinned to the top: rules text is short and
             // varies in length, and top-aligning it leaves the bottom half of every card
             // visibly empty.
-            _descriptionLabel = UiFactory.Label(rect, "Description", card.Data.BuildDescription(), 17,
+            if (card.Data.Art != null)
+            {
+                var artRect = UiFactory.Panel(rect, "Art", new Color(1f, 1f, 1f, 0f));
+                UiFactory.Place(artRect, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
+                                new Vector2(0f, -66f), new Vector2(86f, 86f));
+                _art = artRect.GetComponent<Image>();
+                _art.sprite = card.Data.Art;
+                _art.color = Color.white;
+                _art.preserveAspect = true;
+                _art.raycastTarget = false;
+            }
+
+            // The text box shrinks when there is art above it, rather than the art floating
+            // over the rules — overlapping the two would cost legibility on every card.
+            float textTop = card.Data.Art != null ? -58f : -30f;
+            float textHeight = card.Data.Art != null ? 116f : 170f;
+            _descriptionLabel = UiFactory.Label(rect, "Description", card.Data.BuildDescription(), 16,
                                                 Palette.InkMuted);
             UiFactory.Place(_descriptionLabel.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
-                            new Vector2(0f, -30f), new Vector2(Width - 28f, 170f));
+                            new Vector2(0f, textTop), new Vector2(Width - 28f, textHeight));
 
             _button = gameObject.AddComponent<Button>();
             _button.targetGraphic = _background;
@@ -98,6 +115,7 @@ namespace EmberDeck.View
             _costBadge.color = playable ? Palette.Energy : Palette.Energy * 0.4f;
             _costLabel.text = displayedCost.ToString();
             _nameLabel.color = playable ? Palette.Ink : Palette.InkMuted;
+            if (_art != null) _art.color = playable ? Color.white : new Color(1f, 1f, 1f, 0.45f);
 
             var rect = (RectTransform)transform;
             rect.anchoredPosition = _restPosition + (selected ? new Vector2(0f, 46f) : Vector2.zero);

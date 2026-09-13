@@ -22,3 +22,4 @@ MonoBehaviour:
   Effects:
   - {fileID: 11400000, guid: 9d3b46e154de94b0fa1d07dcd9f883fb, type: 2}
   TintColor: {r: 0.86, g: 0.42, b: 0.28, a: 1}
+  Art: {fileID: 21300000, guid: a07f2145ba6fe4f93838398274a17b0c, type: 3}

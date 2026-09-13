@@ -25,5 +25,6 @@ namespace EmberDeck.Content
         public List<EnemyMove> Moves = new();
 
         public Color TintColor = new(0.72f, 0.28f, 0.32f);
+        public Sprite Art;
     }
 }

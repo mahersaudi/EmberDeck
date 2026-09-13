@@ -29,6 +29,7 @@ namespace EmberDeck.Content
 
         [Header("Presentation")]
         public Color TintColor = new(0.85f, 0.45f, 0.25f);
+        public Sprite Art;
 
         /// <summary>Built from the effects themselves, so text can never contradict behaviour.</summary>
         public string BuildDescription()

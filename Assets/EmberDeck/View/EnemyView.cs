@@ -12,6 +12,7 @@ namespace EmberDeck.View
         public Enemy Enemy { get; private set; }
 
         Image _body;
+        bool _hasArt;
         Image _healthFill;
         Text _nameLabel;
         Text _healthLabel;
@@ -47,8 +48,15 @@ namespace EmberDeck.View
 
             var body = UiFactory.Panel(rect, "Body", enemy.Data.TintColor);
             UiFactory.Place(body, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
-                            new Vector2(0f, -12f), new Vector2(150f, 170f));
+                            new Vector2(0f, -8f), new Vector2(236f, 208f));
             _body = body.GetComponent<Image>();
+
+            if (enemy.Data.Art != null)
+            {
+                _body.sprite = enemy.Data.Art;
+                _body.preserveAspect = true;
+                _hasArt = true;
+            }
 
             _nameLabel = UiFactory.Label(rect, "Name", enemy.Name, 22, Palette.Ink);
             UiFactory.Place(_nameLabel.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
@@ -82,7 +90,11 @@ namespace EmberDeck.View
             bool alive = Enemy.IsAlive;
             gameObject.SetActive(true);
 
-            _body.color = alive ? Enemy.Data.TintColor : Enemy.Data.TintColor * 0.3f;
+            // A sprite is tinted white so its own colours show; only the placeholder
+            // rectangle takes the enemy's tint.
+            _body.color = _hasArt
+                ? (alive ? Color.white : new Color(0.45f, 0.45f, 0.5f, 1f))
+                : (alive ? Enemy.Data.TintColor : Enemy.Data.TintColor * 0.3f);
             GetComponent<Image>().color = targetable && alive ? Palette.PanelRaised : Palette.PanelDark;
 
             UiFactory.SetBarFill(_healthFill, Enemy.MaxHp > 0 ? (float)Enemy.Hp / Enemy.MaxHp : 0f);

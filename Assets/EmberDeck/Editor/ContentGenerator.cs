@@ -30,6 +30,8 @@ namespace EmberDeck.EditorTools
         const string ContentRoot = Root + "/Content";
         const string ScenePath = Root + "/Scenes/Combat.unity";
         const string ConfigPath = ContentRoot + "/RunConfig.asset";
+        const string CardArtPath = Root + "/Art/Cards";
+        const string EnemyArtPath = Root + "/Art/Enemies";
 
         static readonly Color AttackTint = new(0.86f, 0.42f, 0.28f);
         static readonly Color SkillTint  = new(0.38f, 0.60f, 0.82f);
@@ -443,6 +445,7 @@ namespace EmberDeck.EditorTools
                 data.Rarity = rarity;
                 data.Exhaust = false;
                 data.Effects = new List<CardEffect>(effects);
+                data.Art = LoadArt($"{CardArtPath}/{id}.png");
             });
             into.Add(card);
             return card;
@@ -468,7 +471,19 @@ namespace EmberDeck.EditorTools
                 enemy.Pattern = pattern;
                 enemy.TintColor = tint;
                 enemy.Moves = new List<EnemyMove>(moves);
+                enemy.Art = LoadArt($"{EnemyArtPath}/{id}.png");
             });
+
+        /// <summary>
+        /// Art is optional: the game has to run before the icons exist, and a missing file
+        /// should degrade to the coloured placeholder rather than fail the whole generation.
+        /// </summary>
+        static Sprite LoadArt(string path)
+        {
+            var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
+            if (sprite == null) Debug.LogWarning($"[EmberDeck] No art at {path}");
+            return sprite;
+        }
 
         /// <summary>Effect assets, keyed by a short name under Content/Effects.</summary>
         static T Asset<T>(string name, System.Action<T> configure) where T : ScriptableObject

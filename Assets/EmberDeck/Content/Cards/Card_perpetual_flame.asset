@@ -23,3 +23,4 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 53609f5df90e0467996a76883acefa9e, type: 2}
   - {fileID: 11400000, guid: b4493bce00239417f9fe8b5436655106, type: 2}
   TintColor: {r: 0.72, g: 0.52, b: 0.85, a: 1}
+  Art: {fileID: 21300000, guid: 29ad5e85d4d8c4791a5c532c0d5a933a, type: 3}

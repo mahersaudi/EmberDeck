@@ -1,7 +1,13 @@
 # Art & animation pipeline
 
-Built on what is actually installed on this machine: **Blender 5.1** and **ffmpeg 8.1**.
-No ImageMagick, no Inkscape, no Python imaging libraries — and none are needed.
+Built on what is actually installed on this machine: **Krita 5.3**, **Blender 5.1** and
+**ffmpeg 8.1**.
+
+A correction worth keeping: the first survey of this machine reported only Blender and
+ffmpeg, and concluded that card illustrations were out of reach. That was wrong. The survey
+probed for lowercase binaries on `PATH`, so it never saw `/Applications/krita.app` or
+SynfigStudio. Krita rasterises SVG headlessly — which is the capability the whole card-art
+pipeline below depends on.
 
 ## The principle: art is a script
 
@@ -15,7 +21,28 @@ is authored by hand, so:
 
 This is the same reason the card content is generated rather than committed as `.asset` YAML.
 
-## Running it
+## Card icons
+
+Sixty card icons, authored as SVG in `art/card_art.py` and rasterised in one pass.
+
+```bash
+./art/render_cards.sh      # SVG -> one Krita render -> 60 sliced PNGs -> Unity
+```
+
+**Why SVG rather than a painting program:** the art is text. It diffs, it merges, a palette
+change is one edit, and any contributor can regenerate it without owning the same software.
+
+**Why symbols rather than illustrations:** sixty painted scenes is an artist's job. Sixty
+symbols in one visual language is a design job, it reads better at card size than a detailed
+picture would, and it carries information a picture would not — pointed means attack, layered
+means block, and a ring means a Power that stays for the combat. The mark inside a Power's
+ring says what it feeds, so six Powers share a silhouette without sharing an icon.
+
+**Why one atlas and not sixty files:** Krita's startup dominates its runtime. Sixty separate
+invocations take about three minutes; one 2560×1536 sheet takes two seconds, and ffmpeg
+slices it.
+
+## Running the enemy renders
 
 ```bash
 blender --background --python art/render_enemies.py            # static sprites
@@ -67,12 +94,18 @@ when the time comes.
 Pre-rendered frames are only correct for things with no interactive state — an enemy's idle
 bob, a death puff, a spell flourish.
 
+## In the game now
+
+Card icons and enemy sprites both load through the data assets: `CardData.Art` and
+`EnemyData.Art`, assigned by `ContentGenerator` from `Assets/EmberDeck/Art/`. An
+`AssetPostprocessor` forces everything under `Art/` to import as a Sprite — without it the
+files arrive as plain Textures, which cannot be assigned to a UI Image at all, and the
+failure shows up as a null at runtime rather than anything in the import log.
+
 ## Next steps, in order
 
-1. **Import the sprites into Unity** and replace the flat colour rectangles in `EnemyView`.
-2. **Sprite sheet slicing** — 12 frames horizontally; the `sprite-editor` workflow handles
-   the slicing, driven by a script rather than the Sprite Editor window.
-3. **Card frames** — extend `CardView` with a rarity border and a type-coloured header,
-   still drawn procedurally.
-4. **DOTween** for card motion, damage shake, and intent changes. This is the single
+1. **Idle animation in game** — the 12-frame cycles are rendered and packed but not yet
+   played; `EnemyView` shows a still.
+2. **Card frames** — a rarity border and a type-coloured header, still drawn procedurally.
+3. **DOTween** for card motion, damage shake, and intent changes. This is the single
    largest perceived-quality jump available and it costs no art at all.
