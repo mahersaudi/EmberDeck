@@ -55,6 +55,11 @@ namespace EmberDeck.Combat
             foreach (var relic in _relics)
                 relic.Detach();
             _relics.Clear();
+
+            foreach (var power in State.ActivePowers)
+                power.Detach();
+            State.ActivePowers.Clear();
+
             State.Bus.Clear();
         }
     }

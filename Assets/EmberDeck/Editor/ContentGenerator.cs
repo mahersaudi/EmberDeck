@@ -50,7 +50,7 @@ namespace EmberDeck.EditorTools
 
             var vulnerable2 = Status("Status_Vulnerable2", StatusType.Vulnerable, 2);
             var weak2       = Status("Status_Weak2", StatusType.Weak, 2);
-            var poison4     = Status("Status_Poison4", StatusType.Poison, 4);
+            var burn4       = Status("Status_Burn4", StatusType.Burn, 4);
             var strength2   = Status("Status_Strength2Self", StatusType.Strength, 2, toSelf: true);
 
             var draw1 = Draw("Draw_1", 1);
@@ -84,7 +84,7 @@ namespace EmberDeck.EditorTools
             var secondWind = Card("second_wind", "Second Wind", CardType.Skill, 1, TargetMode.Self, skillTint,
                                   CardRarity.Common, block6, draw1);
             var venomDart = Card("venom_dart", "Venom Dart", CardType.Attack, 1, TargetMode.SingleEnemy, attackTint,
-                                 CardRarity.Uncommon, dmg3, poison4);
+                                 CardRarity.Uncommon, dmg3, burn4);
             var weakeningCry = Card("weakening_cry", "Weakening Cry", CardType.Skill, 1, TargetMode.AllEnemies,
                                     skillTint, CardRarity.Uncommon, weak2);
             var ashenBrew = Card("ashen_brew", "Ashen Brew", CardType.Skill, 0, TargetMode.Self, skillTint,

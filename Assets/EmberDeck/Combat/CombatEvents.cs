@@ -72,6 +72,34 @@ namespace EmberDeck.Combat
         public bool PlayerWon;
     }
 
+    /// <summary>Raised after Block is actually applied. Forge Rite listens here.</summary>
+    public sealed class BlockGainedEvent
+    {
+        public Actor Target;
+        public int Amount;
+    }
+
+    /// <summary>Raised after Heat is added. Ember Engine listens here.</summary>
+    public sealed class HeatGainedEvent
+    {
+        public int Amount;
+        public int Total;
+    }
+
+    /// <summary>Raised when a card leaves play permanently. Pyre Rite and Phoenix Ash listen here.</summary>
+    public sealed class CardExhaustedEvent
+    {
+        public CardInstance Card;
+    }
+
+    /// <summary>Raised after a status lands. Searing Blade listens for Burn.</summary>
+    public sealed class StatusAppliedEvent
+    {
+        public Actor Target;
+        public StatusType Status;
+        public int Amount;
+    }
+
     /// <summary>Anything the view should redraw. Kept coarse on purpose: the model never
     /// knows what a view is, and the view never reaches into the model to poll.</summary>
     public sealed class CombatStateChangedEvent

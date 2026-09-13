@@ -47,9 +47,11 @@ namespace EmberDeck.Combat
 
             // Block expires at the start of its owner's turn, so block bought this turn is
             // what defends against the enemy turn that follows. Any other timing quietly
-            // makes every defensive card a turn too slow.
-            State.Player.Block = 0;
+            // makes every defensive card a turn too slow. Molten Armor switches this off.
+            if (!State.BlockPersists) State.Player.Block = 0;
+
             State.Energy = State.EnergyPerTurn;
+            State.CardsPlayedThisTurn = 0;
 
             DrawCards(State.CardsPerTurn);
 
@@ -64,6 +66,7 @@ namespace EmberDeck.Combat
             State.Bus.Publish(new TurnEndedEvent { IsPlayerTurn = true, TurnNumber = State.TurnNumber });
 
             DiscardHand();
+            ResolveOverheat();
             TickEndOfTurn(State.Player);
             if (CheckCombatOver()) return;
 
@@ -110,12 +113,12 @@ namespace EmberDeck.Combat
         /// <summary>End-of-turn upkeep for one actor: poison bites, durations tick down.</summary>
         void TickEndOfTurn(Actor actor)
         {
-            int poison = actor.GetStatus(StatusType.Poison);
-            if (poison > 0)
+            int burn = actor.GetStatus(StatusType.Burn);
+            if (burn > 0)
             {
-                // Poison is HP loss, not an attack: it ignores block, Strength and Vulnerable.
-                LoseHp(actor, poison);
-                actor.AddStatus(StatusType.Poison, -1);
+                // Burn is HP loss, not an attack: it ignores Block, Strength and Vulnerable.
+                LoseHp(actor, burn);
+                if (State.BurnDecays) actor.AddStatus(StatusType.Burn, -1);
             }
 
             foreach (StatusType status in Enum.GetValues(typeof(StatusType)))
@@ -146,10 +149,11 @@ namespace EmberDeck.Combat
 
             State.Energy -= GetCardCost(card);
             State.Hand.Remove(card);
+            State.CardsPlayedThisTurn++;
 
             ResolveEffects(card, target);
 
-            if (card.Data.Exhaust) State.ExhaustPile.Add(card);
+            if (card.Data.Exhaust) ExhaustCard(card);
             else State.DiscardPile.Add(card);
 
             State.Bus.Publish(new CardPlayedEvent { Card = card, Target = target });
@@ -247,13 +251,93 @@ namespace EmberDeck.Combat
             var calculation = new BlockCalculation { Target = actor, Amount = block };
             State.Bus.Publish(calculation);
 
-            actor.Block += Math.Max(0, calculation.Amount);
+            int granted = Math.Max(0, calculation.Amount);
+            actor.Block += granted;
+
+            if (granted > 0)
+                State.Bus.Publish(new BlockGainedEvent { Target = actor, Amount = granted });
         }
 
         public void ApplyStatus(Actor actor, StatusType status, int amount)
         {
             if (actor == null || !actor.IsAlive) return;
             actor.AddStatus(status, amount);
+            State.Bus.Publish(new StatusAppliedEvent { Target = actor, Status = status, Amount = amount });
+        }
+
+        /// <summary>Attaches a Power for the rest of the combat.</summary>
+        public void ActivatePower(Content.Powers.PowerBehaviour power)
+        {
+            if (power == null) return;
+            power.Attach(State, this);
+            State.ActivePowers.Add(power);
+        }
+
+        // ── Heat ─────────────────────────────────────────────────────────────────────
+
+        public void GainHeat(int amount)
+        {
+            if (amount <= 0) return;
+            State.Heat += amount;
+            State.Bus.Publish(new HeatGainedEvent { Amount = amount, Total = State.Heat });
+        }
+
+        /// <summary>Empties the Heat pool and returns what was in it, for cards that cash out.</summary>
+        public int SpendAllHeat()
+        {
+            int spent = State.Heat;
+            State.Heat = 0;
+            return spent;
+        }
+
+        /// <summary>Spends up to <paramref name="amount"/>; returns how much was actually spent.</summary>
+        public int SpendHeat(int amount)
+        {
+            int spent = Math.Min(State.Heat, Math.Max(0, amount));
+            State.Heat -= spent;
+            return spent;
+        }
+
+        /// <summary>
+        /// The cost of holding Heat. Deliberately HP loss rather than an attack: Block must
+        /// not defend against it, or the Overdrive archetype has no downside at all and the
+        /// whole risk/reward axis collapses.
+        /// </summary>
+        void ResolveOverheat()
+        {
+            int excess = State.Heat - State.OverheatThreshold;
+            if (excess > 0) LoseHp(State.Player, excess);
+        }
+
+        /// <summary>
+        /// The single path a card takes out of play permanently. Routing every exhaust
+        /// through here is what keeps the counter and the event from ever disagreeing —
+        /// and Ash Armor reads that counter.
+        /// </summary>
+        public void ExhaustCard(CardInstance card)
+        {
+            if (card == null) return;
+
+            State.Hand.Remove(card);
+            State.ExhaustPile.Add(card);
+            State.CardsExhaustedThisCombat++;
+            State.Bus.Publish(new CardExhaustedEvent { Card = card });
+        }
+
+        /// <summary>Exhausts the top card of the draw pile, reshuffling first if needed.</summary>
+        public CardInstance ExhaustTopOfDraw()
+        {
+            if (State.DrawPile.Count == 0)
+            {
+                if (State.DiscardPile.Count == 0) return null;
+                ReshuffleDiscardIntoDraw();
+            }
+
+            int last = State.DrawPile.Count - 1;
+            var card = State.DrawPile[last];
+            State.DrawPile.RemoveAt(last);
+            ExhaustCard(card);
+            return card;
         }
 
         // ── Deck handling ────────────────────────────────────────────────────────────

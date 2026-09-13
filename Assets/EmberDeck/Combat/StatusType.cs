@@ -19,8 +19,14 @@ namespace EmberDeck.Combat
         /// <summary>Deals -25% attack damage. Ticks down by 1 at end of the owner's turn.</summary>
         Weak,
 
-        /// <summary>Loses N HP at end of the owner's turn, then N drops by 1.</summary>
-        Poison
+        /// <summary>
+        /// Loses N HP at end of the owner's turn, then N drops by 1 — unless Slow Roast is
+        /// active for the combat, in which case it does not decay.
+        ///
+        /// This replaces the old Poison status. The two were one mechanic wearing two names,
+        /// and a second name for an identical rule is a tax on the player that buys nothing.
+        /// </summary>
+        Burn
     }
 
     public static class StatusTypeExtensions
@@ -35,7 +41,7 @@ namespace EmberDeck.Combat
             StatusType.Dexterity  => "Dexterity",
             StatusType.Vulnerable => "Vulnerable",
             StatusType.Weak       => "Weak",
-            StatusType.Poison     => "Poison",
+            StatusType.Burn       => "Burn",
             _ => type.ToString()
         };
     }
