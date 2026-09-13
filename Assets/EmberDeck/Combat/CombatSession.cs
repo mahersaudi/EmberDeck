@@ -16,25 +16,40 @@ namespace EmberDeck.Combat
         public readonly CombatEngine Engine;
         public readonly RunConfig Config;
 
+        /// <summary>Null for a one-off fight (the balance simulator); set during a run.</summary>
+        public readonly Run.RunState Run;
+
         readonly List<RelicBehaviour> _relics = new();
 
-        public CombatSession(RunConfig config, int seed)
+        public CombatSession(RunConfig config, int seed, Run.RunState run = null)
         {
             Config = config;
+            Run = run;
             State.Rng = new RunRng(seed);
             State.EnergyPerTurn = config.EnergyPerTurn;
             State.CardsPerTurn = config.CardsPerTurn;
-            State.Player = new Actor(config.PlayerName, config.MaxHp, isPlayer: true);
+
+            int maxHp = run?.MaxHp ?? config.MaxHp;
+            State.Player = new Actor(config.PlayerName, maxHp, isPlayer: true);
+            // Damage carries between fights. That is most of what makes a run a run: a fight
+            // won at 8 HP changes every decision in the next one.
+            if (run != null) State.Player.Hp = run.Hp;
+
             Engine = new CombatEngine(State);
         }
 
         public void Begin()
         {
+            // Enemies grow with the fight number so a deck that got stronger still meets
+            // resistance. Scaling HP rather than damage keeps the intent numbers — which the
+            // player plans around — honest.
+            float scale = 1f + Config.EnemyScalingPerFight * ((Run?.FightNumber ?? 1) - 1);
+
             foreach (var enemyData in Config.Encounter)
             {
                 if (enemyData == null) continue;
-                int hp = State.Rng.Enemies.Range(enemyData.MinHp, enemyData.MaxHp + 1);
-                State.Enemies.Add(new Enemy(enemyData, hp));
+                int rolled = State.Rng.Enemies.Range(enemyData.MinHp, enemyData.MaxHp + 1);
+                State.Enemies.Add(new Enemy(enemyData, UnityEngine.Mathf.RoundToInt(rolled * scale)));
             }
 
             // Relics attach BEFORE the first turn begins: one that grants block or draws a
@@ -47,7 +62,13 @@ namespace EmberDeck.Combat
                 _relics.Add(behaviour);
             }
 
-            Engine.StartCombat(Config.BuildDeck());
+            var deck = new List<CardInstance>();
+            if (Run != null)
+                foreach (var card in Run.Deck) deck.Add(new CardInstance(card));
+            else
+                deck = Config.BuildDeck();
+
+            Engine.StartCombat(deck);
         }
 
         public void End()

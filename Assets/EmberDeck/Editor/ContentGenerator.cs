@@ -316,6 +316,8 @@ namespace EmberDeck.EditorTools
                     Entry(stoke, 1)
                 };
 
+                cfg.RewardPool = cards.FindAll(c => c.Rarity != CardRarity.Starter);
+                cfg.EnemyScalingPerFight = 0.18f;
                 cfg.Relics = new List<RelicData> { emberCore };
                 cfg.Encounter = new List<EnemyData> { emberling, cinderRat, ashHound };
             });

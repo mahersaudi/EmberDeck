@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using EmberDeck.Combat;
 using EmberDeck.Content;
+using EmberDeck.Run;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -23,6 +24,10 @@ namespace EmberDeck.View
         [SerializeField] int _fixedSeed = 12345;
 
         CombatSession _session;
+        RunState _run;
+        RectTransform _rewardPanel;
+        Text _rewardTitle;
+        readonly System.Collections.Generic.List<CardView> _rewardViews = new();
         CombatState State => _session.State;
         CombatEngine Engine => _session.Engine;
 
@@ -48,6 +53,7 @@ namespace EmberDeck.View
         Text _drawLabel;
         Text _discardLabel;
         Text _seedLabel;
+        Text _runLabel;
         Text _overlayLabel;
         Button _endTurnButton;
 
@@ -195,6 +201,10 @@ namespace EmberDeck.View
             UiFactory.Place(_discardLabel.rectTransform, new Vector2(1f, 0f), new Vector2(1f, 0f),
                             new Vector2(-40f, 30f), new Vector2(260f, 26f));
 
+            _runLabel = UiFactory.Label(_root, "Run", "", 22, Palette.Ink, TextAnchor.UpperLeft);
+            UiFactory.Place(_runLabel.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f),
+                            new Vector2(40f, -56f), new Vector2(520f, 30f));
+
             _seedLabel = UiFactory.Label(_root, "Seed", "", 17, new Color(0.4f, 0.4f, 0.46f), TextAnchor.UpperLeft);
             UiFactory.Place(_seedLabel.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f),
                             new Vector2(40f, -30f), new Vector2(400f, 26f));
@@ -215,6 +225,36 @@ namespace EmberDeck.View
             again.onClick.AddListener(StartNewCombat);
 
             _overlay.gameObject.SetActive(false);
+
+            BuildRewardPanel();
+        }
+
+        /// <summary>
+        /// The pick-one-of-three screen. This is the moment a sequence of fights becomes a
+        /// run: it is the first decision that outlives the combat it was made in.
+        /// </summary>
+        void BuildRewardPanel()
+        {
+            _rewardPanel = UiFactory.Panel(_root, "Rewards", new Color(0.05f, 0.05f, 0.07f, 0.93f));
+            UiFactory.Stretch(_rewardPanel);
+
+            _rewardTitle = UiFactory.Label(_rewardPanel, "RewardTitle", "", 44, Palette.Victory);
+            UiFactory.Place(_rewardTitle.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
+                            new Vector2(0f, -120f), new Vector2(1000f, 60f));
+
+            var hint = UiFactory.Label(_rewardPanel, "RewardHint", "Choose one card to add to your deck",
+                                       22, Palette.InkMuted);
+            UiFactory.Place(hint.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
+                            new Vector2(0f, -178f), new Vector2(1000f, 34f));
+
+            var skip = UiFactory.TextButton(_rewardPanel, "Skip", "Skip", Palette.PanelRaised, Palette.InkMuted, 24);
+            UiFactory.Place((RectTransform)skip.transform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
+                            new Vector2(0f, 90f), new Vector2(200f, 62f));
+            // Skipping is a real option: a deck that never refuses a card drowns its own
+            // good cards in filler, and learning that is part of the genre.
+            skip.onClick.AddListener(() => TakeReward(null));
+
+            _rewardPanel.gameObject.SetActive(false);
         }
 
         // ── Combat lifecycle ─────────────────────────────────────────────────────────
@@ -228,6 +268,14 @@ namespace EmberDeck.View
                 return;
             }
 
+            int runSeed = _useRandomSeed ? Random.Range(int.MinValue, int.MaxValue) : _fixedSeed;
+            _run = RunState.Start(_config, runSeed);
+            StartFight();
+        }
+
+        /// <summary>Starts the next fight of the current run, keeping deck and health.</summary>
+        void StartFight()
+        {
             _session?.End();
             ClearChildren(_enemyRow);
             ClearChildren(_handRow);
@@ -236,8 +284,9 @@ namespace EmberDeck.View
             _selectedCard = null;
             _overlay.gameObject.SetActive(false);
 
-            int seed = _useRandomSeed ? Random.Range(int.MinValue, int.MaxValue) : _fixedSeed;
-            _session = new CombatSession(_config, seed);
+            // One stream per fight, derived from the run seed, so a run replays exactly.
+            int seed = _run.Seed ^ (_run.FightNumber * unchecked((int)0x9E3779B1));
+            _session = new CombatSession(_config, seed, _run);
 
             _session.State.Bus.Subscribe<CombatStateChangedEvent>(OnStateChanged);
             _session.State.Bus.Subscribe<CombatEndedEvent>(OnCombatEnded);
@@ -245,7 +294,8 @@ namespace EmberDeck.View
             _session.Begin();
 
             BuildEnemyViews();
-            _seedLabel.text = $"seed {seed}";
+            _seedLabel.text = $"seed {_run.Seed}";
+            _runLabel.text = $"Fight {_run.FightNumber}    Deck {_run.Deck.Count}";
             Redraw();
         }
 
@@ -268,9 +318,58 @@ namespace EmberDeck.View
 
         void OnCombatEnded(CombatEndedEvent evt)
         {
-            _overlay.gameObject.SetActive(true);
-            _overlayLabel.text = evt.PlayerWon ? "VICTORY" : "DEFEAT";
-            _overlayLabel.color = evt.PlayerWon ? Palette.Victory : Palette.Defeat;
+            if (!evt.PlayerWon)
+            {
+                _overlay.gameObject.SetActive(true);
+                _overlayLabel.text = "DEFEAT";
+                _overlayLabel.color = Palette.Defeat;
+                return;
+            }
+
+            // Carry the damage forward before anything else: the reward is chosen knowing
+            // how much health survived it.
+            _run.Hp = State.Player.Hp;
+            ShowRewards();
+        }
+
+        void ShowRewards()
+        {
+            foreach (var view in _rewardViews)
+                if (view != null) Destroy(view.gameObject);
+            _rewardViews.Clear();
+
+            var offers = RewardService.Roll(_config.RewardPool, _run.Rng.Rewards);
+            _rewardTitle.text = $"VICTORY  —  Fight {_run.FightNumber}";
+
+            float spacing = CardView.Width + 60f;
+            float startX = -(offers.Count - 1) * spacing * 0.5f;
+
+            for (int i = 0; i < offers.Count; i++)
+            {
+                var view = CardView.Create(_rewardPanel, new CardInstance(offers[i]));
+                UiFactory.Place((RectTransform)view.transform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
+                                Vector2.zero, new Vector2(CardView.Width, CardView.Height));
+
+                // Refresh re-applies the card's rest position, so setting it through Place
+                // alone leaves every reward stacked at the centre — three cards occupying
+                // one spot, which reads as a single offer.
+                view.SetRestPosition(new Vector2(startX + i * spacing, -10f));
+                view.Refresh(playable: true, selected: false, displayedCost: offers[i].Cost);
+
+                var chosen = offers[i];
+                view.Clicked += _ => TakeReward(chosen);
+                _rewardViews.Add(view);
+            }
+
+            _rewardPanel.gameObject.SetActive(true);
+        }
+
+        void TakeReward(CardData card)
+        {
+            _run.AddCard(card);
+            _run.FightNumber++;
+            _rewardPanel.gameObject.SetActive(false);
+            StartFight();
         }
 
         // ── Input ────────────────────────────────────────────────────────────────────
@@ -301,6 +400,27 @@ namespace EmberDeck.View
             _selectedCard = null;
             Redraw();
         }
+
+#if DEVELOPMENT_BUILD || UNITY_EDITOR
+        /// <summary>
+        /// Capture-harness only: resolves the current fight as a win.
+        ///
+        /// The harness exists to take screenshots, not to play well. Teaching it to actually
+        /// win would mean duplicating the simulator's policy inside the shipped assembly —
+        /// two copies of the same judgement, guaranteed to drift. This is honest about being
+        /// a tool, and it is compiled out of a release build.
+        /// </summary>
+        public void DebugWinFight()
+        {
+            if (_session == null || State.IsOver) return;
+
+            foreach (var enemy in new System.Collections.Generic.List<Enemy>(State.LivingEnemies()))
+                Engine.LoseHp(enemy, enemy.Hp);
+
+            Engine.EndPlayerTurn();   // runs the end-of-combat check
+            Redraw();
+        }
+#endif
 
         void OnEndTurnClicked()
         {

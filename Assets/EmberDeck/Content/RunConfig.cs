@@ -32,8 +32,14 @@ namespace EmberDeck.Content
         [Header("Starting relics")]
         public List<RelicData> Relics = new();
 
-        [Header("Encounter — the enemies of the slice's single fight")]
+        [Header("Encounter — the enemies of each fight")]
         public List<EnemyData> Encounter = new();
+
+        [Header("Reward pool — every card that can be offered after a victory")]
+        public List<CardData> RewardPool = new();
+
+        [Tooltip("Enemy HP gained per fight beyond the first, as a fraction.")]
+        public float EnemyScalingPerFight = 0.18f;
 
         public List<CardInstance> BuildDeck()
         {
