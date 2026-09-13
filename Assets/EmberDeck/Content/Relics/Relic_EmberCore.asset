@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4f498e237d6c94436b4bda639b56b9c8, type: 3}
+  m_Name: Relic_EmberCore
+  m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.Relics.EmberCoreRelic
+  Id: ember_core
+  DisplayName: Ember Core
+  Description: The first attack you play each turn deals 3 additional damage.
+  BonusDamage: 3

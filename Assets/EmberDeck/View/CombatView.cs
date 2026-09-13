@@ -3,7 +3,6 @@ using EmberDeck.Combat;
 using EmberDeck.Content;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
 
 namespace EmberDeck.View
@@ -58,14 +57,16 @@ namespace EmberDeck.View
         // ── Setup ────────────────────────────────────────────────────────────────────
 
         /// <summary>
-        /// uGUI needs an EventSystem to receive clicks, and this project is configured for
-        /// the new Input System — so the legacy StandaloneInputModule would silently accept
-        /// no input at all. Building it here keeps the scene file empty of wiring.
+        /// uGUI needs an EventSystem to receive clicks. The module here must match the
+        /// project's active input backend (Project Settings > Player > Active Input
+        /// Handling): this project uses the legacy Input Manager, so StandaloneInputModule
+        /// is the correct one. Get this pair wrong and the game runs perfectly while
+        /// silently ignoring every click — with no error to point at.
         /// </summary>
         static void EnsureEventSystem()
         {
             if (FindFirstObjectByType<EventSystem>() != null) return;
-            new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
+            new GameObject("EventSystem", typeof(EventSystem), typeof(StandaloneInputModule));
         }
 
         void BuildStaticUi()

@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c2f327b0dabf43b3b4e04da39c5ae4e, type: 3}
+  m_Name: RunConfig
+  m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.RunConfig
+  PlayerName: Ember
+  MaxHp: 65
+  EnergyPerTurn: 3
+  CardsPerTurn: 5
+  StarterDeck:
+  - Card: {fileID: 11400000, guid: 310b64e21620344eb81d6fc99298309b, type: 2}
+    Count: 4
+  - Card: {fileID: 11400000, guid: 011bacfc195554149986ecece581ab7b, type: 2}
+    Count: 4
+  - Card: {fileID: 11400000, guid: 2ab12774be7254560842b1d90d023edf, type: 2}
+    Count: 1
+  - Card: {fileID: 11400000, guid: 2f4c0579d45014a3a839c07e077d664d, type: 2}
+    Count: 1
+  - Card: {fileID: 11400000, guid: 921d10d7305514ff09de6ba47b1bc030, type: 2}
+    Count: 1
+  - Card: {fileID: 11400000, guid: 7e6c38bb695b844f89a8e6a12bf49765, type: 2}
+    Count: 1
+  - Card: {fileID: 11400000, guid: 664620873cdca48ec9927e8b1da2b42f, type: 2}
+    Count: 1
+  - Card: {fileID: 11400000, guid: fda81ad61dc8848c99ca3d2e0a59ed39, type: 2}
+    Count: 1
+  Relics:
+  - {fileID: 11400000, guid: e800fe51f045c463ea4f9dd762ac330e, type: 2}
+  Encounter:
+  - {fileID: 11400000, guid: 47adfd6a5e2e04b9e9f1f89cf6ef4d27, type: 2}
+  - {fileID: 11400000, guid: 28f25caaf702e46a588c3252bdaf7199, type: 2}
+  - {fileID: 11400000, guid: 3cedddfa93b0444979c3cbea782b1107, type: 2}

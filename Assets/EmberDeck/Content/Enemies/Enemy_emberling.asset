@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f010fd5b1388f4fdd8472225f49570d0, type: 3}
+  m_Name: Enemy_emberling
+  m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.EnemyData
+  Id: emberling
+  DisplayName: Emberling
+  MinHp: 12
+  MaxHp: 15
+  Pattern: 0
+  Moves:
+  - {fileID: 11400000, guid: 140d67dae3e3e413bb023ae705a2bb1d, type: 2}
+  - {fileID: 11400000, guid: de27404b382814796a393853553f0327, type: 2}
+  TintColor: {r: 0.85, g: 0.58, b: 0.25, a: 1}

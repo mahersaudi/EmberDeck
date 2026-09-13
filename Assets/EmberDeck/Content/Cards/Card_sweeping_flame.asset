@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b127717e197394e729d71394d4936d1f, type: 3}
+  m_Name: Card_sweeping_flame
+  m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.CardData
+  Id: sweeping_flame
+  DisplayName: Sweeping Flame
+  Type: 0
+  Rarity: 2
+  Cost: 2
+  Target: 2
+  Exhaust: 0
+  Effects:
+  - {fileID: 11400000, guid: 658e2b6f05a0e431592787ec66a8a14b, type: 2}
+  TintColor: {r: 0.86, g: 0.42, b: 0.28, a: 1}

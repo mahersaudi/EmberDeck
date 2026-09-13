@@ -100,22 +100,22 @@ namespace EmberDeck.EditorTools
                 EditorUtility.SetDirty(card);
 
             // ── Enemy moves ──────────────────────────────────────────────────────────
-            var bite    = Move("Move_Bite", "Bite", IntentKind.Attack, 1, Damage("Damage_Enemy6", 6));
-            var skitter = Move("Move_Skitter", "Skitter", IntentKind.Block, 1, Block("Block_Enemy5", 5));
-            var maul    = Move("Move_Maul", "Maul", IntentKind.Attack, 3, Damage("Damage_Enemy9", 9));
+            var bite    = Move("Move_Bite", "Bite", IntentKind.Attack, 1, Damage("Damage_Bite", 10));
+            var skitter = Move("Move_Skitter", "Skitter", IntentKind.Block, 1, Block("Block_Skitter", 8));
+            var maul    = Move("Move_Maul", "Maul", IntentKind.Attack, 3, Damage("Damage_Maul", 14));
             var howl    = Move("Move_Howl", "Howl", IntentKind.Buff, 1,
-                               Status("Status_EnemyStrength2Self", StatusType.Strength, 2, toSelf: true));
-            var brace   = Move("Move_Brace", "Brace", IntentKind.Block, 1, Block("Block_Enemy6", 6));
-            var spark   = Move("Move_Spark", "Spark", IntentKind.Attack, 1, Damage("Damage_Enemy4", 4));
+                               Status("Status_Howl", StatusType.Strength, 3, toSelf: true));
+            var brace   = Move("Move_Brace", "Brace", IntentKind.Block, 1, Block("Block_Brace", 10));
+            var spark   = Move("Move_Spark", "Spark", IntentKind.Attack, 1, Damage("Damage_Spark", 7));
             var ignite  = Move("Move_Ignite", "Ignite", IntentKind.Debuff, 1,
-                               Damage("Damage_Enemy2", 2), Status("Status_EnemyWeak1", StatusType.Weak, 1));
+                               Damage("Damage_Ignite", 4), Status("Status_Ignite", StatusType.Weak, 1));
 
             // ── Enemies ──────────────────────────────────────────────────────────────
-            var cinderRat = MakeEnemy("cinder_rat", "Cinder Rat", 16, 20, MovePattern.Sequence,
+            var cinderRat = MakeEnemy("cinder_rat", "Cinder Rat", 20, 24, MovePattern.Sequence,
                                   new Color(0.70f, 0.33f, 0.26f), bite, bite, skitter);
-            var ashHound = MakeEnemy("ash_hound", "Ash Hound", 26, 30, MovePattern.WeightedRandom,
+            var ashHound = MakeEnemy("ash_hound", "Ash Hound", 30, 35, MovePattern.WeightedRandom,
                                  new Color(0.45f, 0.30f, 0.42f), maul, howl, brace);
-            var emberling = MakeEnemy("emberling", "Emberling", 10, 13, MovePattern.Sequence,
+            var emberling = MakeEnemy("emberling", "Emberling", 12, 15, MovePattern.Sequence,
                                   new Color(0.85f, 0.58f, 0.25f), spark, ignite);
 
             // ── Relic ────────────────────────────────────────────────────────────────
@@ -131,7 +131,7 @@ namespace EmberDeck.EditorTools
             var config = CreateAsset<RunConfig>($"{ContentRoot}/RunConfig.asset", cfg =>
             {
                 cfg.PlayerName = "Ember";
-                cfg.MaxHp = 72;
+                cfg.MaxHp = 65;
                 cfg.EnergyPerTurn = 3;
                 cfg.CardsPerTurn = 5;
 
