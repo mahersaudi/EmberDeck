@@ -45,7 +45,11 @@ namespace EmberDeck.Combat
             // player plans around — honest.
             float scale = 1f + Config.EnemyScalingPerFight * ((Run?.FightNumber ?? 1) - 1);
 
-            foreach (var enemyData in Config.Encounter)
+            var encounter = Config.Encounter;
+            if (Run != null && Run.IsBoss && Config.BossEncounter.Count > 0) encounter = Config.BossEncounter;
+            else if (Run != null && Run.IsElite && Config.EliteEncounter.Count > 0) encounter = Config.EliteEncounter;
+
+            foreach (var enemyData in encounter)
             {
                 if (enemyData == null) continue;
                 int rolled = State.Rng.Enemies.Range(enemyData.MinHp, enemyData.MaxHp + 1);

@@ -25,6 +25,8 @@ namespace EmberDeck.View
 
         CombatSession _session;
         RunState _run;
+        MapView _mapView;
+        Text _restLabel;
         RectTransform _rewardPanel;
         Text _rewardTitle;
         readonly System.Collections.Generic.List<CardView> _rewardViews = new();
@@ -227,6 +229,9 @@ namespace EmberDeck.View
             _overlay.gameObject.SetActive(false);
 
             BuildRewardPanel();
+
+            _mapView = MapView.Create(_root);
+            _mapView.NodeChosen += OnNodeChosen;
         }
 
         /// <summary>
@@ -270,7 +275,7 @@ namespace EmberDeck.View
 
             int runSeed = _useRandomSeed ? Random.Range(int.MinValue, int.MaxValue) : _fixedSeed;
             _run = RunState.Start(_config, runSeed);
-            StartFight();
+            ShowMap();
         }
 
         /// <summary>Starts the next fight of the current run, keeping deck and health.</summary>
@@ -316,6 +321,55 @@ namespace EmberDeck.View
 
         void OnStateChanged(CombatStateChangedEvent _) => Redraw();
 
+        void ShowMap()
+        {
+            _session?.End();
+            _session = null;
+            ClearChildren(_enemyRow);
+            ClearChildren(_handRow);
+            _enemyViews.Clear();
+            _cardViews.Clear();
+            _overlay.gameObject.SetActive(false);
+            _rewardPanel.gameObject.SetActive(false);
+            _runLabel.text = $"Fight {_run.FightNumber}    Deck {_run.Deck.Count}    HP {_run.Hp}/{_run.MaxHp}";
+            _mapView.Show(_run.Map);
+
+            // The map is opaque, so the run header has to be drawn after it. Health and deck
+            // size are exactly what the choice between a Rest and an Elite turns on — hiding
+            // them on the screen where that choice is made would be the worst place to hide
+            // them.
+            _runLabel.transform.SetAsLastSibling();
+        }
+
+        /// <summary>
+        /// Each node type does something different, which is the whole point of a map: the
+        /// choice is what kind of turn to spend, not merely which line to follow.
+        /// </summary>
+        void OnNodeChosen(MapNode node)
+        {
+            _run.Map.Current = node;
+            _run.ActiveNode = node;
+            node.Visited = true;
+            _mapView.Hide();
+
+            switch (node.Type)
+            {
+                case NodeType.Rest:
+                    _run.Heal(Mathf.RoundToInt(_run.MaxHp * _config.RestHealFraction));
+                    ShowMap();
+                    break;
+
+                case NodeType.Treasure:
+                    // A free card with no fight attached. Still a choice, and still skippable.
+                    ShowRewards(title: "TREASURE");
+                    break;
+
+                default:
+                    StartFight();
+                    break;
+            }
+        }
+
         void OnCombatEnded(CombatEndedEvent evt)
         {
             if (!evt.PlayerWon)
@@ -329,17 +383,18 @@ namespace EmberDeck.View
             // Carry the damage forward before anything else: the reward is chosen knowing
             // how much health survived it.
             _run.Hp = State.Player.Hp;
-            ShowRewards();
+            ShowRewards(_run.IsBoss ? "RUN COMPLETE" : _run.IsElite ? "ELITE DEFEATED" : "VICTORY");
         }
 
-        void ShowRewards()
+        void ShowRewards(string title)
         {
             foreach (var view in _rewardViews)
                 if (view != null) Destroy(view.gameObject);
             _rewardViews.Clear();
 
-            var offers = RewardService.Roll(_config.RewardPool, _run.Rng.Rewards);
-            _rewardTitle.text = $"VICTORY  —  Fight {_run.FightNumber}";
+            var offers = RewardService.Roll(_config.RewardPool, _run.Rng.Rewards,
+                                            eliteOdds: _run.IsElite || _run.ActiveNode?.Type == NodeType.Treasure);
+            _rewardTitle.text = title;
 
             float spacing = CardView.Width + 60f;
             float startX = -(offers.Count - 1) * spacing * 0.5f;
@@ -367,9 +422,18 @@ namespace EmberDeck.View
         void TakeReward(CardData card)
         {
             _run.AddCard(card);
-            _run.FightNumber++;
             _rewardPanel.gameObject.SetActive(false);
-            StartFight();
+
+            if (_run.IsBoss)
+            {
+                _overlay.gameObject.SetActive(true);
+                _overlayLabel.text = "RUN COMPLETE";
+                _overlayLabel.color = Palette.Victory;
+                return;
+            }
+
+            _run.FightNumber++;
+            ShowMap();
         }
 
         // ── Input ────────────────────────────────────────────────────────────────────

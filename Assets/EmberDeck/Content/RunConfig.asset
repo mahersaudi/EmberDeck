@@ -31,6 +31,13 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 47adfd6a5e2e04b9e9f1f89cf6ef4d27, type: 2}
   - {fileID: 11400000, guid: 28f25caaf702e46a588c3252bdaf7199, type: 2}
   - {fileID: 11400000, guid: 3cedddfa93b0444979c3cbea782b1107, type: 2}
+  EliteEncounter:
+  - {fileID: 11400000, guid: 3cedddfa93b0444979c3cbea782b1107, type: 2}
+  - {fileID: 11400000, guid: 3cedddfa93b0444979c3cbea782b1107, type: 2}
+  - {fileID: 11400000, guid: 28f25caaf702e46a588c3252bdaf7199, type: 2}
+  BossEncounter:
+  - {fileID: 11400000, guid: 95034449f8515417f8745a1e0d551758, type: 2}
+  RestHealFraction: 0.3
   RewardPool:
   - {fileID: 11400000, guid: 7e6c38bb695b844f89a8e6a12bf49765, type: 2}
   - {fileID: 11400000, guid: aec984f0a01864e749323c61d065c544, type: 2}

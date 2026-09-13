@@ -24,6 +24,16 @@ namespace EmberDeck.Run
         /// <summary>1 for the first fight. Enemy scaling reads this.</summary>
         public int FightNumber = 1;
 
+        public RunMap Map;
+
+        /// <summary>The node currently being resolved — a fight knows whether it is an elite.</summary>
+        public MapNode ActiveNode;
+
+        public bool IsElite => ActiveNode?.Type == NodeType.Elite;
+        public bool IsBoss  => ActiveNode?.Type == NodeType.Boss;
+
+        public void Heal(int amount) => Hp = System.Math.Min(MaxHp, Hp + amount);
+
         public RunState(int seed, int maxHp)
         {
             Seed = seed;
@@ -35,6 +45,7 @@ namespace EmberDeck.Run
         public static RunState Start(RunConfig config, int seed)
         {
             var run = new RunState(seed, config.MaxHp);
+            run.Map = RunMap.Generate(run.Rng.Map);
             foreach (var entry in config.StarterDeck)
             {
                 if (entry?.Card == null) continue;

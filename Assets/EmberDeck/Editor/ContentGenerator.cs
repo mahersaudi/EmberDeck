@@ -289,6 +289,17 @@ namespace EmberDeck.EditorTools
             var emberling = MakeEnemy("emberling", "Emberling", 12, 15, MovePattern.Sequence,
                                       new Color(0.85f, 0.58f, 0.25f), spark, ignite);
 
+            // The boss. Its moves are bigger versions of moves the player has already met,
+            // so the fight is readable on sight — a boss whose vocabulary is entirely new
+            // punishes the player for knowledge they had no way to acquire.
+            var crush   = Move("Move_Crush", "Crush", IntentKind.Attack, 3, Damage("Dmg_Crush", 22));
+            var forge   = Move("Move_Forge", "Forge", IntentKind.Buff, 1,
+                               Status("Str_Tyrant_Self", StatusType.Strength, 4, toSelf: true),
+                               Block("Blk_Tyrant", 14));
+            var scourge = Move("Move_Scourge", "Scourge", IntentKind.Attack, 2, Damage("Dmg_Scourge", 9, hits: 3));
+            var tyrant = MakeEnemy("forge_tyrant", "Forge Tyrant", 140, 160, MovePattern.Sequence,
+                                   new Color(0.86f, 0.34f, 0.22f), crush, scourge, forge, crush);
+
             var emberCore = Asset<EmberCoreRelic>("Relics/Relic_EmberCore", relic =>
             {
                 relic.Id = "ember_core";
@@ -320,6 +331,11 @@ namespace EmberDeck.EditorTools
                 cfg.EnemyScalingPerFight = 0.18f;
                 cfg.Relics = new List<RelicData> { emberCore };
                 cfg.Encounter = new List<EnemyData> { emberling, cinderRat, ashHound };
+                // The elite is two of the hardest normal enemy rather than a new creature:
+                // the threat is legible before the player commits to the node.
+                cfg.EliteEncounter = new List<EnemyData> { ashHound, ashHound, cinderRat };
+                cfg.BossEncounter = new List<EnemyData> { tyrant };
+                cfg.RestHealFraction = 0.3f;
             });
 
             _ = new[] { focus, cinderStorm };

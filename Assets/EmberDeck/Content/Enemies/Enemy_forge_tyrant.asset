@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f010fd5b1388f4fdd8472225f49570d0, type: 3}
+  m_Name: Enemy_forge_tyrant
+  m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.EnemyData
+  Id: forge_tyrant
+  DisplayName: Forge Tyrant
+  MinHp: 140
+  MaxHp: 160
+  Pattern: 0
+  Moves:
+  - {fileID: 11400000, guid: e7367f11e5b34462dae122c8ddfe0c70, type: 2}
+  - {fileID: 11400000, guid: 524925cd8c48d467fa3d0ee1f56eedc2, type: 2}
+  - {fileID: 11400000, guid: 233c9e9376f3844e8ba22b7c4f2d8828, type: 2}
+  - {fileID: 11400000, guid: e7367f11e5b34462dae122c8ddfe0c70, type: 2}
+  TintColor: {r: 0.86, g: 0.34, b: 0.22, a: 1}
+  Art: {fileID: 0}

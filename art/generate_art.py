@@ -160,6 +160,9 @@ ENEMIES = {
                   "charred whiskers, cracks of fire along its spine, crouched and snarling",
     "ash_hound": "a monstrous four-legged hound of ash and violet flame, glowing eyes, "
                  "smoke curling from its jaws, bone-like plates, imposing and predatory",
+    "forge_tyrant": "a colossal armoured forge titan of blackened iron and molten seams, "
+                    "enormous hammer arm, furnace burning in its chest, towering and regal, "
+                    "boss monster, imposing scale",
 }
 
 

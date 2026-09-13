@@ -35,6 +35,13 @@ namespace EmberDeck.Content
         [Header("Encounter — the enemies of each fight")]
         public List<EnemyData> Encounter = new();
 
+        [Header("Elite and boss encounters")]
+        public List<EnemyData> EliteEncounter = new();
+        public List<EnemyData> BossEncounter = new();
+
+        [Tooltip("Fraction of max HP restored at a Rest node.")]
+        public float RestHealFraction = 0.3f;
+
         [Header("Reward pool — every card that can be offered after a victory")]
         public List<CardData> RewardPool = new();
 

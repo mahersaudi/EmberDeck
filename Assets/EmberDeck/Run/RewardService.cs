@@ -16,11 +16,11 @@ namespace EmberDeck.Run
     {
         public const int OfferCount = 3;
 
-        static int Weight(CardRarity rarity) => rarity switch
+        static int Weight(CardRarity rarity, bool elite) => rarity switch
         {
-            CardRarity.Common   => 60,
-            CardRarity.Uncommon => 33,
-            CardRarity.Rare     => 7,
+            CardRarity.Common   => elite ? 25 : 60,
+            CardRarity.Uncommon => elite ? 50 : 33,
+            CardRarity.Rare     => elite ? 25 : 7,
             _                   => 0,   // Starter cards are never offered as rewards.
         };
 
@@ -29,7 +29,7 @@ namespace EmberDeck.Run
         /// two-card choice wearing a three-card screen, and players notice immediately.
         /// </summary>
         public static List<CardData> Roll(IReadOnlyList<CardData> pool, DeterministicRng rng,
-                                          int count = OfferCount)
+                                          int count = OfferCount, bool eliteOdds = false)
         {
             var offered = new List<CardData>(count);
             var remaining = new List<CardData>(pool);
@@ -37,13 +37,13 @@ namespace EmberDeck.Run
             while (offered.Count < count && remaining.Count > 0)
             {
                 int total = 0;
-                foreach (var card in remaining) total += Weight(card.Rarity);
+                foreach (var card in remaining) total += Weight(card.Rarity, eliteOdds);
                 if (total <= 0) break;
 
                 int roll = rng.Range(0, total);
                 for (int i = 0; i < remaining.Count; i++)
                 {
-                    roll -= Weight(remaining[i].Rarity);
+                    roll -= Weight(remaining[i].Rarity, eliteOdds);
                     if (roll >= 0) continue;
 
                     offered.Add(remaining[i]);

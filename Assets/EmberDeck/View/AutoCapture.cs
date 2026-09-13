@@ -54,7 +54,17 @@ namespace EmberDeck.View
                 // Let layout settle. uGUI positions itself over a frame or two, so capturing
                 // immediately shows a half-built board and proves nothing.
                 yield return new WaitForSeconds(1.5f);
-                yield return Capture("01-combat-start.png");
+                yield return Capture("01-map.png");
+
+                // A run opens on the map, so the harness has to walk it: take the first
+                // available node, which is always a fight on the opening row.
+                var map = FindFirstObjectByType<MapView>();
+                if (map != null && map.gameObject.activeInHierarchy)
+                {
+                    var node = FindFirstNodeButton();
+                    if (node != null) { Click(node); yield return new WaitForSeconds(1.2f); }
+                }
+                yield return Capture("02-combat-start.png");
 
                 // Drive one full turn cycle through the real button, so the shot exercises
                 // enemy resolution and the redraw path rather than just the initial render.
@@ -66,7 +76,7 @@ namespace EmberDeck.View
                     try { endTurn.onClick.Invoke(); }
                     catch (System.Exception e) { Debug.LogError($"[AutoCapture] end turn threw: {e}"); }
                     yield return new WaitForSeconds(1.0f);
-                    yield return Capture("02-after-end-turn.png");
+                    yield return Capture("03-after-end-turn.png");
                 }
                 else
                 {
@@ -122,7 +132,7 @@ namespace EmberDeck.View
                 }
 
                 Debug.Log($"[AutoCapture] ended on {(FindButton("Skip") != null ? "rewards" : "something else")}");
-                yield return Capture("03-rewards.png");
+                yield return Capture("04-rewards.png");
 
                 // Take a reward and prove the loop closes: deck grows, fight number advances,
                 // health carries over. A screenshot of the reward screen alone does not show
@@ -132,7 +142,7 @@ namespace EmberDeck.View
                 {
                     Click(offers[0].GetComponent<Button>());
                     yield return new WaitForSeconds(1.0f);
-                    yield return Capture("04-next-fight.png");
+                    yield return Capture("05-map-after.png");
                 }
 
                 yield return new WaitForSeconds(0.3f);
@@ -157,6 +167,14 @@ namespace EmberDeck.View
                 if (button == null) return;
                 try { button.onClick.Invoke(); }
                 catch (System.Exception e) { Debug.LogError($"[AutoCapture] click threw: {e}"); }
+            }
+
+            /// <summary>Any clickable map node — only reachable ones carry a Button.</summary>
+            static Button FindFirstNodeButton()
+            {
+                foreach (var button in FindObjectsByType<Button>(FindObjectsSortMode.None))
+                    if (button.name.StartsWith("Node_")) return button;
+                return null;
             }
 
             static Button FindButton(string name)
