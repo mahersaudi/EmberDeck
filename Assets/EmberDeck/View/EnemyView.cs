@@ -48,7 +48,7 @@ namespace EmberDeck.View
 
             var body = UiFactory.Panel(rect, "Body", enemy.Data.TintColor);
             UiFactory.Place(body, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
-                            new Vector2(0f, -8f), new Vector2(236f, 208f));
+                            new Vector2(0f, -8f), new Vector2(240f, 184f));
             _body = body.GetComponent<Image>();
 
             if (enemy.Data.Art != null)
@@ -60,7 +60,7 @@ namespace EmberDeck.View
 
             _nameLabel = UiFactory.Label(rect, "Name", enemy.Name, 22, Palette.Ink);
             UiFactory.Place(_nameLabel.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
-                            new Vector2(0f, 72f), new Vector2(250f, 28f));
+                            new Vector2(0f, 76f), new Vector2(250f, 28f));
 
             _healthFill = UiFactory.Bar(rect, "Health", Palette.HealthTrack, Palette.Health,
                                         new Vector2(210f, 22f), new Vector2(0f, -108f));

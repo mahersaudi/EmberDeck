@@ -111,7 +111,7 @@ namespace EmberDeck.View
 
             _handRow = UiFactory.Panel(_root, "Hand", new Color(0f, 0f, 0f, 0f));
             UiFactory.Place(_handRow, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
-                            new Vector2(0f, 56f), new Vector2(1400f, 300f));
+                            new Vector2(0f, 40f), new Vector2(1500f, 330f));
 
             BuildPlayerPanel();
             BuildHud();
@@ -403,7 +403,7 @@ namespace EmberDeck.View
 
             // Cards overlap once the hand grows, and fan slightly. The fan is not decoration:
             // it keeps every card's top edge visible, so a ten-card hand stays readable.
-            float step = Mathf.Min(CardView.Width + 16f, 1100f / Mathf.Max(1, count));
+            float step = Mathf.Min(CardView.Width + 14f, 1180f / Mathf.Max(1, count));
             float startX = -(count - 1) * step * 0.5f;
 
             for (int i = 0; i < count; i++)

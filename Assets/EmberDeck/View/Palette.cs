@@ -27,6 +27,13 @@ namespace EmberDeck.View
         public static readonly Color IntentBuff   = new(0.85f, 0.72f, 0.35f, 1f);
 
         public static readonly Color CardIdle     = new(0.20f, 0.19f, 0.24f, 1f);
+        public static readonly Color ArtWell     = new(0.09f, 0.08f, 0.11f, 1f);
+
+        // Rarity reads from the card border, so it is legible in a fanned hand where
+        // only the top edge of most cards is visible.
+        public static readonly Color RarityCommon   = new(0.32f, 0.31f, 0.36f, 1f);
+        public static readonly Color RarityUncommon = new(0.38f, 0.62f, 0.78f, 1f);
+        public static readonly Color RarityRare     = new(0.85f, 0.66f, 0.28f, 1f);
         public static readonly Color CardSelected = new(0.31f, 0.29f, 0.38f, 1f);
         public static readonly Color CardDisabled = new(0.13f, 0.13f, 0.16f, 1f);
 
