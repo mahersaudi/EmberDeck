@@ -37,26 +37,63 @@ SAMPLER = "dpmpp_sde"
 SCHEDULER = "karras"
 SIZE = 1024
 
-# One style contract for the whole set.
+# One style contract for the whole set — everything except the palette, which is per
+# archetype.
 STYLE = ("digital painting, fantasy trading card art, dramatic rim lighting, "
-         "rich saturated colour, molten ember palette, deep shadows, volumetric glow, "
-         "ornate, highly detailed, painterly brushwork, centred composition, "
-         "dark background, masterpiece")
+         "rich saturated colour, deep shadows, volumetric glow, ornate, highly detailed, "
+         "painterly brushwork, centred composition, dark background, masterpiece")
 
-NEGATIVE = ("text, watermark, signature, logo, ui, frame, border, letters, words, "
-            "blurry, low contrast, flat lighting, washed out, pale, desaturated, "
-            "photo, photograph, 3d render, plastic, deformed, extra limbs, ugly")
+BASE_NEGATIVE = ("text, watermark, signature, logo, ui, frame, border, letters, words, "
+                 "blurry, low contrast, flat lighting, washed out, pale, desaturated, "
+                 "photo, photograph, 3d render, plastic, deformed, extra limbs, ugly")
+
+# Colour carries information in this game: a card's archetype is meant to be readable before
+# its text is. The first pass put "molten ember palette" in the global style, which made all
+# sixty cards orange and threw that information away.
+#
+# Temperature is the axis that makes the split feel earned rather than arbitrary —
+# blue-white steel is hotter than orange fire, magenta is past the point of control, and ash
+# is what is left when the heat has gone.
+PALETTES = {
+    # "frost" pulled snow into the first Forge image. The blue is right — cold iron and
+    # blue-white heat — but this world has no winter in it, so the word has to go and the
+    # negative has to say so.
+    "forge":     ("cold steel blue and cyan palette, blue-white heat, quenched dark iron, "
+                  "deep blue forge glow", "orange, red, warm colours, snow, ice, winter"),
+    "swarm":     ("golden amber palette, brass and bright gold highlights, warm yellow "
+                  "sparks", "red, magenta, blue"),
+    "pyre":      ("molten ember palette, deep orange and red fire, glowing lava", "blue, grey"),
+    "overdrive": ("hot magenta and crimson palette, pink-white plasma glow, overheated "
+                  "energy", "orange, green, blue"),
+    "ashfall":   ("ash grey and violet palette, cold pale light, muted purple smoke, "
+                  "bone white", "orange, saturated fire, yellow"),
+    "neutral":   ("warm neutral palette, bone, iron and dull gold", "neon, magenta"),
+}
 
 
-def workflow(prompt, seed, width=SIZE, height=SIZE):
+def archetype_of(card_id):
+    """Single source of truth: the same table the SVG symbols and the design doc use."""
+    import card_art
+    for cid, _symbol, hue in card_art.CARDS:
+        if cid == card_id:
+            return hue
+    return "neutral"
+
+
+def workflow(prompt, seed, width=SIZE, height=SIZE, palette=None):
     """A plain SDXL text-to-image graph in ComfyUI's API format."""
+    if palette is None:
+        palette = PALETTES["neutral"]
+    colour, avoid = palette
+    positive = f"{prompt}, {colour}, {STYLE}"
+    negative = f"{BASE_NEGATIVE}, {avoid}"
     return {
         "4": {"class_type": "CheckpointLoaderSimple",
               "inputs": {"ckpt_name": CHECKPOINT}},
         "6": {"class_type": "CLIPTextEncode",
-              "inputs": {"text": f"{prompt}, {STYLE}", "clip": ["4", 1]}},
+              "inputs": {"text": positive, "clip": ["4", 1]}},
         "7": {"class_type": "CLIPTextEncode",
-              "inputs": {"text": NEGATIVE, "clip": ["4", 1]}},
+              "inputs": {"text": negative, "clip": ["4", 1]}},
         "5": {"class_type": "EmptyLatentImage",
               "inputs": {"width": width, "height": height, "batch_size": 1}},
         "3": {"class_type": "KSampler",
@@ -92,9 +129,10 @@ def fetch_image(info):
         return response.read()
 
 
-def render(prompt, seed, destination, width=SIZE, height=SIZE, timeout=420):
+def render(prompt, seed, destination, width=SIZE, height=SIZE, timeout=420, palette=None):
     """Queues one image and blocks until ComfyUI reports it done."""
-    prompt_id = post("/prompt", {"prompt": workflow(prompt, seed, width, height)})["prompt_id"]
+    graph = workflow(prompt, seed, width, height, palette)
+    prompt_id = post("/prompt", {"prompt": graph})["prompt_id"]
 
     deadline = time.time() + timeout
     while time.time() < deadline:
@@ -246,7 +284,8 @@ def main():
             print(f"[art] {name}: already present, skipping")
             continue
         start = time.time()
-        ok = render(prompt, args.seed + i * 1000, destination)
+        palette = PALETTES.get(archetype_of(name)) if name in CARDS else None
+        ok = render(prompt, args.seed + i * 1000, destination, palette=palette)
         print(f"[art] [{i + 1}/{total}] {name}: {'ok' if ok else 'FAILED'} "
               f"({time.time() - start:.0f}s)")
 
