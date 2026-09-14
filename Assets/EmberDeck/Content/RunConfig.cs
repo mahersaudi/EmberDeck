@@ -76,6 +76,9 @@ namespace EmberDeck.Content
         [Tooltip("Enemy HP gained per fight beyond the first, as a fraction.")]
         public float EnemyScalingPerFight = 0.18f;
 
+        [Tooltip("Gold a run starts with: enough for one card or one removal at the first shop.")]
+        public int StartingGold = 99;
+
         public List<CardInstance> BuildDeck()
         {
             var deck = new List<CardInstance>();

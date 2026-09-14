@@ -29,6 +29,13 @@ namespace EmberDeck.EditorTools
         /// <summary>Experiment knob: how many card rewards a won elite grants.</summary>
         static int EliteRewardPicks = 1;
 
+        /// <summary>
+        /// Experiment knob: whether the bot buys anything at shops. With it off the map, gold and shop
+        /// visits are unchanged — only purchases stop — so the difference between the two passes is
+        /// what buying is worth, separated from the change to the map that adding shops also made.
+        /// </summary>
+        static bool ShopsEnabled = true;
+
         // Hunter and Avoider exist because Cautious and Greedy turned out to behave almost
         // alike — 0.17 elites per run apart — which is too little difference for a comparison
         // between them to show whether elites pay off. These two plan their route.
@@ -52,6 +59,7 @@ namespace EmberDeck.EditorTools
             public int BossHpPctLeftOnDeath = -1;
             public int RelicsGained;
             public int Upgrades;
+            public int Shops, CardsBought, CardsRemoved, RelicsBought;
             public readonly List<int> HallwayCost = new();
             public readonly List<int> EliteCost = new();
             /// <summary>Every fight entered: which encounter, and the HP it cost if won (-1 if lost).</summary>
@@ -76,11 +84,12 @@ namespace EmberDeck.EditorTools
             // Add 2 here to test multi-card elite rewards. Tested once: granting two cards
             // instead of one moved greedy boss-reach from 27.7% to 27.3% — no effect — so it is
             // off by default rather than doubling the run time of every simulation.
-            foreach (int picks in new[] { 1 })
+            foreach (bool shopping in new[] { true, false })
             {
-                EliteRewardPicks = picks;
+                ShopsEnabled = shopping;
+                int picks = EliteRewardPicks;
                 report.AppendLine();
-                report.AppendLine($"[elite pays {picks} card(s)]");
+                report.AppendLine(shopping ? "[shops on]" : "[shops off: same maps and gold, nothing bought]");
                 report.AppendLine("policy     boss win%  reach boss%  elites/run  HP@boss  deck@boss  win|reached  boss HP left at death");
                 report.AppendLine("----------------------------------------------------------------------------------------------------");
 
@@ -89,7 +98,7 @@ namespace EmberDeck.EditorTools
                     var results = new List<Result>(Runs);
                     for (int i = 0; i < Runs; i++)
                         results.Add(PlayRun(config, seed: 10_000 + i, policy));
-                    allResults.AddRange(results);
+                    if (shopping) allResults.AddRange(results);
 
                     int wins = results.Count(r => r.BeatBoss);
                     var reached = results.Where(r => r.HpAtBoss >= 0).ToList();
@@ -102,13 +111,15 @@ namespace EmberDeck.EditorTools
                         $"{results.Average(r => r.ElitesFought),9:F2}  {Median(reached.Select(r => r.HpAtBoss)),7}  " +
                         $"{Median(reached.Select(r => r.DeckAtBoss)),9}  {winGivenReach,10:F1}  {Median(bossDeaths),14}%");
 
-                    if (picks != 1) continue;
+                    if (!shopping) continue;
 
                     details.AppendLine(
                         $"-- {policy}: HP cost of a won hallway {Median(results.SelectMany(r => r.HallwayCost))}, " +
                         $"won elite {Median(results.SelectMany(r => r.EliteCost))}, " +
                         $"relics gained per run {results.Average(r => r.RelicsGained):F2}, " +
-                        $"upgrades per run {results.Average(r => r.Upgrades):F2}");
+                        $"upgrades per run {results.Average(r => r.Upgrades):F2}, " +
+                        $"shops {results.Average(r => r.Shops):F2}, bought {results.Average(r => r.CardsBought):F2}, " +
+                        $"removed {results.Average(r => r.CardsRemoved):F2}, relics bought {results.Average(r => r.RelicsBought):F2}");
                     details.AppendLine($"-- {policy}: where runs ended --");
                     foreach (var group in results.Where(r => !r.BeatBoss)
                                                  .GroupBy(r => (r.DiedAt, r.DiedOnRow))
@@ -176,9 +187,17 @@ namespace EmberDeck.EditorTools
                     continue;
                 }
 
+                if (node.Type == NodeType.Shop)
+                {
+                    result.Shops++;
+                    VisitShop(run, config, result);
+                    continue;
+                }
+
                 if (node.Type == NodeType.Treasure)
                 {
                     result.Treasures++;
+                    GoldService.Earn(run, GoldService.ForTreasure(run));
                     Tally(result, TakeReward(run, config, eliteOdds: true));
                     run.FightNumber++;
                     continue;
@@ -226,6 +245,8 @@ namespace EmberDeck.EditorTools
                     }
                 }
 
+                // Mirrors CombatView: gold is paid before the card reward, from the same position.
+                GoldService.Earn(run, GoldService.ForVictory(run));
                 Tally(result, TakeReward(run, config, eliteOdds: node.Type == NodeType.Elite));
                 if (node.Type == NodeType.Elite)
                     for (int extra = 1; extra < EliteRewardPicks; extra++)
@@ -292,25 +313,49 @@ namespace EmberDeck.EditorTools
             return true;
         }
 
+        /// <summary>
+        /// A plain shopper: thin the deck first, then the best card it can afford, then the relic.
+        /// Removing a starter Strike is the classic first purchase — every later draw is better for it.
+        /// </summary>
+        static void VisitShop(RunState run, RunConfig config, Result result)
+        {
+            if (!ShopsEnabled) return;
+            var stock = ShopService.Roll(run, config);
+
+            var strike = run.Deck.FirstOrDefault(c => c != null && c.Id == "strike");
+            if (strike != null && ShopService.RemoveCard(run, stock, strike)) result.CardsRemoved++;
+
+            foreach (var item in stock.Cards.OrderByDescending(i => (int)i.Card.Rarity).ThenBy(i => i.Price))
+            {
+                if (!ShopService.BuyCard(run, item)) continue;
+                result.CardsBought++;
+                break;
+            }
+
+            if (ShopService.BuyRelic(run, stock)) result.RelicsBought++;
+        }
+
         static MapNode ChooseNode(RunState run, List<MapNode> options, Policy policy)
         {
             float health = (float)run.Hp / run.MaxHp;
 
             MapNode First(NodeType type) => options.FirstOrDefault(n => n.Type == type);
+            // A shop is worth a detour only with gold to spend in it.
+            MapNode ShopIfRich() => run.Gold >= 100 ? First(NodeType.Shop) : null;
 
             switch (policy)
             {
                 case Policy.Cautious:
                     // Never takes an elite; rests early.
                     if (health < 0.6f && First(NodeType.Rest) is { } rest) return rest;
-                    return First(NodeType.Treasure) ?? First(NodeType.Fight) ?? First(NodeType.Rest)
+                    return First(NodeType.Treasure) ?? ShopIfRich() ?? First(NodeType.Fight) ?? First(NodeType.Rest)
                            ?? options.FirstOrDefault(n => n.Type != NodeType.Elite) ?? options[0];
 
                 case Policy.Greedy:
                     // Takes every elite it can survive a guess at.
                     if (health > 0.5f && First(NodeType.Elite) is { } greedyElite) return greedyElite;
                     if (health < 0.35f && First(NodeType.Rest) is { } greedyRest) return greedyRest;
-                    return First(NodeType.Treasure) ?? First(NodeType.Fight) ?? options[0];
+                    return First(NodeType.Treasure) ?? ShopIfRich() ?? First(NodeType.Fight) ?? options[0];
 
                 case Policy.Hunter:
                     // Routes toward the nearest elite and enters every one it reaches, resting
@@ -331,7 +376,7 @@ namespace EmberDeck.EditorTools
                 default:
                     if (health < 0.45f && First(NodeType.Rest) is { } balancedRest) return balancedRest;
                     if (health > 0.75f && First(NodeType.Elite) is { } balancedElite) return balancedElite;
-                    return First(NodeType.Treasure) ?? First(NodeType.Fight) ?? options[0];
+                    return First(NodeType.Treasure) ?? ShopIfRich() ?? First(NodeType.Fight) ?? options[0];
             }
         }
 
@@ -339,6 +384,7 @@ namespace EmberDeck.EditorTools
         {
             NodeType.Treasure => 0,
             NodeType.Fight    => 1,
+            NodeType.Shop     => 1,
             NodeType.Rest     => 2,
             NodeType.Elite    => 3,
             _                 => 4,

@@ -27,6 +27,7 @@ namespace EmberDeck.View
         RunState _run;
         MapView _mapView;
         RestView _restView;
+        ShopView _shopView;
         MainMenuView _mainMenu;
         SettingsView _settings;
         PauseMenuView _pause;
@@ -154,6 +155,7 @@ namespace EmberDeck.View
             _selectedCard = null;
             _mapView?.Hide();
             _restView?.Hide();
+            _shopView?.Hide();
             _endOfRun?.Hide();
             _rewardPanel.gameObject.SetActive(false);
             _run = null;
@@ -353,6 +355,9 @@ namespace EmberDeck.View
             _restView = RestView.Create(_root);
             _restView.HealChosen += OnRestHeal;
             _restView.UpgradeChosen += OnRestUpgrade;
+
+            _shopView = ShopView.Create(_root);
+            _shopView.Left += ShowMap;
         }
 
         /// <summary>
@@ -361,7 +366,7 @@ namespace EmberDeck.View
         /// </summary>
         void BuildRewardPanel()
         {
-            _rewardPanel = UiFactory.Panel(_root, "Rewards", new Color(0.05f, 0.05f, 0.07f, 0.93f));
+            _rewardPanel = UiFactory.Panel(_root, "Rewards", new Color(0.05f, 0.05f, 0.07f, 0.98f));
             UiFactory.Stretch(_rewardPanel);
 
             _rewardTitle = UiFactory.Label(_rewardPanel, "RewardTitle", "", 44, Palette.Victory);
@@ -450,7 +455,7 @@ namespace EmberDeck.View
             AudioDirector.PlayMusic(_run.IsBoss ? MusicTrack.Boss : MusicTrack.Combat);
             AudioDirector.Play(Sfx.TurnStart, 0.8f);
             _seedLabel.text = $"seed {_run.Seed}";
-            _runLabel.text = $"Fight {_run.FightNumber}    Deck {_run.Deck.Count}    Relics {_run.Relics.Count}";
+            _runLabel.text = $"Fight {_run.FightNumber}    Deck {_run.Deck.Count}    Relics {_run.Relics.Count}    Gold {_run.Gold}";
             Redraw();
         }
 
@@ -573,6 +578,7 @@ namespace EmberDeck.View
         void ShowMap()
         {
             _restView?.Hide();
+            _shopView?.Hide();
             _session?.End();
             _session = null;
             ClearChildren(_enemyRow);
@@ -581,7 +587,7 @@ namespace EmberDeck.View
             _cardViews.Clear();
             _endOfRun?.Hide();
             _rewardPanel.gameObject.SetActive(false);
-            _runLabel.text = $"Fight {_run.FightNumber}    Deck {_run.Deck.Count}    Relics {_run.Relics.Count}    HP {_run.Hp}/{_run.MaxHp}";
+            _runLabel.text = $"Fight {_run.FightNumber}    Deck {_run.Deck.Count}    Relics {_run.Relics.Count}    Gold {_run.Gold}    HP {_run.Hp}/{_run.MaxHp}";
             _mapView.Show(_run.Map);
             AudioDirector.PlayMusic(MusicTrack.Map);
             // Saving here rather than on every state change means the file is only ever
@@ -613,15 +619,27 @@ namespace EmberDeck.View
                     OpenRest();
                     break;
 
+                case NodeType.Shop:
+                    OpenShop();
+                    break;
+
                 case NodeType.Treasure:
-                    // A free card with no fight attached. Still a choice, and still skippable.
-                    ShowRewards(title: "TREASURE");
+                    // A free card with no fight attached, and some gold. The card is still a choice,
+                    // and still skippable.
+                    int treasureGold = GoldService.ForTreasure(_run);
+                    GoldService.Earn(_run, treasureGold);
+                    ShowRewards(title: "TREASURE", gold: treasureGold);
                     break;
 
                 default:
                     StartFight();
                     break;
             }
+        }
+
+        void OpenShop()
+        {
+            _shopView.Show(_run, ShopService.Roll(_run, _config));
         }
 
         void OpenRest()
@@ -682,10 +700,13 @@ namespace EmberDeck.View
                 if (relic != null) _run.Relics.Add(relic);
             }
 
-            ShowRewards(_run.IsBoss ? "RUN COMPLETE" : _run.IsElite ? "ELITE DEFEATED" : "VICTORY", relic);
+            int gold = GoldService.ForVictory(_run);
+            GoldService.Earn(_run, gold);
+
+            ShowRewards(_run.IsBoss ? "RUN COMPLETE" : _run.IsElite ? "ELITE DEFEATED" : "VICTORY", relic, gold);
         }
 
-        void ShowRewards(string title, Content.Relics.RelicData relic = null)
+        void ShowRewards(string title, Content.Relics.RelicData relic = null, int gold = 0)
         {
             foreach (var view in _rewardViews)
                 if (view != null) Destroy(view.gameObject);
@@ -694,7 +715,9 @@ namespace EmberDeck.View
             var offers = RewardService.Roll(_config.RewardPool, _run.RewardRng(),
                                             eliteOdds: _run.IsElite || _run.ActiveNode?.Type == NodeType.Treasure);
             _rewardTitle.text = title;
-            _relicLabel.text = relic != null ? $"Relic gained: {relic.DisplayName}  —  {relic.Description}" : "";
+            string goldText = gold > 0 ? $"+{gold} gold" : "";
+            string relicText = relic != null ? $"Relic gained: {relic.DisplayName}  —  {relic.Description}" : "";
+            _relicLabel.text = goldText.Length > 0 && relicText.Length > 0 ? $"{goldText}      {relicText}" : goldText + relicText;
             if (relic != null) Motion.After(0.5f, () => AudioDirector.Play(Sfx.Relic));
 
             float spacing = CardView.Width + 60f;
@@ -815,6 +838,15 @@ namespace EmberDeck.View
 
         /// <summary>Capture-harness only: shows the end-of-run screen for the current run without ending it.</summary>
         public void DebugShowEndOfRun(bool won) => ShowEndOfRun(won);
+
+        /// <summary>Capture-harness only: opens a shop with 160 gold — enough for some shelves and not others.</summary>
+        public void DebugOpenShop()
+        {
+            if (_run == null) return;
+            _mapView.Hide();
+            _run.Gold = 160;
+            OpenShop();
+        }
 
 
         /// <summary>

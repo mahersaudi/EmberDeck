@@ -8,7 +8,8 @@ namespace EmberDeck.Run
         Elite,
         Rest,
         Treasure,
-        Boss
+        Boss,
+        Shop
     }
 
     /// <summary>One stop on the map. Rows run bottom to top; the boss is the last row.</summary>

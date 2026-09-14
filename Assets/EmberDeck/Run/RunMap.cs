@@ -143,12 +143,21 @@ namespace EmberDeck.Run
                     // risk for a better reward, and that is not a choice with a starter deck.
                     bool elitesAllowed = row >= Grid.Count / 3;
 
+                    // Shops only from the third row: with starting gold and nothing earned yet, a shop
+                    // on the first rows is one purchase and a walk past.
+                    bool shopsAllowed = row >= 2;
+
+                    // Shops are carved out of treasure, not out of fights. The first version took five
+                    // points from fights, and a shop is a step with no damage and no enemy scaling:
+                    // run wins rose from 24-29% to 35-39% with the bot buying nothing at all.
+                    // Fights and elites are back at 70%, non-fight nodes at 30%, as before shops.
                     node.Type = roll switch
                     {
                         < 55 => NodeType.Fight,
                         < 70 => elitesAllowed ? NodeType.Elite : NodeType.Fight,
                         < 80 => NodeType.Rest,
-                        _    => NodeType.Treasure,
+                        < 89 => NodeType.Treasure,
+                        _    => shopsAllowed ? NodeType.Shop : NodeType.Treasure,
                     };
                 }
             }

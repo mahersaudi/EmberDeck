@@ -24,7 +24,7 @@ namespace EmberDeck.View
         const float DeckScale = 0.55f;
         const float TileStepX = CardView.Width + 24f;
         const float TileStepY = CardView.Height + 28f;
-        const float StatRowHeight = 42f;
+        const float StatRowHeight = 38f;
 
         public event Action NewRunChosen;
         public event Action MainMenuChosen;
@@ -147,6 +147,8 @@ namespace EmberDeck.View
                 ("Turns", stats.Turns.ToString()),
                 ("Cards added", stats.CardsAdded.ToString()),
                 ("Cards upgraded", stats.CardsUpgraded.ToString()),
+                ("Cards removed", stats.CardsRemoved.ToString()),
+                ("Gold earned", stats.GoldEarned.ToString()),
                 ("Relics", run.Relics.Count.ToString()),
                 ("Time", FormatTime(stats.Seconds)),
                 ("Seed", run.Seed.ToString()),

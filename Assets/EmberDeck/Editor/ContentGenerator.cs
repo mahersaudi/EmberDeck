@@ -476,6 +476,8 @@ namespace EmberDeck.EditorTools
                 cfg.Encounters = encounters;
                 cfg.EarlyRows = 3;
                 cfg.RestHealFraction = 0.3f;
+                // Enough for one removal or one common at the first shop, not both.
+                cfg.StartingGold = 75;
             });
 
             _ = new[] { focus, cinderStorm };

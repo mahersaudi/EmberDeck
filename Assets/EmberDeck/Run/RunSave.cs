@@ -29,7 +29,7 @@ namespace EmberDeck.Run
         [Serializable]
         sealed class Data
         {
-            public int version = 3;
+            public int version = 4;
             public int seed;
             public int hp;
             public int maxHp;
@@ -40,6 +40,8 @@ namespace EmberDeck.Run
             public int currentRow = -1;
             public int currentColumn = -1;
             public RunStats stats = new();   // version 3
+            public int gold = -1;            // version 4
+            public int cardsRemoved;         // version 4
         }
 
         public static bool Exists() => File.Exists(Path);
@@ -60,6 +62,8 @@ namespace EmberDeck.Run
                 currentRow = run.Map?.Current?.Row ?? -1,
                 currentColumn = run.Map?.Current?.Column ?? -1,
                 stats = run.Stats,
+                gold = run.Gold,
+                cardsRemoved = run.CardsRemoved,
             };
 
             foreach (var card in run.Deck)
@@ -100,7 +104,7 @@ namespace EmberDeck.Run
                 return null;
             }
 
-            if (data == null || (data.version < 1 || data.version > 3))
+            if (data == null || (data.version < 1 || data.version > 4))
             {
                 Debug.LogWarning("[EmberDeck] Save is from a different version, starting fresh.");
                 Delete();
@@ -114,6 +118,9 @@ namespace EmberDeck.Run
             run.FightNumber = Mathf.Max(1, data.fightNumber);
             // Saves before version 3 carry no stats; the run continues with a fresh count.
             run.Stats = data.stats ?? new RunStats();
+            // Saves before version 4 predate gold; they continue with the starting purse.
+            run.Gold = data.gold >= 0 ? data.gold : config.StartingGold;
+            run.CardsRemoved = Mathf.Max(0, data.cardsRemoved);
 
             foreach (var id in data.deck)
             {

@@ -249,6 +249,22 @@ namespace EmberDeck.View
                     yield return Capture("08-map-after-upgrade.png");
                 }
 
+                // The shop with 160 gold — some shelves affordable, some not — then its removal picker.
+                var shopHost = FindFirstObjectByType<CombatView>();
+                if (shopHost != null)
+                {
+                    shopHost.DebugOpenShop();
+                    yield return new WaitForSeconds(0.8f);
+                    yield return Capture("08b-shop.png");
+                    Click(FindButton("ShopRemove"));
+                    yield return new WaitForSeconds(0.6f);
+                    yield return Capture("08c-shop-remove.png");
+                    Click(FindButton("ShopRemoveCancel"));
+                    yield return new WaitForSeconds(0.2f);
+                    Click(FindButton("ShopLeave"));
+                    yield return new WaitForSeconds(0.4f);
+                }
+
                 // One screenshot per encounter, so every portrait and every group's layout — three
                 // Ash Mites is the widest — is checked in the real player rather than assumed.
                 var encounterHost = FindFirstObjectByType<CombatView>();

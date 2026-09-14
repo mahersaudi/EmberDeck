@@ -25,6 +25,12 @@ namespace EmberDeck.Run
         public int MaxHp;
         public int Hp;
 
+        /// <summary>Spent at shops. Earned only through GoldService.</summary>
+        public int Gold;
+
+        /// <summary>Cards removed at shops this run; each removal costs more than the last.</summary>
+        public int CardsRemoved;
+
         /// <summary>1 for the first fight. Enemy scaling reads this.</summary>
         public int FightNumber = 1;
 
@@ -84,6 +90,7 @@ namespace EmberDeck.Run
         {
             var run = new RunState(seed, config.MaxHp);
             run.Map = RunMap.Generate(run.Rng.Map);
+            run.Gold = config.StartingGold;
             foreach (var relic in config.Relics)
                 if (relic != null) run.Relics.Add(relic);
             foreach (var entry in config.StarterDeck)
