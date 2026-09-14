@@ -59,3 +59,28 @@ or the arrow keys.
 The harness now photographs the main menu and the settings screen, starts a run with the menu's own
 New Run button (clicking twice if a saved run asks for confirmation), and photographs the pause
 menu over the map before walking into the first fight.
+
+## End of run
+
+A run used to end on one word over the board: DEFEAT, or RUN COMPLETE. That wastes the one moment
+a roguelike has the player's full attention: the run is over, nothing is at stake, and they want
+to know what happened. The end-of-run screen answers three questions.
+
+| question | shown as |
+|---|---|
+| What happened? | VICTORY or DEFEAT, and "Fell to Kiln Imp and Emberling on floor 5 of 9" |
+| How did it go? | floor, fights won (and elites), enemies defeated, damage dealt and taken, biggest hit, cards played, turns, cards added and upgraded, relics, time, seed |
+| What did the deck become? | the final deck as cards, rarest first, with ×N on duplicates, and the relics |
+
+- **Defeat waits 1.4 seconds** before the summary covers the board, so the final blow and the
+  defeat sting are seen rather than cut off.
+- **Beating the boss goes straight to the summary.** It used to offer a card reward first, for a
+  next fight that does not exist.
+- The seed is shown so a run can be shared or replayed.
+
+**The numbers are saved with the run** (`RunStats`, save format version 3), so a run resumed after
+a restart ends with the numbers of the whole run. Older saves still load and start counting from
+zero. The numbers are informational only: no rule reads them, and the simulator does not track
+them, so they cannot change how a run plays.
+
+Time counts only while a run is on screen, not while a menu, the pause screen or settings are open.

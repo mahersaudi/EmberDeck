@@ -30,6 +30,7 @@ namespace EmberDeck.View
         MainMenuView _mainMenu;
         SettingsView _settings;
         PauseMenuView _pause;
+        EndOfRunView _endOfRun;
         bool _settingsFromPause;
         Text _restLabel;
         RectTransform _rewardPanel;
@@ -42,7 +43,6 @@ namespace EmberDeck.View
         RectTransform _root;
         RectTransform _enemyRow;
         RectTransform _handRow;
-        RectTransform _overlay;
 
         readonly List<EnemyView> _enemyViews = new();
 
@@ -72,7 +72,6 @@ namespace EmberDeck.View
         Text _discardLabel;
         Text _seedLabel;
         Text _runLabel;
-        Text _overlayLabel;
         Button _endTurnButton;
 
 #if UNITY_EDITOR
@@ -100,9 +99,13 @@ namespace EmberDeck.View
         /// <summary>Escape backs out one layer at a time: settings first, then the pause menu.</summary>
         void Update()
         {
+            // Time spent in a run, not in its menus.
+            if (_run != null && !_mainMenu.IsOpen && !_pause.IsOpen && !_endOfRun.IsOpen && !_settings.IsOpen)
+                _run.Stats.Seconds += Time.unscaledDeltaTime;
+
             if (!Input.GetKeyDown(KeyCode.Escape)) return;
             if (_settings.IsOpen) { _settings.Close(); return; }
-            if (_mainMenu.IsOpen) return;
+            if (_mainMenu.IsOpen || _endOfRun.IsOpen) return;
             TogglePause();
         }
 
@@ -123,6 +126,10 @@ namespace EmberDeck.View
             _pause.SettingsChosen += () => OpenSettings(fromPause: true);
             _pause.MainMenuChosen += ShowMainMenu;
             _pause.QuitChosen += () => Application.Quit();
+
+            _endOfRun = EndOfRunView.Create(_root);
+            _endOfRun.NewRunChosen += () => BeginRun(resume: false);
+            _endOfRun.MainMenuChosen += ShowMainMenu;
 
             _settings = SettingsView.Create(_root);
             _settings.Closed += () => { if (_settingsFromPause) _pause.Show(); };
@@ -147,7 +154,7 @@ namespace EmberDeck.View
             _selectedCard = null;
             _mapView?.Hide();
             _restView?.Hide();
-            _overlay.gameObject.SetActive(false);
+            _endOfRun?.Hide();
             _rewardPanel.gameObject.SetActive(false);
             _run = null;
 
@@ -166,7 +173,7 @@ namespace EmberDeck.View
         /// <summary>Opens or closes the pause menu during a run. Public so the capture harness can photograph it.</summary>
         public void TogglePause()
         {
-            if (_mainMenu.IsOpen || _run == null) return;
+            if (_mainMenu.IsOpen || _endOfRun.IsOpen || _run == null) return;
             if (_pause.IsOpen)
             {
                 _pause.Hide();
@@ -233,7 +240,7 @@ namespace EmberDeck.View
             UiFactory.Stretch(_fxLayer);
             _fxLayer.GetComponent<Image>().raycastTarget = false;
 
-            BuildOverlay();
+            BuildScreens();
         }
 
         void BuildPlayerPanel()
@@ -336,27 +343,8 @@ namespace EmberDeck.View
                             new Vector2(40f, -30f), new Vector2(400f, 26f));
         }
 
-        void BuildOverlay()
+        void BuildScreens()
         {
-            _overlay = UiFactory.Panel(_root, "Overlay", new Color(0.05f, 0.05f, 0.07f, 0.88f));
-            UiFactory.Stretch(_overlay);
-
-            _overlayLabel = UiFactory.Label(_overlay, "Result", "", 72, Palette.Ink);
-            UiFactory.Place(_overlayLabel.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
-                            new Vector2(0f, 60f), new Vector2(900f, 110f));
-
-            var again = UiFactory.TextButton(_overlay, "Again", "New Run", Palette.PanelRaised, Palette.Ink, 30);
-            UiFactory.Place((RectTransform)again.transform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
-                            new Vector2(0f, -70f), new Vector2(260f, 78f));
-            again.onClick.AddListener(() => BeginRun(resume: false));
-
-            var menu = UiFactory.TextButton(_overlay, "OverlayMenu", "Main Menu", Palette.PanelRaised, Palette.InkMuted, 26);
-            UiFactory.Place((RectTransform)menu.transform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
-                            new Vector2(0f, -165f), new Vector2(260f, 64f));
-            menu.onClick.AddListener(ShowMainMenu);
-
-            _overlay.gameObject.SetActive(false);
-
             BuildRewardPanel();
 
             _mapView = MapView.Create(_root);
@@ -405,6 +393,7 @@ namespace EmberDeck.View
         {
             _mainMenu.Hide();
             _pause.Hide();
+            _endOfRun.Hide();
             if (!resume) RunSave.Delete();
 
             if (_config == null)
@@ -439,7 +428,7 @@ namespace EmberDeck.View
             _enemyViews.Clear();
             _cardViews.Clear();
             _selectedCard = null;
-            _overlay.gameObject.SetActive(false);
+            _endOfRun?.Hide();
 
             // One stream per fight, derived from the run seed, so a run replays exactly.
             int seed = _run.Seed ^ (_run.FightNumber * unchecked((int)0x9E3779B1));
@@ -456,11 +445,57 @@ namespace EmberDeck.View
             // Attached after Begin so the views it animates exist. Nothing needs an effect
             // before the first turn: the opening hand already deals itself in.
             new CombatFeedback(_session.State, _fxLayer, AnchorFor, FlashFor);
+            TrackStats(_session.State);
+            _run.Stats.FinalEncounter = DescribeEncounter(_session.State);
             AudioDirector.PlayMusic(_run.IsBoss ? MusicTrack.Boss : MusicTrack.Combat);
             AudioDirector.Play(Sfx.TurnStart, 0.8f);
             _seedLabel.text = $"seed {_run.Seed}";
             _runLabel.text = $"Fight {_run.FightNumber}    Deck {_run.Deck.Count}    Relics {_run.Relics.Count}";
             Redraw();
+        }
+
+        /// <summary>Counts what the end-of-run screen reports. Reads combat, never changes it — like CombatFeedback.</summary>
+        void TrackStats(CombatState state)
+        {
+            var stats = _run.Stats;
+            stats.Turns++;   // the first turn began inside Begin, before anything here could subscribe
+            state.Bus.Subscribe<TurnStartedEvent>(e => { if (e.IsPlayerTurn) stats.Turns++; });
+            state.Bus.Subscribe<CardPlayedEvent>(_ => stats.CardsPlayed++);
+            state.Bus.Subscribe<ActorDiedEvent>(e => { if (!e.Actor.IsPlayer) stats.EnemiesDefeated++; });
+            state.Bus.Subscribe<DamageAppliedEvent>(e =>
+            {
+                if (e.HpLost <= 0 || e.Target == null) return;
+                if (e.Target.IsPlayer)
+                {
+                    stats.DamageTaken += e.HpLost;
+                    return;
+                }
+                // Burn and other sourceless loss on an enemy is still the player's damage; only a
+                // direct hit counts as a "hit".
+                stats.DamageDealt += e.HpLost;
+                if (e.Source != null && e.Source.IsPlayer) stats.BiggestHit = Mathf.Max(stats.BiggestHit, e.HpLost);
+            });
+        }
+
+        static string DescribeEncounter(CombatState state)
+        {
+            var names = new List<string>();
+            foreach (var enemy in state.Enemies)
+                if (!names.Contains(enemy.Name)) names.Add(enemy.Name);
+            return string.Join(" and ", names);
+        }
+
+        void ShowEndOfRun(bool won)
+        {
+            if (_run == null) return;
+            Tooltip.Hide();
+            _pause.Hide();
+            _rewardPanel.gameObject.SetActive(false);
+
+            int floor = (_run.ActiveNode?.Row ?? 0) + 1;
+            int floors = _run.Map?.Grid.Count ?? RunMap.Rows;
+            _endOfRun.Show(_run, won, floor, floors);
+            AudioDirector.PlayMusic(won ? MusicTrack.Map : MusicTrack.None);
         }
 
         IReadOnlyList<Tooltip.Entry> DescribePlayer()
@@ -544,7 +579,7 @@ namespace EmberDeck.View
             ClearChildren(_handRow);
             _enemyViews.Clear();
             _cardViews.Clear();
-            _overlay.gameObject.SetActive(false);
+            _endOfRun?.Hide();
             _rewardPanel.gameObject.SetActive(false);
             _runLabel.text = $"Fight {_run.FightNumber}    Deck {_run.Deck.Count}    Relics {_run.Relics.Count}    HP {_run.Hp}/{_run.MaxHp}";
             _mapView.Show(_run.Map);
@@ -607,7 +642,7 @@ namespace EmberDeck.View
         void OnRestUpgrade(CardData card)
         {
             AudioDirector.Play(Sfx.Upgrade);
-            _run.UpgradeCard(card);
+            if (_run.UpgradeCard(card)) _run.Stats.CardsUpgraded++;
             ShowMap();
         }
 
@@ -617,15 +652,26 @@ namespace EmberDeck.View
             {
                 RunSave.Delete();
                 AudioDirector.PlayMusic(MusicTrack.None);
-                _overlay.gameObject.SetActive(true);
-                _overlayLabel.text = "DEFEAT";
-                _overlayLabel.color = Palette.Defeat;
+                // The final blow and the defeat sting play out on the board before the summary covers it.
+                var lost = _run;
+                Motion.After(1.4f, () => { if (_run == lost) ShowEndOfRun(won: false); }, this);
                 return;
             }
 
             // Carry the damage forward before anything else: the reward is chosen knowing
             // how much health survived it.
             _run.Hp = State.Player.Hp;
+            _run.Stats.FightsWon++;
+            if (_run.IsElite) _run.Stats.ElitesWon++;
+
+            // Beating the boss ends the run: there is no next fight for a card reward to matter in.
+            if (_run.IsBoss)
+            {
+                RunSave.Delete();
+                var won = _run;
+                Motion.After(1.2f, () => { if (_run == won) ShowEndOfRun(won: true); }, this);
+                return;
+            }
 
             // Elites grant a relic on top of the card. Rolled before the card reward and before
             // the fight counter advances, in the same order RunSimulator uses.
@@ -677,6 +723,7 @@ namespace EmberDeck.View
 
         void TakeReward(CardData card)
         {
+            if (card != null) _run.Stats.CardsAdded++;
             _run.AddCard(card);
             AudioDirector.Play(Sfx.Reward);
             _rewardPanel.gameObject.SetActive(false);
@@ -684,9 +731,7 @@ namespace EmberDeck.View
             if (_run.IsBoss)
             {
                 RunSave.Delete();
-                _overlay.gameObject.SetActive(true);
-                _overlayLabel.text = "RUN COMPLETE";
-                _overlayLabel.color = Palette.Victory;
+                ShowEndOfRun(won: true);
                 return;
             }
 
@@ -767,6 +812,9 @@ namespace EmberDeck.View
             _restView?.Hide();
             StartFight(encounter);
         }
+
+        /// <summary>Capture-harness only: shows the end-of-run screen for the current run without ending it.</summary>
+        public void DebugShowEndOfRun(bool won) => ShowEndOfRun(won);
 
 
         /// <summary>

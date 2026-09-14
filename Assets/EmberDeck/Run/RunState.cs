@@ -33,6 +33,9 @@ namespace EmberDeck.Run
         /// <summary>The node currently being resolved — a fight knows whether it is an elite.</summary>
         public MapNode ActiveNode;
 
+        /// <summary>Numbers for the end-of-run screen. Saved with the run; never read by any rule.</summary>
+        public RunStats Stats = new();
+
         public bool IsElite => ActiveNode?.Type == NodeType.Elite;
         public bool IsBoss  => ActiveNode?.Type == NodeType.Boss;
 

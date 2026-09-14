@@ -256,6 +256,18 @@ namespace EmberDeck.View
                         yield return Capture($"enc-{id}.png");
                     }
 
+                // The end-of-run screen both ways, over the run the harness has been playing.
+                var endHost = FindFirstObjectByType<CombatView>();
+                if (endHost != null)
+                {
+                    endHost.DebugShowEndOfRun(won: false);
+                    yield return new WaitForSeconds(1.3f);
+                    yield return Capture("09-end-defeat.png");
+                    endHost.DebugShowEndOfRun(won: true);
+                    yield return new WaitForSeconds(1.3f);
+                    yield return Capture("10-end-victory.png");
+                }
+
                 // Report the state the save should restore to, so a second launch can be
                 // checked against it rather than eyeballed.
                 var runInfo = FindFirstObjectByType<CombatView>();

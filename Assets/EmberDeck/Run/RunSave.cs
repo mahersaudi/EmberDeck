@@ -29,7 +29,7 @@ namespace EmberDeck.Run
         [Serializable]
         sealed class Data
         {
-            public int version = 2;
+            public int version = 3;
             public int seed;
             public int hp;
             public int maxHp;
@@ -39,6 +39,7 @@ namespace EmberDeck.Run
             public List<int> visited = new();   // flattened row, column pairs
             public int currentRow = -1;
             public int currentColumn = -1;
+            public RunStats stats = new();   // version 3
         }
 
         public static bool Exists() => File.Exists(Path);
@@ -58,6 +59,7 @@ namespace EmberDeck.Run
                 fightNumber = run.FightNumber,
                 currentRow = run.Map?.Current?.Row ?? -1,
                 currentColumn = run.Map?.Current?.Column ?? -1,
+                stats = run.Stats,
             };
 
             foreach (var card in run.Deck)
@@ -98,7 +100,7 @@ namespace EmberDeck.Run
                 return null;
             }
 
-            if (data == null || (data.version != 1 && data.version != 2))
+            if (data == null || (data.version < 1 || data.version > 3))
             {
                 Debug.LogWarning("[EmberDeck] Save is from a different version, starting fresh.");
                 Delete();
@@ -110,6 +112,8 @@ namespace EmberDeck.Run
             run.Map = RunMap.Generate(run.Rng.Map);
             run.Hp = Mathf.Clamp(data.hp, 0, data.maxHp);
             run.FightNumber = Mathf.Max(1, data.fightNumber);
+            // Saves before version 3 carry no stats; the run continues with a fresh count.
+            run.Stats = data.stats ?? new RunStats();
 
             foreach (var id in data.deck)
             {
