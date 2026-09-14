@@ -274,9 +274,15 @@ namespace EmberDeck.EditorTools
             // ── Enemies ─────────────────────────────────────────────────────────────
             var bite    = Move("Move_Bite", "Bite", IntentKind.Attack, 1, Damage("Dmg_Bite", 10));
             var skitter = Move("Move_Skitter", "Skitter", IntentKind.Block, 1, Block("Blk_Skitter", 11));
-            var maul    = Move("Move_Maul", "Maul", IntentKind.Attack, 3, Damage("Dmg_Maul", 14));
+            // Ash Hound appears only in the elite, and it was the elite's killer. Hunter-style
+            // play died inside elites 108 times in 300 runs. The danger was escalation, not the
+            // opening hit: Brace (13 Block) stretches the fight and every Howl stacked +3 Strength,
+            // so Maul grew 14 -> 17 -> 20. Howl now grants +1 and Maul starts at 12. Its health is
+            // unchanged, so an elite is still a long, costly fight — just not one that turns
+            // lethal because it lasted.
+            var maul    = Move("Move_Maul", "Maul", IntentKind.Attack, 3, Damage("Dmg_Maul", 12));
             var howl    = Move("Move_Howl", "Howl", IntentKind.Buff, 1,
-                               Status("Str_Howl_Self", StatusType.Strength, 3, toSelf: true));
+                               Status("Str_Howl_Self", StatusType.Strength, 1, toSelf: true));
             var brace   = Move("Move_Brace", "Brace", IntentKind.Block, 1, Block("Blk_Brace", 13));
             var spark   = Move("Move_Spark", "Spark", IntentKind.Attack, 1, Damage("Dmg_Spark", 7));
             var ignite  = Move("Move_Ignite", "Ignite", IntentKind.Debuff, 1,

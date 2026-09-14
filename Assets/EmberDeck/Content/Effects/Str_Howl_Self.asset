@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: Str_Howl_Self
   m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.Effects.ApplyStatusEffect
   Status: 0
-  Amount: 3
+  Amount: 1
   ApplyToSelf: 1
