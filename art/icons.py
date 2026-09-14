@@ -114,6 +114,37 @@ ICONS = {
     "potion_gold": bottle("#e2b33e", "#f7df90"),
     "potion_green": bottle("#4bb46a", "#a8e6b8"),
     "potion_purple": bottle("#9a62d8", "#d3b5f5"),
+
+    # Map nodes: what a step on the map holds, read before the player commits to a path.
+    "node_fight": f'<g transform="rotate(45 50 50)">{sword("#e9e4dc", "#9a9aa6")}</g>',
+    "node_elite": '<path d="M26 44 C14 30 16 10 30 8 C26 20 30 30 38 36 Z" fill="#d9b25c"/>'
+                  '<path d="M74 44 C86 30 84 10 70 8 C74 20 70 30 62 36 Z" fill="#d9b25c"/>'
+                  '<path d="M26 46 C26 22 74 22 74 46 L74 72 L63 72 L63 92 L37 92 L37 72 L26 72 Z" fill="#b8473a"/>'
+                  '<rect x="34" y="50" width="32" height="8" rx="3" fill="#2a1410"/>'
+                  '<rect x="46" y="58" width="8" height="24" rx="2" fill="#2a1410"/>',
+    "node_rest": '<rect x="18" y="74" width="64" height="12" rx="6" fill="#7a4a2a" transform="rotate(-14 50 80)"/>'
+                 '<rect x="18" y="74" width="64" height="12" rx="6" fill="#8d5a34" transform="rotate(14 50 80)"/>'
+                 f'<g transform="translate(22 4) scale(0.56)">{flame()}</g>',
+    "node_treasure": '<path d="M14 44 C14 22 86 22 86 44 Z" fill="#b8792e"/>'
+                     '<rect x="14" y="44" width="72" height="44" rx="4" fill="#8f5a24"/>'
+                     '<rect x="14" y="40" width="72" height="9" fill="#e2b33e"/>'
+                     '<rect x="44" y="46" width="12" height="18" rx="2" fill="#f2d27a"/>',
+    "node_shop": '<ellipse cx="50" cy="80" rx="32" ry="10" fill="#b8862c"/>'
+                 '<ellipse cx="50" cy="72" rx="32" ry="10" fill="#d9a53b"/>'
+                 '<ellipse cx="50" cy="58" rx="28" ry="9" fill="#b8862c"/>'
+                 '<ellipse cx="50" cy="50" rx="28" ry="9" fill="#e8bd4f"/>'
+                 '<ellipse cx="50" cy="34" rx="24" ry="8" fill="#b8862c"/>'
+                 '<ellipse cx="50" cy="26" rx="24" ry="8" fill="#f2d27a"/>',
+    "node_event": '<circle cx="50" cy="50" r="40" fill="#8a63c9"/>'
+                  '<path d="M37 38 C37 22 63 22 63 38 C63 50 50 50 50 62" fill="none" stroke="#f4eefc" '
+                  'stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>'
+                  '<circle cx="50" cy="76" r="6" fill="#f4eefc"/>',
+    "node_boss": '<path d="M24 30 L32 10 L42 24 L50 6 L58 24 L68 10 L76 30 Z" fill="#e2b33e"/>'
+                 '<path d="M22 54 C22 30 78 30 78 54 C78 68 70 74 66 76 L66 90 L34 90 L34 76 C30 74 22 68 22 54 Z" fill="#e6e0d4"/>'
+                 '<circle cx="38" cy="54" r="8" fill="#2a1410"/><circle cx="62" cy="54" r="8" fill="#2a1410"/>'
+                 '<path d="M46 66 L50 60 L54 66 Z" fill="#2a1410"/>'
+                 '<rect x="40" y="80" width="4" height="10" fill="#2a1410"/><rect x="48" y="80" width="4" height="10" fill="#2a1410"/>'
+                 '<rect x="56" y="80" width="4" height="10" fill="#2a1410"/>',
 }
 
 TAG = re.compile(r"<(path|rect|circle|ellipse|polygon)\b([^>]*?)/>")

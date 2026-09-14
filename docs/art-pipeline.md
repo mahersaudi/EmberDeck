@@ -109,3 +109,26 @@ failure shows up as a null at runtime rather than anything in the import log.
 2. **Card frames** — a rarity border and a type-coloured header, still drawn procedurally.
 3. **DOTween** for card motion, damage shake, and intent changes. This is the single
    largest perceived-quality jump available and it costs no art at all.
+
+## Backgrounds and map icons
+
+**Backgrounds** (`art/generate_backgrounds.py`, then `art/install_backgrounds.sh`): the battlefield for
+hallway fights, elites and the boss, and the map. Rendered at SDXL's native 1344×768, cropped and
+scaled to 1920×1080 into `Resources/Backgrounds`, and drawn darkened (about 42% for fights, 45% for
+the map) so cards, numbers and paths stay the brightest things on screen. They import compressed at
+2048 max; uncompressed, each would add about 8 MB to the build.
+
+- Every prompt asks for an empty scene with a dark centre, and a per-background palette pushes
+  people, creatures, text, signatures and bright floors into the negatives.
+- **The first elite render failed three ways:** "falling ash like snow" painted a winter, it signed
+  both bottom corners, and its floor was bright white exactly behind the cards. The prompt now says
+  smoke and cinders, snow is a negative, and the installer trims the bottom 4% and matching sides of
+  every background, since a signature can come back even when asked not to.
+- A fight picks its background from its encounter tier (elite, boss, or hallway); a missing painting
+  falls back to the flat background colour.
+
+**Map icons** (`art/icons.py`): fight, elite, rest, treasure, shop, event and boss, in the same
+outlined SVG style as the status icons. A node is now a coloured ring around a dark face holding its
+icon: colour still reads from across the map, and the icon reads up close, where a letter only hinted.
+Reachable nodes pulse in step; unreachable ones fade and visited ones grey out. Every node has a
+tooltip saying what it holds.

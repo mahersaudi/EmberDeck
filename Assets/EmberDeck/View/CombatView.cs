@@ -43,6 +43,7 @@ namespace EmberDeck.View
         CombatEngine Engine => _session.Engine;
 
         RectTransform _root;
+        Image _background;
         RectTransform _enemyRow;
         RectTransform _handRow;
 
@@ -229,6 +230,7 @@ namespace EmberDeck.View
 
             var background = UiFactory.Panel(_root, "Background", Palette.Background);
             UiFactory.Stretch(background);
+            _background = background.GetComponent<Image>();
 
             _enemyRow = UiFactory.Panel(_root, "EnemyRow", new Color(0f, 0f, 0f, 0f));
             UiFactory.Place(_enemyRow, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
@@ -464,6 +466,11 @@ namespace EmberDeck.View
             TrackStats(_session.State);
             _run.Stats.FinalEncounter = DescribeEncounter(_session.State);
             AudioDirector.PlayMusic(_run.IsBoss ? MusicTrack.Boss : MusicTrack.Combat);
+            var tier = forced != null ? forced.Tier
+                     : _run.IsBoss ? EncounterTier.Boss
+                     : _run.IsElite ? EncounterTier.Elite
+                     : EncounterTier.Early;
+            SetBattlefield(tier == EncounterTier.Boss ? "bg_boss" : tier == EncounterTier.Elite ? "bg_elite" : "bg_hallway");
             AudioDirector.Play(Sfx.TurnStart, 0.8f);
             _seedLabel.text = $"seed {_run.Seed}";
             _runLabel.text = $"Fight {_run.FightNumber}    Deck {_run.Deck.Count}    Relics {_run.Relics.Count}    Gold {_run.Gold}";
@@ -613,6 +620,17 @@ namespace EmberDeck.View
             var potion = _run.Potions[slot];
             string how = potion.Target == TargetMode.SingleEnemy ? "Click it, then click an enemy." : "Click to drink.";
             return new[] { new Tooltip.Entry(potion.DisplayName, $"{potion.BuildDescription()} {how} Costs no energy.", potion.Icon) };
+        }
+
+        /// <summary>
+        /// The painted battlefield for this fight, darkened so cards and numbers stay the brightest thing
+        /// on screen. Falls back to the flat background colour when the painting is missing.
+        /// </summary>
+        void SetBattlefield(string name)
+        {
+            var art = Resources.Load<Sprite>($"Backgrounds/{name}");
+            _background.sprite = art;
+            _background.color = art != null ? new Color(0.42f, 0.42f, 0.46f, 1f) : Palette.Background;
         }
 
         RectTransform AnchorFor(Actor actor)

@@ -20,3 +20,10 @@
 19	potion_gold
 20	potion_green
 21	potion_purple
+22	node_fight
+23	node_elite
+24	node_rest
+25	node_treasure
+26	node_shop
+27	node_event
+28	node_boss
