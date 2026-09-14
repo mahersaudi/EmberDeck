@@ -43,7 +43,12 @@ namespace EmberDeck.Combat
             // Enemies grow with the fight number so a deck that got stronger still meets
             // resistance. Scaling HP rather than damage keeps the intent numbers — which the
             // player plans around — honest.
-            float scale = 1f + Config.EnemyScalingPerFight * ((Run?.FightNumber ?? 1) - 1);
+            // The boss is exempt. Its numbers are authored as the end of the run; multiplying
+            // them by the run's fight count as well put a 150 HP boss at about 250 by the time
+            // anyone reached it, and 74 of 74 simulated runs that arrived there died.
+            float scale = Run != null && Run.IsBoss
+                ? 1f
+                : 1f + Config.EnemyScalingPerFight * ((Run?.FightNumber ?? 1) - 1);
 
             var encounter = Config.Encounter;
             if (Run != null && Run.IsBoss && Config.BossEncounter.Count > 0) encounter = Config.BossEncounter;

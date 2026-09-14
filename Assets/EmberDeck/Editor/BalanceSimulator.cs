@@ -98,9 +98,10 @@ namespace EmberDeck.EditorTools
             }
 
             report.AppendLine();
-            report.AppendLine("Target: 80-90% for the starter deck. Every archetype deck should clear it more");
-            report.AppendLine("comfortably than the starter — that is what makes building one feel like progress —");
-            report.AppendLine("but an archetype far above the rest is one that makes the others pointless.");
+            report.AppendLine("Read HP left, not win rate. Health carries between fights, so a hallway fight");
+            report.AppendLine("the starter wins while losing three quarters of its health is a fight that kills");
+            report.AppendLine("the run one node later. Target: a hallway costs roughly 15-25% of max HP.");
+            report.AppendLine("Run the full-run simulation for whether a run actually reaches the boss.");
             Debug.Log(report.ToString());
         }
 
@@ -175,7 +176,10 @@ namespace EmberDeck.EditorTools
         /// baseline, so a high win rate means the fight is genuinely easy rather than that
         /// the bot is clever.
         /// </summary>
-        static void PlayTurn(CombatSession session)
+        // internal: RunSimulator plays its fights with this exact policy. Two copies of
+        // the same judgement would drift, and then the two simulators would disagree
+        // about the same fight for reasons that have nothing to do with the game.
+        internal static void PlayTurn(CombatSession session)
         {
             var state = session.State;
             var engine = session.Engine;

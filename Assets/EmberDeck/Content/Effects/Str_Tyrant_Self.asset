@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: Str_Tyrant_Self
   m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.Effects.ApplyStatusEffect
   Status: 0
-  Amount: 4
+  Amount: 2
   ApplyToSelf: 1

@@ -292,12 +292,12 @@ namespace EmberDeck.EditorTools
             // The boss. Its moves are bigger versions of moves the player has already met,
             // so the fight is readable on sight — a boss whose vocabulary is entirely new
             // punishes the player for knowledge they had no way to acquire.
-            var crush   = Move("Move_Crush", "Crush", IntentKind.Attack, 3, Damage("Dmg_Crush", 22));
+            var crush   = Move("Move_Crush", "Crush", IntentKind.Attack, 3, Damage("Dmg_Crush", 16));
             var forge   = Move("Move_Forge", "Forge", IntentKind.Buff, 1,
-                               Status("Str_Tyrant_Self", StatusType.Strength, 4, toSelf: true),
-                               Block("Blk_Tyrant", 14));
-            var scourge = Move("Move_Scourge", "Scourge", IntentKind.Attack, 2, Damage("Dmg_Scourge", 9, hits: 3));
-            var tyrant = MakeEnemy("forge_tyrant", "Forge Tyrant", 140, 160, MovePattern.Sequence,
+                               Status("Str_Tyrant_Self", StatusType.Strength, 2, toSelf: true),
+                               Block("Blk_Tyrant", 12));
+            var scourge = Move("Move_Scourge", "Scourge", IntentKind.Attack, 2, Damage("Dmg_Scourge", 6, hits: 3));
+            var tyrant = MakeEnemy("forge_tyrant", "Forge Tyrant", 110, 120, MovePattern.Sequence,
                                    new Color(0.86f, 0.34f, 0.22f), crush, scourge, forge, crush);
 
             var emberCore = Asset<EmberCoreRelic>("Relics/Relic_EmberCore", relic =>
@@ -329,12 +329,23 @@ namespace EmberDeck.EditorTools
 
                 cfg.RewardPool = cards.FindAll(c => c.Rarity != CardRarity.Starter);
                 cfg.AllCards = new List<CardData>(cards);
-                cfg.EnemyScalingPerFight = 0.18f;
+                // 8%, not 18%: the scaling compounds per fight, and 18% put row-eight enemies
+                // at 2.4x their base health.
+                cfg.EnemyScalingPerFight = 0.08f;
                 cfg.Relics = new List<RelicData> { emberCore };
-                cfg.Encounter = new List<EnemyData> { emberling, cinderRat, ashHound };
+                // The hallway fight is two enemies. The first full-run simulation showed the
+                // old three-enemy group was elite difficulty wearing a hallway's name: the
+                // starter deck won it 83% of the time but finished at 16 of 63 HP, and with
+                // health carrying between fights that made the second fight lethal. Zero of
+                // 900 simulated runs reached the boss.
+                cfg.Encounter = new List<EnemyData> { emberling, cinderRat };
                 // The elite is two of the hardest normal enemy rather than a new creature:
                 // the threat is legible before the player commits to the node.
-                cfg.EliteEncounter = new List<EnemyData> { ashHound, ashHound, cinderRat };
+                // Two strong enemies, not the old three. Greedy map play — taking every elite
+                // it could — reached the boss less often (19%) than cautious play (30%): an
+                // elite that costs more than it pays is not a risk, it is a mistake the map
+                // offers.
+                cfg.EliteEncounter = new List<EnemyData> { cinderRat, ashHound };
                 cfg.BossEncounter = new List<EnemyData> { tyrant };
                 cfg.RestHealFraction = 0.3f;
             });
