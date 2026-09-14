@@ -100,14 +100,30 @@ namespace EmberDeck.EditorTools
             // Add 2 here to test multi-card elite rewards. Tested once: granting two cards
             // instead of one moved greedy boss-reach from 27.7% to 27.3% — no effect — so it is
             // off by default rather than doubling the run time of every simulation.
-            // The current experiment is potions. Shops were measured the same way; see docs/economy-and-shop.md.
-            foreach (bool drinking in new[] { true, false })
+            // Potions and shops were measured with on/off passes like these; see docs/economy-and-shop.md.
+            // The passes are the unlock experiment. The base game, with nothing unlocked, is what every new
+            // player starts with and the balance target; the second shows what the whole unlock track adds;
+            // the third takes the highest difficulty away from that.
+            // The middle two split the track, so a jump in the second pass can be traced to cards or relics.
+            var cardUnlocks = config.Unlocks.Where(u => u != null && u.Cards.Count > 0).Select(u => u.Id).ToList();
+            var relicUnlocks = config.Unlocks.Where(u => u != null && u.Relics.Count > 0).Select(u => u.Id).ToList();
+            var passes = new (string Label, List<string> Unlocked, int Difficulty)[]
             {
+                ("[base game: nothing unlocked, normal difficulty]", null, 0),
+                ("[unlocked cards only, normal difficulty]", cardUnlocks, 0),
+                ("[unlocked relics only, normal difficulty]", relicUnlocks, 0),
+                ("[everything unlocked, normal difficulty]", config.AllUnlockIds(), 0),
+                ("[everything unlocked, difficulty 5]", config.AllUnlockIds(), DifficultyRules.Max),
+            };
+            foreach (var pass in passes)
+            {
+                bool firstPass = pass.Label == passes[0].Label;   // the first pass carries the details and the encounter table
                 ShopsEnabled = true;
-                PotionsEnabled = drinking;
+                PotionsEnabled = true;
                 int picks = EliteRewardPicks;
+                var unlocked = pass.Unlocked;
                 report.AppendLine();
-                report.AppendLine(drinking ? "[potions on]" : "[potions off: same drops, never drunk]");
+                report.AppendLine(pass.Label);
                 // "boss" columns are the final boss. act1% is how many runs beat the first boss, the old
                 // single-act win rate, kept so a change to Act 2 can be told apart from a change to Act 1.
                 report.AppendLine("policy      run win%  act1 boss%  reach boss%  elites/run  HP@boss  deck@boss  win|reached  boss HP left at death");
@@ -117,8 +133,8 @@ namespace EmberDeck.EditorTools
                 {
                     var results = new List<Result>(Runs);
                     for (int i = 0; i < Runs; i++)
-                        results.Add(PlayRun(config, seed: 10_000 + i, policy));
-                    if (drinking) allResults.AddRange(results);
+                        results.Add(PlayRun(config, seed: 10_000 + i, policy, pass.Difficulty, unlocked));
+                    if (firstPass) allResults.AddRange(results);
 
                     int wins = results.Count(r => r.BeatBoss);
                     var reached = results.Where(r => r.HpAtBoss >= 0).ToList();
@@ -132,7 +148,7 @@ namespace EmberDeck.EditorTools
                         $"{results.Average(r => r.ElitesFought),9:F2}  {Median(reached.Select(r => r.HpAtBoss)),7}  " +
                         $"{Median(reached.Select(r => r.DeckAtBoss)),9}  {winGivenReach,10:F1}  {Median(bossDeaths),14}%");
 
-                    if (!drinking) continue;
+                    if (!firstPass) continue;
 
                     details.AppendLine(
                         $"-- {policy}: HP cost of a won hallway {Median(results.SelectMany(r => r.HallwayCost))}, " +
@@ -180,9 +196,9 @@ namespace EmberDeck.EditorTools
 
         // ── One run ──────────────────────────────────────────────────────────────────
 
-        static Result PlayRun(RunConfig config, int seed, Policy policy)
+        static Result PlayRun(RunConfig config, int seed, Policy policy, int difficulty = 0, List<string> unlocked = null)
         {
-            var run = RunState.Start(config, seed);
+            var run = RunState.Start(config, seed, difficulty, unlocked);
             var result = new Result();
             result.Stats = run.Stats;
 
@@ -205,7 +221,7 @@ namespace EmberDeck.EditorTools
                     var upgradable = run.UpgradableCards();
                     if ((float)run.Hp / run.MaxHp < 0.7f || upgradable.Count == 0)
                     {
-                        run.Heal(Mathf.RoundToInt(run.MaxHp * config.RestHealFraction));
+                        run.Heal(Mathf.RoundToInt(run.MaxHp * DifficultyRules.RestHealFraction(config, run.Difficulty)));
                     }
                     else
                     {
@@ -346,7 +362,7 @@ namespace EmberDeck.EditorTools
             var rng = extraPick == 0
                 ? run.RewardRng()
                 : new EmberDeck.Core.DeterministicRng(run.Seed ^ unchecked(run.FightNumber * 31 + extraPick * 7717));
-            var offers = RewardService.Roll(config.RewardPool, rng, eliteOdds: eliteOdds);
+            var offers = RewardService.Roll(run.RewardPool(config), rng, eliteOdds: eliteOdds);
             if (offers.Count == 0) return false;
 
             // Take the rarest card offered. Crude, and deliberately so: like the combat bot,

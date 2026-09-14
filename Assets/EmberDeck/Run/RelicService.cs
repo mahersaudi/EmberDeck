@@ -17,7 +17,7 @@ namespace EmberDeck.Run
         public static RelicData Roll(RunState run, RunConfig config)
         {
             var available = new List<RelicData>();
-            foreach (var relic in config.RelicPool)
+            foreach (var relic in run.RelicPool(config))
                 if (relic != null && !run.Relics.Contains(relic))
                     available.Add(relic);
 

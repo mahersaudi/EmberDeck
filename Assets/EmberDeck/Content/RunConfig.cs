@@ -75,6 +75,41 @@ namespace EmberDeck.Content
         [Tooltip("Relics an elite victory can grant. Starting relics are not in this pool.")]
         public List<RelicData> RelicPool = new();
 
+        [Tooltip("The unlock track. Its cards and relics are in no pool above until a profile unlocks them.")]
+        public List<UnlockData> Unlocks = new();
+
+        /// <summary>The reward pool with the given unlocks' cards added.</summary>
+        public List<CardData> RewardPoolFor(ICollection<string> unlocked)
+        {
+            var pool = new List<CardData>(RewardPool);
+            if (unlocked == null) return pool;
+            foreach (var unlock in Unlocks)
+                if (unlock != null && unlocked.Contains(unlock.Id))
+                    foreach (var card in unlock.Cards)
+                        if (card != null) pool.Add(card);
+            return pool;
+        }
+
+        /// <summary>The relic pool with the given unlocks' relics added.</summary>
+        public List<RelicData> RelicPoolFor(ICollection<string> unlocked)
+        {
+            var pool = new List<RelicData>(RelicPool);
+            if (unlocked == null) return pool;
+            foreach (var unlock in Unlocks)
+                if (unlock != null && unlocked.Contains(unlock.Id))
+                    foreach (var relic in unlock.Relics)
+                        if (relic != null) pool.Add(relic);
+            return pool;
+        }
+
+        public List<string> AllUnlockIds()
+        {
+            var ids = new List<string>();
+            foreach (var unlock in Unlocks)
+                if (unlock != null) ids.Add(unlock.Id);
+            return ids;
+        }
+
         [Tooltip("Potions that fights drop and shops sell.")]
         public List<PotionData> PotionPool = new();
 
@@ -98,6 +133,10 @@ namespace EmberDeck.Content
                 if (relic != null && relic.Id == id) return relic;
             foreach (var relic in RelicPool)
                 if (relic != null && relic.Id == id) return relic;
+            foreach (var unlock in Unlocks)
+                if (unlock != null)
+                    foreach (var relic in unlock.Relics)
+                        if (relic != null && relic.Id == id) return relic;
             return null;
         }
 

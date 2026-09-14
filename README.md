@@ -108,6 +108,7 @@ The slice ends at a single fight. In order:
 5. ~~**Upgrades**~~ — done: the rest site offers heal *or* upgrade. See `docs/card-design.md`, "Upgrades".
 6. ~~**First-run tutorial**~~ — done: tips that appear when what they explain first matters. See `docs/first-run-tips.md`.
 7. ~~**Act 2**~~ — done: a second map, seven enemies and the Cinder Wyrm. See `docs/act-two.md`.
+8. ~~**Meta unlocks**~~ — done: Embers, an unlock track of cards and relics, and five difficulty levels. See `docs/meta-progression.md`.
 
 Content and balance are the work after that; the architecture above is meant not to change.
 

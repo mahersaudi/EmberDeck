@@ -31,6 +31,7 @@ namespace EmberDeck.View
 
         Text _title;
         Text _subtitle;
+        Text _earned;
         RectTransform _stats;
         Text _deckTitle;
         RectTransform _deckGrid;
@@ -58,6 +59,10 @@ namespace EmberDeck.View
             _subtitle = UiFactory.Label(root, "EndSubtitle", "", 28, Palette.InkMuted);
             UiFactory.Place(_subtitle.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
                             new Vector2(0f, -180f), new Vector2(1400f, 40f));
+
+            _earned = UiFactory.Label(root, "EndEarned", "", 22, Palette.Energy);
+            UiFactory.Place(_earned.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
+                            new Vector2(0f, -218f), new Vector2(1600f, 32f));
 
             // Left: the numbers.
             var statsTitle = UiFactory.Label(root, "StatsTitle", "THE RUN", 22, Palette.Energy, TextAnchor.MiddleLeft);
@@ -99,7 +104,7 @@ namespace EmberDeck.View
             gameObject.SetActive(false);
         }
 
-        public void Show(RunState run, bool won, int floor, int floors)
+        public void Show(RunState run, bool won, int floor, int floors, RunResult result = null)
         {
             foreach (var spawned in _spawned)
             {
@@ -117,6 +122,10 @@ namespace EmberDeck.View
                 ? $"The {foe} lies in the ashes. The forge is yours."
                 : $"Fell to {foe} on floor {floor} of {floors}.";
 
+            _earned.text = DescribeResult(run, result);
+            if (result != null && (result.Unlocked.Count > 0 || result.DifficultyUnlocked > 0))
+                Motion.Punch(_earned.transform, 0.12f, 0.45f, 0.35f);
+
             BuildStats(run, floor, floors);
             BuildDeck(run);
 
@@ -131,6 +140,24 @@ namespace EmberDeck.View
         }
 
         public void Hide() => gameObject.SetActive(false);
+
+        /// <summary>"+26 Embers (51 total) · Unlocked: Tempest cards", with the difficulty when it is not normal.</summary>
+        static string DescribeResult(RunState run, RunResult result)
+        {
+            var parts = new List<string>();
+            if (run.Difficulty > 0) parts.Add(DifficultyRules.Name(run.Difficulty));
+            if (result == null) return string.Join("    ·    ", parts);
+
+            parts.Add($"+{result.Earned} Embers  ({result.After} total)");
+            if (result.Unlocked.Count > 0)
+            {
+                var names = new List<string>();
+                foreach (var unlock in result.Unlocked) names.Add(unlock.DisplayName);
+                parts.Add("Unlocked: " + string.Join(", ", names));
+            }
+            if (result.DifficultyUnlocked > 0) parts.Add($"Difficulty {result.DifficultyUnlocked} unlocked");
+            return string.Join("    ·    ", parts);
+        }
 
         void BuildStats(RunState run, int floor, int floors)
         {

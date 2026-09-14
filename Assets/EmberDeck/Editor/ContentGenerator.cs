@@ -272,7 +272,40 @@ namespace EmberDeck.EditorTools
                  Power("Pow_SecondForge", PowerTrigger.TurnStart, "Gain 1 Energy at the start of each turn.", false, energy1));
             Exhausting(Card(cards, "last_ember", "Last Ember", CardType.Attack, 3, TargetMode.SingleEnemy, CardRarity.Rare, dmg22));
 
-            var upgrades = BuildUpgrades(cards, draw1);
+            // ── Unlockable ──────────────────────────────────────────────────────────
+            // Cards earned between runs (docs/meta-progression.md). Kept out of `cards`, so they reach a
+            // reward pool only through RunConfig.Unlocks; built from existing effects like everything else.
+            var unlockCards = new List<CardData>();
+            var unlockBlk2 = Block("Unlock_Blk_2", 2);
+            var crucible = Card(unlockCards, "crucible", "Crucible", CardType.Skill, 1, TargetMode.Self, CardRarity.Common,
+                                Block("Unlock_Blk_7", 7), heat3);
+            var brand = Card(unlockCards, "brand", "Brand", CardType.Attack, 1, TargetMode.SingleEnemy, CardRarity.Common,
+                             Damage("Unlock_Dmg_6b", 6), Status("Unlock_Vuln_1", StatusType.Vulnerable, 1));
+            var kilnGuard = Card(unlockCards, "kiln_guard", "Kiln Guard", CardType.Power, 2, TargetMode.Self, CardRarity.Uncommon,
+                                 Power("Pow_Unlock_KilnGuard", PowerTrigger.AttackPlayed, "Whenever you play an Attack, gain 2 Block.", false, unlockBlk2));
+
+            var emberScatter = Card(unlockCards, "ember_scatter", "Ember Scatter", CardType.Attack, 1, TargetMode.AllEnemies, CardRarity.Common,
+                                    Damage("Unlock_Dmg_3_All", 3));
+            var bladeDance = Card(unlockCards, "blade_dance", "Blade Dance", CardType.Attack, 2, TargetMode.SingleEnemy, CardRarity.Uncommon,
+                                  Damage("Unlock_Dmg_3x4", 3, hits: 4));
+            var momentum = Exhausting(Card(unlockCards, "momentum", "Momentum", CardType.Skill, 0, TargetMode.Self, CardRarity.Uncommon,
+                                           energy1));
+
+            var magmaHeart = Card(unlockCards, "magma_heart", "Magma Heart", CardType.Power, 1, TargetMode.Self, CardRarity.Uncommon,
+                                  Power("Pow_Unlock_MagmaHeart", PowerTrigger.BurnApplied, "Whenever you apply Burn, gain 1 Block.", false, blk1));
+            var supernova = Exhausting(Card(unlockCards, "supernova", "Supernova", CardType.Attack, 2, TargetMode.AllEnemies, CardRarity.Rare,
+                                            Asset<SpendHeatEffect>("Unlock_SpendHeat_DmgAll", e =>
+                                            {
+                                                e.Payout = HeatPayout.Damage;
+                                                e.Ratio = 1f;
+                                                e.AllEnemies = true;
+                                            })));
+            var phoenixPlume = Exhausting(Card(unlockCards, "phoenix_plume", "Phoenix Plume", CardType.Skill, 1, TargetMode.Self, CardRarity.Uncommon,
+                                               Block("Unlock_Blk_9", 9), Asset<HealEffect>("Unlock_Heal_3", e => e.Amount = 3)));
+
+            var upgradable = new List<CardData>(cards);
+            upgradable.AddRange(unlockCards);
+            var upgrades = BuildUpgrades(upgradable, draw1);
 
             // ── Enemies ─────────────────────────────────────────────────────────────
             var bite    = Move("Move_Bite", "Bite", IntentKind.Attack, 1, Damage("Dmg_Bite", 10));
@@ -521,6 +554,14 @@ namespace EmberDeck.EditorTools
                            Status("Burn_3_Relic", StatusType.Burn, 3)),
             };
 
+            // Relics earned between runs: never in the pool above until unlocked.
+            var obsidianShard = RelicAsset("obsidian_shard", "Obsidian Shard", "At the start of each combat, apply 1 Weak to ALL enemies.",
+                                           Status("Unlock_Relic_Weak_1", StatusType.Weak, 1));
+            var forgeApron = RelicAsset("forge_apron", "Forge Apron", "At the end of your turn, gain 2 Block.",
+                                        Power("Pow_Relic_ForgeApron", PowerTrigger.TurnEnd, "At the end of your turn, gain 2 Block.", false, unlockBlk2));
+            var anvilCrown = RelicAsset("anvil_crown", "Anvil Crown", "Whenever you gain Heat, gain 1 Block.",
+                                        Power("Pow_Relic_AnvilCrown", PowerTrigger.HeatGained, "Whenever you gain Heat, gain 1 Block.", false, blk1));
+
             // ── Potions ─────────────────────────────────────────────────────────────
             // Every potion is an existing effect used without a card. Colour carries the kind: red
             // heals, blue guards, orange burns, gold empowers, green draws, purple weakens.
@@ -562,6 +603,7 @@ namespace EmberDeck.EditorTools
 
                 cfg.RewardPool = cards.FindAll(c => c.Rarity != CardRarity.Starter);
                 cfg.AllCards = new List<CardData>(cards);
+                cfg.AllCards.AddRange(unlockCards);
                 // Upgraded cards are in the lookup, so a save can name them, but not in the
                 // reward pool: rewards offer base cards, and upgrading is the rest site's job.
                 cfg.AllCards.AddRange(upgrades);
@@ -595,6 +637,18 @@ namespace EmberDeck.EditorTools
                 cfg.BossEncounter = new List<EnemyData> { tyrant };
                 cfg.Encounters = encounters;
                 cfg.Acts = 2;
+                // Thresholds in lifetime Embers. A first run that dies on floor 6 earns about 8, a loss at the
+                // Tyrant about 15, a win about 60: the first unlock inside two runs, the last after roughly a
+                // dozen. See docs/meta-progression.md.
+                cfg.Unlocks = new List<UnlockData>
+                {
+                    Unlock("kiln_cards", "Kiln cards", 10, cards: new[] { crucible, brand, kilnGuard }),
+                    Unlock("obsidian_shard", "Obsidian Shard", 25, relic: obsidianShard),
+                    Unlock("tempest_cards", "Tempest cards", 45, cards: new[] { emberScatter, bladeDance, momentum }),
+                    Unlock("forge_apron", "Forge Apron", 70, relic: forgeApron),
+                    Unlock("inferno_cards", "Inferno cards", 100, cards: new[] { magmaHeart, supernova, phoenixPlume }),
+                    Unlock("anvil_crown", "Anvil Crown", 140, relic: anvilCrown),
+                };
                 cfg.ActNames = new List<string> { "The Forge", "The Obsidian Deep" };
                 cfg.EarlyRows = 3;
                 cfg.RestHealFraction = 0.3f;
@@ -662,6 +716,14 @@ namespace EmberDeck.EditorTools
         // ── Helpers ──────────────────────────────────────────────────────────────────
 
         static RunConfig.DeckEntry Entry(CardData card, int count) => new() { Card = card, Count = count };
+
+        static UnlockData Unlock(string id, string name, int threshold, CardData[] cards = null, RelicData relic = null)
+        {
+            var unlock = new UnlockData { Id = id, DisplayName = name, Threshold = threshold };
+            if (cards != null) unlock.Cards.AddRange(cards);
+            if (relic != null) unlock.Relics.Add(relic);
+            return unlock;
+        }
 
         // ── Upgrades ─────────────────────────────────────────────────────────────────
         //

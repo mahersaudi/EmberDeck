@@ -58,7 +58,7 @@ namespace EmberDeck.Run
                                            ^ unchecked((run.Act - 1) * 0x61C88647));   // Act 2's shops are not Act 1's again
 
             var stock = new ShopStock();
-            var cards = RewardService.Roll(config.RewardPool, rng, CardCount);
+            var cards = RewardService.Roll(run.RewardPool(config), rng, CardCount);
             // One card at half price: a reason to look at every shelf rather than only at rares.
             int sale = cards.Count > 0 ? rng.Range(0, cards.Count) : -1;
             for (int i = 0; i < cards.Count; i++)
@@ -69,7 +69,7 @@ namespace EmberDeck.Run
             }
 
             var unowned = new List<RelicData>();
-            foreach (var relic in config.RelicPool)
+            foreach (var relic in run.RelicPool(config))
                 if (relic != null && !run.Relics.Contains(relic)) unowned.Add(relic);
             if (unowned.Count > 0)
             {

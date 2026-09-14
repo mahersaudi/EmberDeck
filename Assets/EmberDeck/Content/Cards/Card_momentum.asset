@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b127717e197394e729d71394d4936d1f, type: 3}
+  m_Name: Card_momentum
+  m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.CardData
+  Id: momentum
+  DisplayName: Momentum
+  Type: 1
+  Rarity: 2
+  Cost: 0
+  Target: 0
+  Exhaust: 1
+  Effects:
+  - {fileID: 11400000, guid: 9bc269f7db8934528b4253f1df854351, type: 2}
+  TintColor: {r: 0.38, g: 0.6, b: 0.82, a: 1}
+  Art: {fileID: 21300000, guid: 25a6754053e6542558710b869ed8e3cd, type: 3}
+  Upgrade: {fileID: 11400000, guid: e10d888e4c2af4fc29bf11b1db993093, type: 2}
+  IsUpgraded: 0

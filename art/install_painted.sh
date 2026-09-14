@@ -46,7 +46,7 @@ for file in "$SRC"/*.png; do
 done
 
 echo "[painted] installed $cards card paintings, $enemies enemy portraits"
-echo "[painted] cards still on SVG symbols: $(( 60 - cards ))"
-if [ "$cards" -gt 60 ]; then
+echo "[painted] cards still on SVG symbols: $(( 69 - cards ))"
+if [ "$cards" -gt 69 ]; then
   echo "[painted] WARNING: more card images than cards — an enemy is filed as a card" >&2
 fi

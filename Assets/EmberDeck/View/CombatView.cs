@@ -81,6 +81,7 @@ namespace EmberDeck.View
         Button _endTurnButton;
         RectTransform _heatPanel;
         int _cardsPlayedThisFight;
+        RunResult _lastResult;
 
 #if UNITY_EDITOR
         /// <summary>
@@ -179,6 +180,7 @@ namespace EmberDeck.View
                     detail = $"Act {saved.Act}    Fight {saved.FightNumber}    {saved.Hp}/{saved.MaxHp} HP    {saved.Deck.Count} cards";
             }
 
+            _mainMenu.SetProgress(_config);
             _mainMenu.Show(detail);
             AudioDirector.PlayMusic(MusicTrack.Map);
         }
@@ -440,7 +442,9 @@ namespace EmberDeck.View
             else
             {
                 int runSeed = _useRandomSeed ? Random.Range(int.MinValue, int.MaxValue) : _fixedSeed;
-                _run = RunState.Start(_config, runSeed);
+                var profile = Profile.Data;
+                _run = RunState.Start(_config, runSeed, Mathf.Clamp(profile.difficulty, 0, profile.maxDifficulty),
+                                      UnlockService.UnlockedIds(_config, profile.embers));
             }
 
             ShowMap();
@@ -550,7 +554,14 @@ namespace EmberDeck.View
             int perAct = (_run.Map?.Grid.Count ?? RunMap.Rows) + 1;
             int floor = (_run.Act - 1) * perAct + (_run.ActiveNode?.Row ?? 0) + 1;
             int floors = perAct * Mathf.Max(1, _config.Acts);
-            _endOfRun.Show(_run, won, floor, floors);
+
+            // Into the profile once per run, however many times its summary is shown.
+            if (!_run.ResultRecorded)
+            {
+                _lastResult = Profile.RecordRun(_run, _config, won, floor);
+                _run.ResultRecorded = true;
+            }
+            _endOfRun.Show(_run, won, floor, floors, _lastResult);
             AudioDirector.PlayMusic(won ? MusicTrack.Map : MusicTrack.None);
         }
 
@@ -841,7 +852,7 @@ namespace EmberDeck.View
 
         void OpenRest()
         {
-            int heal = Mathf.RoundToInt(_run.MaxHp * _config.RestHealFraction);
+            int heal = Mathf.RoundToInt(_run.MaxHp * DifficultyRules.RestHealFraction(_config, _run.Difficulty));
             _restView.Show(heal, _run.Hp, _run.MaxHp, _run.UpgradableCards());
             // Health is what the heal-or-upgrade choice turns on, so keep it visible.
             _runLabel.transform.SetAsLastSibling();
@@ -850,7 +861,7 @@ namespace EmberDeck.View
         void OnRestHeal()
         {
             AudioDirector.Play(Sfx.Reward);
-            _run.Heal(Mathf.RoundToInt(_run.MaxHp * _config.RestHealFraction));
+            _run.Heal(Mathf.RoundToInt(_run.MaxHp * DifficultyRules.RestHealFraction(_config, _run.Difficulty)));
             ShowMap();
         }
 
@@ -914,7 +925,7 @@ namespace EmberDeck.View
                 if (view != null) Destroy(view.gameObject);
             _rewardViews.Clear();
 
-            var offers = RewardService.Roll(_config.RewardPool, _run.RewardRng(),
+            var offers = RewardService.Roll(_run.RewardPool(_config), _run.RewardRng(),
                                             eliteOdds: _run.IsElite || _run.IsBoss || _run.ActiveNode?.Type == NodeType.Treasure);
             _rewardTitle.text = title;
             var gains = new List<string>();

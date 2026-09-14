@@ -56,6 +56,7 @@ namespace EmberDeck.Combat
             float scale = Run != null && Run.IsBoss
                 ? 1f
                 : 1f + Config.ScalingPerFight(Run?.Act ?? 1) * (Run?.FightsIntoAct ?? 0);
+            scale *= global::EmberDeck.Run.DifficultyRules.EnemyHpMultiplier(Run);
 
             // A run draws from the encounter pools. A one-off fight (the balance simulator) has no
             // run and no map position, so it keeps the fixed lists.

@@ -425,6 +425,17 @@ CARDS = [
     ("cinder_trance", "spiral", "ashfall"),
     ("second_forge", "ring:anvil", "neutral"),
     ("last_ember", "greatsword", "neutral"),
+
+    # Unlocked between runs
+    ("crucible", "shield_layered", "forge"),
+    ("brand", "poker", "pyre"),
+    ("kiln_guard", "ring:gauntlet", "forge"),
+    ("ember_scatter", "sparks", "swarm"),
+    ("blade_dance", "slashes", "swarm"),
+    ("momentum", "spiral", "neutral"),
+    ("magma_heart", "ring:heart", "pyre"),
+    ("supernova", "meltdown", "overdrive"),
+    ("phoenix_plume", "ember_seed", "ashfall"),
 ]
 
 

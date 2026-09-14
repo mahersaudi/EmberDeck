@@ -29,7 +29,7 @@ namespace EmberDeck.Run
         [Serializable]
         sealed class Data
         {
-            public int version = 7;
+            public int version = 8;
             public int seed;
             public int hp;
             public int maxHp;
@@ -46,6 +46,8 @@ namespace EmberDeck.Run
             public List<string> potions = new();      // version 6
             public int act = 1;                       // version 7
             public int actStartFight = 1;             // version 7
+            public int difficulty;                    // version 8
+            public List<string> unlocked = new();     // version 8
         }
 
         public static bool Exists() => File.Exists(Path);
@@ -71,6 +73,8 @@ namespace EmberDeck.Run
                 seenEvents = new List<string>(run.SeenEvents),
                 act = run.Act,
                 actStartFight = run.ActStartFight,
+                difficulty = run.Difficulty,
+                unlocked = new List<string>(run.Unlocked),
             };
 
             foreach (var card in run.Deck)
@@ -114,7 +118,7 @@ namespace EmberDeck.Run
                 return null;
             }
 
-            if (data == null || (data.version < 1 || data.version > 7))
+            if (data == null || (data.version < 1 || data.version > 8))
             {
                 Debug.LogWarning("[EmberDeck] Save is from a different version, starting fresh.");
                 Delete();
@@ -126,6 +130,9 @@ namespace EmberDeck.Run
             var run = new RunState(data.seed, data.maxHp);
             run.Act = Mathf.Clamp(data.act, 1, Mathf.Max(1, config.Acts));
             run.ActStartFight = Mathf.Max(1, data.actStartFight);
+            // Saves before version 8 predate difficulty and unlocks: normal difficulty, base pools.
+            run.Difficulty = Mathf.Clamp(data.difficulty, 0, DifficultyRules.Max);
+            if (data.unlocked != null) run.Unlocked.AddRange(data.unlocked);
             run.GenerateMap();
             run.Hp = Mathf.Clamp(data.hp, 0, data.maxHp);
             run.FightNumber = Mathf.Max(1, data.fightNumber);

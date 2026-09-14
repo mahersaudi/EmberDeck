@@ -33,6 +33,14 @@ namespace EmberDeck.View
             // stops, with nothing in the log to say why.
             Application.runInBackground = true;
 
+            // Here rather than in the runner: this runs before any Start, so the main menu reads these on its
+            // first draw. Set in the runner, the menu had already shown the real profile's numbers.
+            // Every first-run tip unseen, and the player's own record of seen tips left untouched.
+            Coach.UseMemoryOnly();
+            // A profile in memory, part-way along the track and with difficulty open, so the menu shows the
+            // progress panel and its difficulty control, and the end-of-run screen crosses an unlock.
+            EmberDeck.Run.Profile.UseMemoryOnly(embers: 30, maxDifficulty: 2);
+
             var host = new GameObject("[AutoCapture]");
             Object.DontDestroyOnLoad(host);
             host.AddComponent<Runner>().Directory = directory;
@@ -64,11 +72,22 @@ namespace EmberDeck.View
                 foreach (var module in FindObjectsByType<UnityEngine.EventSystems.BaseInputModule>(FindObjectsSortMode.None))
                     module.enabled = false;
 
-                // Every first-run tip unseen, and the player's own record of seen tips left untouched.
-                Coach.UseMemoryOnly();
-
                 yield return new WaitForSeconds(1.5f);
                 yield return Capture("00-main-menu.png");
+
+                // The progress panel's two tooltips: the unlock track, and what the chosen difficulty adds.
+                foreach (var (objectName, shot) in new[] { ("UnlockList", "00c-unlocks-tooltip.png"), ("DifficultyValue", "00d-difficulty-tooltip.png") })
+                {
+                    var host = GameObject.Find(objectName);
+                    var trigger = host != null ? host.GetComponent<TooltipTrigger>() : null;
+                    if (trigger == null) { Debug.LogError($"[AutoCapture] no tooltip on {objectName}"); continue; }
+                    if (objectName == "DifficultyValue") Click(FindButton("DifficultyNext"));
+                    trigger.ShowNow();
+                    yield return new WaitForSeconds(0.3f);
+                    yield return Capture(shot);
+                    Tooltip.Hide();
+                }
+                Click(FindButton("DifficultyPrevious"));   // back to normal, so the run below is the base game
 
                 // Settings and back, then a new run — all through the menu's own buttons.
                 var settingsButton = FindButton("Settings");

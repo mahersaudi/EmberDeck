@@ -184,6 +184,15 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 154aed0949622467b87e923de92f5ee3, type: 2}
   - {fileID: 11400000, guid: 31a5789600ba64a6d98e7a2baa274530, type: 2}
   - {fileID: 11400000, guid: 701d13a577d654ba18e6f13046ae160e, type: 2}
+  - {fileID: 11400000, guid: 954e914c93ea9497591bf3023f653b30, type: 2}
+  - {fileID: 11400000, guid: b363b6bb21df24359b5d6b610b5afbb0, type: 2}
+  - {fileID: 11400000, guid: 661c7e3dd5c104e2abcefab553734c86, type: 2}
+  - {fileID: 11400000, guid: 5924af58b3f294c27914eb728e0d01d9, type: 2}
+  - {fileID: 11400000, guid: f54b68b7d5f934ceba957fd24d82adb7, type: 2}
+  - {fileID: 11400000, guid: 3600ef736228e41bf87f603e1289b712, type: 2}
+  - {fileID: 11400000, guid: b46a7171530b642f281d534b7131270d, type: 2}
+  - {fileID: 11400000, guid: ab6b6f3f41c3744aeb02199488f76463, type: 2}
+  - {fileID: 11400000, guid: cd1598b78343446f29145387bd49ddfb, type: 2}
   - {fileID: 11400000, guid: 061d54effd6934b48bd8f359ff1af6a5, type: 2}
   - {fileID: 11400000, guid: ca981aec2f0a644ba8739b34a5fd0f28, type: 2}
   - {fileID: 11400000, guid: 431f8e0a36ecf481b9615ff0d9160440, type: 2}
@@ -244,6 +253,15 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 974fb7b7a101742b7aa8992d53bf7658, type: 2}
   - {fileID: 11400000, guid: 1c9b824635394406d9388b2c89a469f3, type: 2}
   - {fileID: 11400000, guid: 0f1d9c8199b6b4128ac9eb84c4dbfbeb, type: 2}
+  - {fileID: 11400000, guid: a61feb52d440345d6ac6d9cf999a9cd9, type: 2}
+  - {fileID: 11400000, guid: 167f6906ac3f84791914a6b2a90def4f, type: 2}
+  - {fileID: 11400000, guid: 858f2eb99b3a14682b9dc0da0eb50e01, type: 2}
+  - {fileID: 11400000, guid: 5199e1bb616b7439ca25e6bb2a1877a3, type: 2}
+  - {fileID: 11400000, guid: 7acc787c147ee4c44a375da45d7a3c75, type: 2}
+  - {fileID: 11400000, guid: e10d888e4c2af4fc29bf11b1db993093, type: 2}
+  - {fileID: 11400000, guid: cec51d151cac14fd99a2bfdecb37779e, type: 2}
+  - {fileID: 11400000, guid: 2c3a996270ed947fc97202fc638f6c80, type: 2}
+  - {fileID: 11400000, guid: 66b4068da385447a295714a1c0e42b8f, type: 2}
   RelicPool:
   - {fileID: 11400000, guid: dbfb64ad58b6644e98a5d8740c699869, type: 2}
   - {fileID: 11400000, guid: 3ecbe9de63b2c415099c7ae2913d2ccf, type: 2}
@@ -252,6 +270,49 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 5ef392e9e6d1244cfbc616e743b5eb87, type: 2}
   - {fileID: 11400000, guid: 33fd5c941321a493597868a5855b6993, type: 2}
   - {fileID: 11400000, guid: dbdcf216da1d64d79903de6adf4d2d69, type: 2}
+  Unlocks:
+  - Id: kiln_cards
+    DisplayName: Kiln cards
+    Threshold: 10
+    Cards:
+    - {fileID: 11400000, guid: 954e914c93ea9497591bf3023f653b30, type: 2}
+    - {fileID: 11400000, guid: b363b6bb21df24359b5d6b610b5afbb0, type: 2}
+    - {fileID: 11400000, guid: 661c7e3dd5c104e2abcefab553734c86, type: 2}
+    Relics: []
+  - Id: obsidian_shard
+    DisplayName: Obsidian Shard
+    Threshold: 25
+    Cards: []
+    Relics:
+    - {fileID: 11400000, guid: 122f7921f543a4d99b999a5f20a59173, type: 2}
+  - Id: tempest_cards
+    DisplayName: Tempest cards
+    Threshold: 45
+    Cards:
+    - {fileID: 11400000, guid: 5924af58b3f294c27914eb728e0d01d9, type: 2}
+    - {fileID: 11400000, guid: f54b68b7d5f934ceba957fd24d82adb7, type: 2}
+    - {fileID: 11400000, guid: 3600ef736228e41bf87f603e1289b712, type: 2}
+    Relics: []
+  - Id: forge_apron
+    DisplayName: Forge Apron
+    Threshold: 70
+    Cards: []
+    Relics:
+    - {fileID: 11400000, guid: b898ebfafa6d844ff8aa047160fcb4e1, type: 2}
+  - Id: inferno_cards
+    DisplayName: Inferno cards
+    Threshold: 100
+    Cards:
+    - {fileID: 11400000, guid: b46a7171530b642f281d534b7131270d, type: 2}
+    - {fileID: 11400000, guid: ab6b6f3f41c3744aeb02199488f76463, type: 2}
+    - {fileID: 11400000, guid: cd1598b78343446f29145387bd49ddfb, type: 2}
+    Relics: []
+  - Id: anvil_crown
+    DisplayName: Anvil Crown
+    Threshold: 140
+    Cards: []
+    Relics:
+    - {fileID: 11400000, guid: d44271f3908ce4c619f6c67d19db58f0, type: 2}
   PotionPool:
   - {fileID: 11400000, guid: 57d66cf085f5743d1ab859d9dfc28488, type: 2}
   - {fileID: 11400000, guid: b16952abc47c645cd944bf3f6915fe92, type: 2}

@@ -50,6 +50,21 @@ namespace EmberDeck.Run
         /// </summary>
         public int ActStartFight = 1;
 
+        /// <summary>0 for normal; see DifficultyRules. Fixed when the run starts.</summary>
+        public int Difficulty;
+
+        /// <summary>
+        /// Unlock ids this run draws from, fixed when it starts. A run keeps the pools it began with, so an
+        /// unlock earned by another run never changes one already saved mid-way.
+        /// </summary>
+        public readonly List<string> Unlocked = new();
+
+        /// <summary>Set once the run's result has gone into the profile, so it is never counted twice.</summary>
+        public bool ResultRecorded;
+
+        public List<CardData> RewardPool(RunConfig config) => config.RewardPoolFor(Unlocked);
+        public List<RelicData> RelicPool(RunConfig config) => config.RelicPoolFor(Unlocked);
+
         public int FightsIntoAct => FightNumber - ActStartFight;
 
         public RunMap Map;
@@ -129,9 +144,11 @@ namespace EmberDeck.Run
             Hp = maxHp;
         }
 
-        public static RunState Start(RunConfig config, int seed)
+        public static RunState Start(RunConfig config, int seed, int difficulty = 0, IEnumerable<string> unlocked = null)
         {
-            var run = new RunState(seed, config.MaxHp);
+            var run = new RunState(seed, DifficultyRules.StartingMaxHp(config, difficulty));
+            run.Difficulty = difficulty;
+            if (unlocked != null) run.Unlocked.AddRange(unlocked);
             run.GenerateMap();
             run.Gold = config.StartingGold;
             foreach (var relic in config.Relics)

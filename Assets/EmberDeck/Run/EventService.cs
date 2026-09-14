@@ -66,9 +66,10 @@ namespace EmberDeck.Run
             return lost;
         }
 
-        static CardData RandomCard(RunConfig config, CardRarity rarity, DeterministicRng rng)
+        /// <summary>From the run's own pool, so an event can hand out an unlocked card but never a locked one.</summary>
+        static CardData RandomCard(RunState run, RunConfig config, CardRarity rarity, DeterministicRng rng)
         {
-            var pool = config.RewardPool.Where(c => c != null && c.Rarity == rarity).ToList();
+            var pool = run.RewardPool(config).Where(c => c != null && c.Rarity == rarity).ToList();
             return pool.Count == 0 ? null : pool[rng.Range(0, pool.Count)];
         }
 
@@ -137,7 +138,7 @@ namespace EmberDeck.Run
                 {
                     var starters = c.Run.Deck.Where(card => IsStarter(c.Config, card)).ToList();
                     var given = starters[c.Rng.Range(0, starters.Count)];
-                    var received = RandomCard(c.Config, CardRarity.Uncommon, c.Rng);
+                    var received = RandomCard(c.Run, c.Config, CardRarity.Uncommon, c.Rng);
                     c.Run.Deck.Remove(given);
                     c.Run.Stats.CardsRemoved++;
                     if (received != null)
@@ -168,7 +169,7 @@ namespace EmberDeck.Run
                 {
                     c.Run.MaxHp -= 5;
                     c.Run.Hp = Math.Min(c.Run.Hp, c.Run.MaxHp);
-                    var card = RandomCard(c.Config, CardRarity.Rare, c.Rng);
+                    var card = RandomCard(c.Run, c.Config, CardRarity.Rare, c.Rng);
                     if (card != null)
                     {
                         c.Run.AddCard(card);

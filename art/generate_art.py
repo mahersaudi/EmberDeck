@@ -286,6 +286,17 @@ CARDS = {
     "mend": "a cracked iron heart being welded back together, molten seam",
     "second_forge": "a second furnace igniting beside the first, double forge glow",
     "last_ember": "a single last ember held in a dying hand, about to burst",
+
+    # Unlocked between runs (docs/meta-progression.md)
+    "crucible": "a glowing crucible of molten metal set into a heavy iron brace, heat shimmer rising",
+    "brand": "a red-hot branding iron pressed against dark armour, a glowing mark seared into the metal",
+    "kiln_guard": "an armoured gauntlet raised in guard, a kiln fire burning inside its iron plates",
+    "ember_scatter": "a fan of burning embers flung wide across a dark battlefield, dozens of trails",
+    "blade_dance": "five crossing arcs of golden blade light whirling in a circle, sparks at every cross",
+    "momentum": "a spinning brass flywheel gathering speed, sparks streaming off its rim",
+    "magma_heart": "a heart of molten magma glowing inside a cage of black rock, pulsing with fire",
+    "supernova": "a blinding star-like explosion of pink-white plasma engulfing everything around it",
+    "phoenix_plume": "a single blazing phoenix feather held up like a shield, warm light and drifting ash",
 }
 
 TEST_PROMPTS = {

@@ -53,12 +53,12 @@ namespace EmberDeck.EditorTools
 
             var baseline = Measure(config, null);
             var report = new StringBuilder();
-            report.AppendLine($"=== Relic audit ({config.RelicPool.Count} relics) ===");
+            report.AppendLine($"=== Relic audit ({config.RelicPoolFor(config.AllUnlockIds()).Count} relics) ===");
             report.AppendLine("relic                Str Dex Block Heat Thresh EnemyBurn Attack(5) ExhaustBlock");
             report.AppendLine(Row("(none)", baseline));
 
             int inert = 0;
-            foreach (var relic in config.RelicPool)
+            foreach (var relic in config.RelicPoolFor(config.AllUnlockIds()))
             {
                 if (relic == null) continue;
                 var snapshot = Measure(config, relic);
