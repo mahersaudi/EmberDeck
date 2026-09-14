@@ -292,12 +292,12 @@ namespace EmberDeck.EditorTools
             // The boss. Its moves are bigger versions of moves the player has already met,
             // so the fight is readable on sight — a boss whose vocabulary is entirely new
             // punishes the player for knowledge they had no way to acquire.
-            var crush   = Move("Move_Crush", "Crush", IntentKind.Attack, 3, Damage("Dmg_Crush", 16));
+            var crush   = Move("Move_Crush", "Crush", IntentKind.Attack, 3, Damage("Dmg_Crush", 13));
             var forge   = Move("Move_Forge", "Forge", IntentKind.Buff, 1,
                                Status("Str_Tyrant_Self", StatusType.Strength, 2, toSelf: true),
-                               Block("Blk_Tyrant", 12));
-            var scourge = Move("Move_Scourge", "Scourge", IntentKind.Attack, 2, Damage("Dmg_Scourge", 6, hits: 3));
-            var tyrant = MakeEnemy("forge_tyrant", "Forge Tyrant", 110, 120, MovePattern.Sequence,
+                               Block("Blk_Tyrant", 10));
+            var scourge = Move("Move_Scourge", "Scourge", IntentKind.Attack, 2, Damage("Dmg_Scourge", 5, hits: 3));
+            var tyrant = MakeEnemy("forge_tyrant", "Forge Tyrant", 90, 100, MovePattern.Sequence,
                                    new Color(0.86f, 0.34f, 0.22f), crush, scourge, forge, crush);
 
             var emberCore = Asset<EmberCoreRelic>("Relics/Relic_EmberCore", relic =>
@@ -345,7 +345,11 @@ namespace EmberDeck.EditorTools
                 // it could — reached the boss less often (19%) than cautious play (30%): an
                 // elite that costs more than it pays is not a risk, it is a mistake the map
                 // offers.
-                cfg.EliteEncounter = new List<EnemyData> { cinderRat, ashHound };
+                // Emberling rather than Cinder Rat beside the hound. A simulated elite paying two
+                // cards instead of one changed nothing, which says the lever is not the size of
+                // the reward: a won elite cost 46% of max HP, and no card offsets that. So the
+                // elite gets cheaper in health instead.
+                cfg.EliteEncounter = new List<EnemyData> { emberling, ashHound };
                 cfg.BossEncounter = new List<EnemyData> { tyrant };
                 cfg.RestHealFraction = 0.3f;
             });
