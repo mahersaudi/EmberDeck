@@ -308,6 +308,32 @@ namespace EmberDeck.EditorTools
                 relic.BonusDamage = 3;
             });
 
+            // Elite rewards. Every one is an existing effect or Power: a relic is something the
+            // player already owns when the fight starts, so none needs engine code of its own.
+            var relicPool = new List<RelicData>
+            {
+                RelicAsset("whetstone_charm", "Whetstone Charm", "Start each combat with 1 Strength.", str1Self),
+                RelicAsset("tempered_buckler", "Tempered Buckler", "Start each combat with 1 Dexterity.",
+                           Status("Dex_1_Relic", StatusType.Dexterity, 1, toSelf: true)),
+                RelicAsset("bellows_heart", "Bellows Heart", "At the start of your turn, gain 1 Heat.",
+                           Power("Pow_Relic_BellowsHeart", PowerTrigger.TurnStart,
+                                 "At the start of your turn, gain 1 Heat.", false, heat1)),
+                RelicAsset("iron_ward", "Iron Ward", "At the start of your turn, gain 3 Block.",
+                           Power("Pow_Relic_IronWard", PowerTrigger.TurnStart,
+                                 "At the start of your turn, gain 3 Block.", false, blk3)),
+                RelicAsset("thermal_core", "Thermal Core", "Your Overheat threshold is 4 higher.",
+                           Asset<RuleChangeEffect>("Rule_Relic_ThermalCore", e =>
+                           {
+                               e.OverheatThresholdDelta = 4;
+                               e.Text = "Your Overheat threshold increases by 4.";
+                           })),
+                RelicAsset("cinder_ring", "Cinder Ring", "Whenever you Exhaust a card, gain 3 Block.",
+                           Power("Pow_Relic_CinderRing", PowerTrigger.CardExhausted,
+                                 "Whenever you Exhaust a card, gain 3 Block.", false, blk3)),
+                RelicAsset("kindling_pouch", "Kindling Pouch", "At the start of each combat, apply 3 Burn to ALL enemies.",
+                           Status("Burn_3_Relic", StatusType.Burn, 3)),
+            };
+
             // ── Run config ──────────────────────────────────────────────────────────
             var config = CreateAsset<RunConfig>(ConfigPath, cfg =>
             {
@@ -333,6 +359,7 @@ namespace EmberDeck.EditorTools
                 // at 2.4x their base health.
                 cfg.EnemyScalingPerFight = 0.08f;
                 cfg.Relics = new List<RelicData> { emberCore };
+                cfg.RelicPool = relicPool;
                 // The hallway fight is two enemies. The first full-run simulation showed the
                 // old three-enemy group was elite difficulty wearing a hallway's name: the
                 // starter deck won it 83% of the time but finished at 16 of 63 HP, and with
@@ -414,6 +441,15 @@ namespace EmberDeck.EditorTools
         // ── Helpers ──────────────────────────────────────────────────────────────────
 
         static RunConfig.DeckEntry Entry(CardData card, int count) => new() { Card = card, Count = count };
+
+        static EffectRelic RelicAsset(string id, string name, string description, params CardEffect[] effects) =>
+            Asset<EffectRelic>($"Relics/Relic_{id}", relic =>
+            {
+                relic.Id = id;
+                relic.DisplayName = name;
+                relic.Description = description;
+                relic.Effects = new List<CardEffect>(effects);
+            });
 
         static CardData Exhausting(CardData card)
         {

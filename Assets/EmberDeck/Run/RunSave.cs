@@ -29,12 +29,13 @@ namespace EmberDeck.Run
         [Serializable]
         sealed class Data
         {
-            public int version = 1;
+            public int version = 2;
             public int seed;
             public int hp;
             public int maxHp;
             public int fightNumber;
             public List<string> deck = new();
+            public List<string> relics = new();
             public List<int> visited = new();   // flattened row, column pairs
             public int currentRow = -1;
             public int currentColumn = -1;
@@ -61,6 +62,9 @@ namespace EmberDeck.Run
 
             foreach (var card in run.Deck)
                 if (card != null) data.deck.Add(card.Id);
+
+            foreach (var relic in run.Relics)
+                if (relic != null) data.relics.Add(relic.Id);
 
             if (run.Map != null)
                 foreach (var row in run.Map.Grid)
@@ -94,7 +98,7 @@ namespace EmberDeck.Run
                 return null;
             }
 
-            if (data == null || data.version != 1)
+            if (data == null || (data.version != 1 && data.version != 2))
             {
                 Debug.LogWarning("[EmberDeck] Save is from a different version, starting fresh.");
                 Delete();
@@ -113,6 +117,18 @@ namespace EmberDeck.Run
                 if (card != null) run.AddCard(card);
                 else Debug.LogWarning($"[EmberDeck] Save names a card that no longer exists: {id}");
             }
+
+            foreach (var id in data.relics)
+            {
+                var relic = config.FindRelic(id);
+                if (relic != null) run.Relics.Add(relic);
+                else Debug.LogWarning($"[EmberDeck] Save names a relic that no longer exists: {id}");
+            }
+
+            // Version-1 saves predate relics and carry none; they get the starting relics.
+            if (data.relics.Count == 0)
+                foreach (var relic in config.Relics)
+                    if (relic != null) run.Relics.Add(relic);
 
             // A deck that lost every card to a content change is not a run worth resuming.
             if (run.Deck.Count == 0)

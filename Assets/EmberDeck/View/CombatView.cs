@@ -29,6 +29,7 @@ namespace EmberDeck.View
         Text _restLabel;
         RectTransform _rewardPanel;
         Text _rewardTitle;
+        Text _relicLabel;
         readonly System.Collections.Generic.List<CardView> _rewardViews = new();
         CombatState State => _session.State;
         CombatEngine Engine => _session.Engine;
@@ -252,6 +253,10 @@ namespace EmberDeck.View
             UiFactory.Place(hint.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
                             new Vector2(0f, -178f), new Vector2(1000f, 34f));
 
+            _relicLabel = UiFactory.Label(_rewardPanel, "RelicGained", "", 22, Palette.RarityRare);
+            UiFactory.Place(_relicLabel.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
+                            new Vector2(0f, -222f), new Vector2(1100f, 34f));
+
             var skip = UiFactory.TextButton(_rewardPanel, "Skip", "Skip", Palette.PanelRaised, Palette.InkMuted, 24);
             UiFactory.Place((RectTransform)skip.transform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
                             new Vector2(0f, 90f), new Vector2(200f, 62f));
@@ -311,7 +316,7 @@ namespace EmberDeck.View
 
             BuildEnemyViews();
             _seedLabel.text = $"seed {_run.Seed}";
-            _runLabel.text = $"Fight {_run.FightNumber}    Deck {_run.Deck.Count}";
+            _runLabel.text = $"Fight {_run.FightNumber}    Deck {_run.Deck.Count}    Relics {_run.Relics.Count}";
             Redraw();
         }
 
@@ -342,7 +347,7 @@ namespace EmberDeck.View
             _cardViews.Clear();
             _overlay.gameObject.SetActive(false);
             _rewardPanel.gameObject.SetActive(false);
-            _runLabel.text = $"Fight {_run.FightNumber}    Deck {_run.Deck.Count}    HP {_run.Hp}/{_run.MaxHp}";
+            _runLabel.text = $"Fight {_run.FightNumber}    Deck {_run.Deck.Count}    Relics {_run.Relics.Count}    HP {_run.Hp}/{_run.MaxHp}";
             _mapView.Show(_run.Map);
             // Saving here rather than on every state change means the file is only ever
             // written at a point the game can actually be restarted from.
@@ -398,10 +403,20 @@ namespace EmberDeck.View
             // Carry the damage forward before anything else: the reward is chosen knowing
             // how much health survived it.
             _run.Hp = State.Player.Hp;
-            ShowRewards(_run.IsBoss ? "RUN COMPLETE" : _run.IsElite ? "ELITE DEFEATED" : "VICTORY");
+
+            // Elites grant a relic on top of the card. Rolled before the card reward and before
+            // the fight counter advances, in the same order RunSimulator uses.
+            Content.Relics.RelicData relic = null;
+            if (_run.IsElite)
+            {
+                relic = RelicService.Roll(_run, _config);
+                if (relic != null) _run.Relics.Add(relic);
+            }
+
+            ShowRewards(_run.IsBoss ? "RUN COMPLETE" : _run.IsElite ? "ELITE DEFEATED" : "VICTORY", relic);
         }
 
-        void ShowRewards(string title)
+        void ShowRewards(string title, Content.Relics.RelicData relic = null)
         {
             foreach (var view in _rewardViews)
                 if (view != null) Destroy(view.gameObject);
@@ -410,6 +425,7 @@ namespace EmberDeck.View
             var offers = RewardService.Roll(_config.RewardPool, _run.RewardRng(),
                                             eliteOdds: _run.IsElite || _run.ActiveNode?.Type == NodeType.Treasure);
             _rewardTitle.text = title;
+            _relicLabel.text = relic != null ? $"Relic gained: {relic.DisplayName}  —  {relic.Description}" : "";
 
             float spacing = CardView.Width + 60f;
             float startX = -(offers.Count - 1) * spacing * 0.5f;

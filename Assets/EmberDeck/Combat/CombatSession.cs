@@ -63,7 +63,7 @@ namespace EmberDeck.Combat
 
             // Relics attach BEFORE the first turn begins: one that grants block or draws a
             // card on turn 1 has to be listening before StartCombat fires that turn.
-            foreach (var relicData in Config.Relics)
+            foreach (var relicData in Run != null ? Run.Relics : Config.Relics)
             {
                 if (relicData == null) continue;
                 var behaviour = relicData.CreateBehaviour();

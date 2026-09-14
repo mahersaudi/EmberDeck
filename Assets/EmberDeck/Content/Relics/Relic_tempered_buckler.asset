@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f419abe046054d8487d2943382563a9, type: 3}
+  m_Name: Relic_tempered_buckler
+  m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.Relics.EffectRelic
+  Id: tempered_buckler
+  DisplayName: Tempered Buckler
+  Description: Start each combat with 1 Dexterity.
+  Effects:
+  - {fileID: 11400000, guid: f7683818f83b64e36a86d740ae25aef8, type: 2}

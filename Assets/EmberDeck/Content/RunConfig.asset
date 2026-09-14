@@ -154,4 +154,12 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 154aed0949622467b87e923de92f5ee3, type: 2}
   - {fileID: 11400000, guid: 31a5789600ba64a6d98e7a2baa274530, type: 2}
   - {fileID: 11400000, guid: 701d13a577d654ba18e6f13046ae160e, type: 2}
+  RelicPool:
+  - {fileID: 11400000, guid: dbfb64ad58b6644e98a5d8740c699869, type: 2}
+  - {fileID: 11400000, guid: 3ecbe9de63b2c415099c7ae2913d2ccf, type: 2}
+  - {fileID: 11400000, guid: 8329ff5c64c064cec9c9911214c8cde3, type: 2}
+  - {fileID: 11400000, guid: 0cc454e21d6fb4cbc9e6be5cb4852b67, type: 2}
+  - {fileID: 11400000, guid: 5ef392e9e6d1244cfbc616e743b5eb87, type: 2}
+  - {fileID: 11400000, guid: 33fd5c941321a493597868a5855b6993, type: 2}
+  - {fileID: 11400000, guid: dbdcf216da1d64d79903de6adf4d2d69, type: 2}
   EnemyScalingPerFight: 0.08

@@ -18,15 +18,15 @@ policy's win rate cannot answer it.
 
 | policy | run win | reach boss | win if reached | boss HP left at death |
 |---|---|---|---|---|
-| Cautious | 17.7% | 40.0% | 44.2% | 24% |
-| Balanced | 15.3% | 37.7% | 40.7% | 24% |
-| Greedy | 15.0% | 36.0% | 41.7% | 24% |
+| Cautious | 22.0% | 42.3% | 52.0% | 26% |
+| Balanced | 21.0% | 40.3% | 52.1% | 26% |
+| Greedy | 20.0% | 39.3% | 50.8% | 24% |
 
 A won hallway costs 12 HP (19% of max), a won elite 20 HP (32%). Decks reach the boss at a
 median 17 cards and about 40 HP.
 
 The combat and map bots are deliberately mediocre — no lookahead, no combos, "take the rarest
-card". Around one run in six won by that player is a reasonable place for the difficulty: hard,
+card". Around one run in five won by that player is a reasonable place for the difficulty: hard,
 winnable, and leaving room for a person who plays with intent.
 
 ## How it got there
@@ -37,6 +37,7 @@ winnable, and leaving room for a person who plays with intent.
 | 1 | hallway 3 enemies → 2; scaling 18% → 8% per fight | 25% | 0% |
 | 2 | boss exempt from scaling, retuned; elite 2 strong enemies | 31% | 2% |
 | 3 | boss cut ~40%; elite partner Rat → Emberling | 38% | 15% |
+| 4 | elites also grant a relic (pool of seven) | 40% | 21% |
 
 ## What each pass taught
 
@@ -62,6 +63,12 @@ instead of one moved greedy boss-reach from 27.7% to 27.3%. A won elite then cos
 health, and no card offsets that. The lever was the elite's health cost, not the size of its
 reward. The knob remains in `RunSimulator` (off by default) so the result can be re-checked.
 
+**Pass 4 — relics raised every policy, not just the greedy one.** Elites now grant a relic
+from a pool of seven, each built from an existing effect or Power. `EmberDeck → Audit Relics`
+starts one combat per relic and confirms each changes what it claims — none is inert. On the
+same seeds, run wins rose 4-6 points for all three policies. The gap between cautious and
+greedy play narrowed from 2.7 to 2.0 points but did not reverse.
+
 ## A tooling failure that cost two passes
 
 Content regeneration crashed Unity natively twice during this work. The batch log contained no
@@ -75,10 +82,12 @@ complained.**
 
 ## Still wrong
 
-- **Elites are neutral, not rewarding.** Cautious play wins 17.7% against greedy 15.0%. With 300
-  runs the standard error on these rates is about 2 points, so the gap is within noise — but the
-  design intends elites to be a *good* bet for a healthy deck, and they are not yet. The natural
-  fix is a different reward, most likely a relic, rather than more cards.
+- **Whether elites pay off is still unanswered — and the measurement is the reason.** With
+  relics, cautious play wins 22.0% against greedy 20.0%, inside the ~2.3-point standard error.
+  But greedy takes only 0.17 more elites per run than cautious (0.66 vs 0.49): both policies
+  decide one step at a time, and an elite is rarely on offer at the moment health allows it. Two
+  policies that behave almost identically cannot show whether a choice between them matters.
+  Answering it needs a policy that routes its path toward elites.
 - **Mid-run attrition is the main killer.** Most deaths are hallway fights on rows 5-7, where
   8%-per-fight scaling has accumulated and the bot has rested less than once per run.
 - **The reward bot is weak.** "Take the rarest card" builds seventeen-card decks with no

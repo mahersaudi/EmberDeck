@@ -47,6 +47,7 @@ namespace EmberDeck.EditorTools
             /// that says how far off the boss is: 5% left means a small nerf, 60% a rework.
             /// </summary>
             public int BossHpPctLeftOnDeath = -1;
+            public int RelicsGained;
             public readonly List<int> HallwayCost = new();
             public readonly List<int> EliteCost = new();
         }
@@ -97,7 +98,8 @@ namespace EmberDeck.EditorTools
 
                     details.AppendLine(
                         $"-- {policy}: HP cost of a won hallway {Median(results.SelectMany(r => r.HallwayCost))}, " +
-                        $"won elite {Median(results.SelectMany(r => r.EliteCost))}");
+                        $"won elite {Median(results.SelectMany(r => r.EliteCost))}, " +
+                        $"relics gained per run {results.Average(r => r.RelicsGained):F2}");
                     details.AppendLine($"-- {policy}: where runs ended --");
                     foreach (var group in results.Where(r => !r.BeatBoss)
                                                  .GroupBy(r => (r.DiedAt, r.DiedOnRow))
@@ -171,6 +173,18 @@ namespace EmberDeck.EditorTools
                 // by definition and would swamp the number this exists to show.
                 if (node.Type == NodeType.Fight) result.HallwayCost.Add(hpBefore - run.Hp);
                 if (node.Type == NodeType.Elite) result.EliteCost.Add(hpBefore - run.Hp);
+
+                // Mirrors CombatView: an elite win grants a relic, rolled before the card reward
+                // and before the fight counter advances, so both roll from the same position.
+                if (node.Type == NodeType.Elite)
+                {
+                    var relic = RelicService.Roll(run, config);
+                    if (relic != null)
+                    {
+                        run.Relics.Add(relic);
+                        result.RelicsGained++;
+                    }
+                }
 
                 Tally(result, TakeReward(run, config, eliteOdds: node.Type == NodeType.Elite));
                 if (node.Type == NodeType.Elite)

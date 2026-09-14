@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using EmberDeck.Content;
+using EmberDeck.Content.Relics;
 using EmberDeck.Core;
 
 namespace EmberDeck.Run
@@ -15,6 +16,9 @@ namespace EmberDeck.Run
     public sealed class RunState
     {
         public readonly List<CardData> Deck = new();
+
+        /// <summary>Relics owned this run. Starts with the configured ones; elites add more.</summary>
+        public readonly List<RelicData> Relics = new();
         public readonly RunRng Rng;
         public readonly int Seed;
 
@@ -53,6 +57,8 @@ namespace EmberDeck.Run
         {
             var run = new RunState(seed, config.MaxHp);
             run.Map = RunMap.Generate(run.Rng.Map);
+            foreach (var relic in config.Relics)
+                if (relic != null) run.Relics.Add(relic);
             foreach (var entry in config.StarterDeck)
             {
                 if (entry?.Card == null) continue;

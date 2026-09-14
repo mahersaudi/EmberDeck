@@ -48,10 +48,22 @@ namespace EmberDeck.Content
         [Tooltip("Every card in the game. A save file stores ids; this resolves them back.")]
         public List<CardData> AllCards = new();
 
+        [Tooltip("Relics an elite victory can grant. Starting relics are not in this pool.")]
+        public List<RelicData> RelicPool = new();
+
         public CardData FindCard(string id)
         {
             foreach (var card in AllCards)
                 if (card != null && card.Id == id) return card;
+            return null;
+        }
+
+        public RelicData FindRelic(string id)
+        {
+            foreach (var relic in Relics)
+                if (relic != null && relic.Id == id) return relic;
+            foreach (var relic in RelicPool)
+                if (relic != null && relic.Id == id) return relic;
             return null;
         }
 
