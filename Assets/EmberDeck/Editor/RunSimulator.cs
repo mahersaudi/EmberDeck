@@ -51,6 +51,7 @@ namespace EmberDeck.EditorTools
             /// </summary>
             public int BossHpPctLeftOnDeath = -1;
             public int RelicsGained;
+            public int Upgrades;
             public readonly List<int> HallwayCost = new();
             public readonly List<int> EliteCost = new();
         }
@@ -102,7 +103,8 @@ namespace EmberDeck.EditorTools
                     details.AppendLine(
                         $"-- {policy}: HP cost of a won hallway {Median(results.SelectMany(r => r.HallwayCost))}, " +
                         $"won elite {Median(results.SelectMany(r => r.EliteCost))}, " +
-                        $"relics gained per run {results.Average(r => r.RelicsGained):F2}");
+                        $"relics gained per run {results.Average(r => r.RelicsGained):F2}, " +
+                        $"upgrades per run {results.Average(r => r.Upgrades):F2}");
                     details.AppendLine($"-- {policy}: where runs ended --");
                     foreach (var group in results.Where(r => !r.BeatBoss)
                                                  .GroupBy(r => (r.DiedAt, r.DiedOnRow))
@@ -137,7 +139,18 @@ namespace EmberDeck.EditorTools
                 if (node.Type == NodeType.Rest)
                 {
                     result.Rests++;
-                    run.Heal(Mathf.RoundToInt(run.MaxHp * config.RestHealFraction));
+                    // Heal when the heal would mostly land; otherwise the forge is worth more.
+                    // Above 70% health a 30% heal is largely wasted.
+                    var upgradable = run.UpgradableCards();
+                    if ((float)run.Hp / run.MaxHp < 0.7f || upgradable.Count == 0)
+                    {
+                        run.Heal(Mathf.RoundToInt(run.MaxHp * config.RestHealFraction));
+                    }
+                    else
+                    {
+                        var target = upgradable.OrderByDescending(c => (int)c.Rarity).First();
+                        if (run.UpgradeCard(target)) result.Upgrades++;
+                    }
                     continue;
                 }
 

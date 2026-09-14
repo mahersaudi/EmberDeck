@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b127717e197394e729d71394d4936d1f, type: 3}
+  m_Name: Card_perpetual_flame_plus
+  m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.CardData
+  Id: perpetual_flame_plus
+  DisplayName: Perpetual Flame+
+  Type: 2
+  Rarity: 3
+  Cost: 1
+  Target: 0
+  Exhaust: 0
+  Effects:
+  - {fileID: 11400000, guid: 53609f5df90e0467996a76883acefa9e, type: 2}
+  - {fileID: 11400000, guid: b4493bce00239417f9fe8b5436655106, type: 2}
+  TintColor: {r: 0.72, g: 0.52, b: 0.85, a: 1}
+  Art: {fileID: 21300000, guid: 29ad5e85d4d8c4791a5c532c0d5a933a, type: 3}
+  Upgrade: {fileID: 0}
+  IsUpgraded: 1

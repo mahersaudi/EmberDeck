@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b127717e197394e729d71394d4936d1f, type: 3}
+  m_Name: Card_brace_plus
+  m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.CardData
+  Id: brace_plus
+  DisplayName: Brace+
+  Type: 1
+  Rarity: 1
+  Cost: 0
+  Target: 0
+  Exhaust: 0
+  Effects:
+  - {fileID: 11400000, guid: 7a83905c02cc848e0a5ad30c69270700, type: 2}
+  TintColor: {r: 0.38, g: 0.6, b: 0.82, a: 1}
+  Art: {fileID: 21300000, guid: e99d3b837e0ee449ebb4be68db53840a, type: 3}
+  Upgrade: {fileID: 0}
+  IsUpgraded: 1

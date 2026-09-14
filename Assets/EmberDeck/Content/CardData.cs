@@ -31,6 +31,11 @@ namespace EmberDeck.Content
         public Color TintColor = new(0.85f, 0.45f, 0.25f);
         public Sprite Art;
 
+        [Header("Upgrade")]
+        [Tooltip("The upgraded version of this card. Null on a card that is already upgraded.")]
+        public CardData Upgrade;
+        public bool IsUpgraded;
+
         /// <summary>Built from the effects themselves, so text can never contradict behaviour.</summary>
         public string BuildDescription()
         {

@@ -39,6 +39,30 @@ namespace EmberDeck.Run
         public void Heal(int amount) => Hp = System.Math.Min(MaxHp, Hp + amount);
 
         /// <summary>
+        /// Replaces one copy of a card with its upgraded version. The run deck holds card
+        /// definitions, so an upgrade is a swap to the generated "+" card — which means every
+        /// effect, description and save path already works for upgraded cards unchanged.
+        /// </summary>
+        public bool UpgradeCard(CardData card)
+        {
+            if (card == null || card.Upgrade == null) return false;
+            int index = Deck.IndexOf(card);
+            if (index < 0) return false;
+            Deck[index] = card.Upgrade;
+            return true;
+        }
+
+        /// <summary>One entry per distinct card that still has an upgrade available.</summary>
+        public List<CardData> UpgradableCards()
+        {
+            var unique = new List<CardData>();
+            foreach (var card in Deck)
+                if (card != null && card.Upgrade != null && !unique.Contains(card))
+                    unique.Add(card);
+            return unique;
+        }
+
+        /// <summary>
         /// The reward roll for the current position. Derived rather than drawn from a running
         /// stream, so reloading a save produces the same offer instead of a different one.
         /// </summary>

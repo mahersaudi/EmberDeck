@@ -19,7 +19,12 @@ namespace EmberDeck.Content.Effects
             context.Engine.DealDamage(context.Source, context.Target, damage, isAttack: true);
         }
 
-        public override string Describe() =>
-            $"Deal damage equal to the target's {Status.DisplayName()}.";
+        // The multiplier must be in the text. Without it Immolate (1.5x) read as plain "equal to
+        // Burn", and its 2x upgrade printed the same sentence — the card lied about its damage.
+        public override string Describe()
+        {
+            string scale = Mathf.Approximately(Multiplier, 1f) ? "" : $"{Multiplier:0.##}x ";
+            return $"Deal damage equal to {scale}the target's {Status.DisplayName()}.";
+        }
     }
 }

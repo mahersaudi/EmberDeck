@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b127717e197394e729d71394d4936d1f, type: 3}
+  m_Name: Card_vent_plus
+  m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.CardData
+  Id: vent_plus
+  DisplayName: Vent+
+  Type: 1
+  Rarity: 1
+  Cost: 1
+  Target: 0
+  Exhaust: 0
+  Effects:
+  - {fileID: 11400000, guid: d330fb5da0dc14e0a9304b057e1d77da, type: 2}
+  TintColor: {r: 0.38, g: 0.6, b: 0.82, a: 1}
+  Art: {fileID: 21300000, guid: 479a32854636044ff892e7698b7d1f31, type: 3}
+  Upgrade: {fileID: 0}
+  IsUpgraded: 1

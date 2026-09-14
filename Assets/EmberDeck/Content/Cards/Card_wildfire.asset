@@ -23,3 +23,5 @@ MonoBehaviour:
   - {fileID: 11400000, guid: e15fb7ddd38034950bcd972ed27287c8, type: 2}
   TintColor: {r: 0.38, g: 0.6, b: 0.82, a: 1}
   Art: {fileID: 21300000, guid: dbf49cbe2f8b145f6b7454ea73ef731b, type: 3}
+  Upgrade: {fileID: 11400000, guid: 1f502838b1ef64ef49d47cb645f2eea9, type: 2}
+  IsUpgraded: 0

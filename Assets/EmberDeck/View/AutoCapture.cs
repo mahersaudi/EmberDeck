@@ -145,6 +145,29 @@ namespace EmberDeck.View
                     yield return Capture("05-map-after.png");
                 }
 
+                // The rest site sits several rows up the map, beyond anything the harness plays
+                // to, so it is opened directly: heal-or-smith choice, picker, then the result.
+                var restHost = FindFirstObjectByType<CombatView>();
+                if (restHost != null)
+                {
+                    restHost.DebugOpenRest();
+                    yield return new WaitForSeconds(0.8f);
+                    yield return Capture("06-rest.png");
+
+                    Click(FindButton("Smith"));
+                    yield return new WaitForSeconds(0.8f);
+                    yield return Capture("07-upgrade-picker.png");
+
+                    var restScreen = FindFirstObjectByType<RestView>();
+                    var choices = restScreen != null ? restScreen.GetComponentsInChildren<CardView>() : new CardView[0];
+                    if (choices.Length > 0)
+                    {
+                        Click(choices[0].GetComponent<Button>());
+                        yield return new WaitForSeconds(1.0f);
+                    }
+                    yield return Capture("08-map-after-upgrade.png");
+                }
+
                 // Report the state the save should restore to, so a second launch can be
                 // checked against it rather than eyeballed.
                 var runInfo = FindFirstObjectByType<CombatView>();

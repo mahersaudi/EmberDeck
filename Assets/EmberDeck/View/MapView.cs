@@ -50,7 +50,7 @@ namespace EmberDeck.View
 
             var legend = UiFactory.Label(root, "Legend",
                                          "Fight      Elite — harder, better reward      "
-                                         + "Rest — heal      Treasure — free card", 18, Palette.InkMuted);
+                                         + "Rest — heal or upgrade      Treasure — free card", 18, Palette.InkMuted);
             UiFactory.Place(legend.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
                             new Vector2(0f, -86f), new Vector2(1200f, 28f));
 

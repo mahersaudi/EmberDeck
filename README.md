@@ -82,7 +82,7 @@ The slice ends at a single fight. In order:
 2. **Card rewards** after victory — pick 1 of 3. The first real run-level decision.
 3. **A map of encounters** with `RunRng.Map`, and `RunState` saved as JSON between fights.
 4. **More relics**, to prove the hook system carries weight beyond the one that exists.
-5. **Upgrades**, using `CardInstance` — the reason cards have instances rather than being shared.
+5. ~~**Upgrades**~~ — done: the rest site offers heal *or* upgrade. See `docs/card-design.md`, "Upgrades".
 
 Content and balance are the work after that; the architecture above is meant not to change.
 

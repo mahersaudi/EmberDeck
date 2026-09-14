@@ -26,6 +26,7 @@ namespace EmberDeck.View
         CombatSession _session;
         RunState _run;
         MapView _mapView;
+        RestView _restView;
         Text _restLabel;
         RectTransform _rewardPanel;
         Text _rewardTitle;
@@ -233,6 +234,10 @@ namespace EmberDeck.View
 
             _mapView = MapView.Create(_root);
             _mapView.NodeChosen += OnNodeChosen;
+
+            _restView = RestView.Create(_root);
+            _restView.HealChosen += OnRestHeal;
+            _restView.UpgradeChosen += OnRestUpgrade;
         }
 
         /// <summary>
@@ -339,6 +344,7 @@ namespace EmberDeck.View
 
         void ShowMap()
         {
+            _restView?.Hide();
             _session?.End();
             _session = null;
             ClearChildren(_enemyRow);
@@ -374,8 +380,7 @@ namespace EmberDeck.View
             switch (node.Type)
             {
                 case NodeType.Rest:
-                    _run.Heal(Mathf.RoundToInt(_run.MaxHp * _config.RestHealFraction));
-                    ShowMap();
+                    OpenRest();
                     break;
 
                 case NodeType.Treasure:
@@ -387,6 +392,26 @@ namespace EmberDeck.View
                     StartFight();
                     break;
             }
+        }
+
+        void OpenRest()
+        {
+            int heal = Mathf.RoundToInt(_run.MaxHp * _config.RestHealFraction);
+            _restView.Show(heal, _run.Hp, _run.MaxHp, _run.UpgradableCards());
+            // Health is what the heal-or-upgrade choice turns on, so keep it visible.
+            _runLabel.transform.SetAsLastSibling();
+        }
+
+        void OnRestHeal()
+        {
+            _run.Heal(Mathf.RoundToInt(_run.MaxHp * _config.RestHealFraction));
+            ShowMap();
+        }
+
+        void OnRestUpgrade(CardData card)
+        {
+            _run.UpgradeCard(card);
+            ShowMap();
         }
 
         void OnCombatEnded(CombatEndedEvent evt)
@@ -502,7 +527,24 @@ namespace EmberDeck.View
         public string DebugRunSummary() =>
             _run == null ? "none"
                          : $"seed={_run.Seed} fight={_run.FightNumber} deck={_run.Deck.Count} "
-                           + $"hp={_run.Hp}/{_run.MaxHp} node={_run.Map?.Current?.Row},{_run.Map?.Current?.Column}";
+                           + $"hp={_run.Hp}/{_run.MaxHp} node={_run.Map?.Current?.Row},{_run.Map?.Current?.Column}"
+                           + $" upgraded={CountUpgraded()}";
+
+        int CountUpgraded()
+        {
+            int count = 0;
+            foreach (var card in _run.Deck)
+                if (card != null && card.IsUpgraded) count++;
+            return count;
+        }
+
+        /// <summary>Capture-harness only: opens the rest site without walking the map to one.</summary>
+        public void DebugOpenRest()
+        {
+            if (_run == null) return;
+            _mapView.Hide();
+            OpenRest();
+        }
 
 
         /// <summary>
