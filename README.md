@@ -23,6 +23,29 @@ It took three passes to get there. The first build of this encounter measured **
 bot won 2000 of 2000 and finished with 60 HP of 72, meaning the fight contained no decision at
 all. Ten hands played by hand would not have shown that.
 
+## Build and ship
+
+```bash
+./tools/build.sh                 # release builds for macOS and Windows
+./tools/build.sh BuildMac        # development build for macOS, with the capture harness
+```
+
+| method | output |
+|---|---|
+| `BuildMac` / `BuildWindows` | `Build/macOS/`, `Build/Windows/`: development builds, with the capture harness and debug hooks |
+| `BuildMacRelease` / `BuildWindowsRelease` | `Build/Release/macOS/`, `Build/Release/Windows/` |
+| `BuildAllRelease` | both release builds; the default |
+
+- The version is `BuildScript.Version`. Only the generated scene is built.
+- Windows builds need Unity's `windows-mono` module. Both platforms use Mono: IL2CPP for Windows can
+  only be built on Windows.
+- Release builds exclude the capture harness entirely (`AutoCapture.cs` is compiled only into
+  development builds), because it drives debug hooks that do not exist in a release.
+- Uploading to Steam, and everything that needs a Steamworks account: [`steam/README.md`](steam/README.md).
+- `tools/build.sh` and `tools/regenerate.sh` share `tools/unity-guards.sh`, which refuses to run beside
+  another Unity process and stops a compiler server from a different .NET SDK — the cause of a build
+  failing with CS1504 "Method not found ... EncodingExtensions" on a file nobody changed.
+
 ## How to play
 
 Click a card to select it, then click an enemy to aim it. Cards that need no target play on the

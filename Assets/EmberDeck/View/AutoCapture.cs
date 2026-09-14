@@ -1,3 +1,7 @@
+// Development builds and the editor only. The harness drives CombatView's Debug* hooks, which are
+// compiled out of release builds — so the harness must be too. Before this guard, no release
+// build could compile; only development builds had ever been made, so nothing had shown it.
+#if DEVELOPMENT_BUILD || UNITY_EDITOR
 using System.Collections;
 using System.IO;
 using UnityEngine;
@@ -314,3 +318,4 @@ namespace EmberDeck.View
         }
     }
 }
+#endif

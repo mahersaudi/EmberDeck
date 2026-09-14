@@ -1,0 +1,16 @@
+0	intent_attack
+1	intent_block
+2	intent_buff
+3	intent_debuff
+4	intent_unknown
+5	status_burn
+6	status_strength
+7	status_dexterity
+8	status_vulnerable
+9	status_weak
+10	res_block
+11	res_energy
+12	res_heat
+13	res_overheat
+14	kw_exhaust
+15	kw_power

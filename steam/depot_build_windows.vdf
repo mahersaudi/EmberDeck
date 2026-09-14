@@ -1,0 +1,14 @@
+"DepotBuild"
+{
+	"DepotID" "__WINDOWS_DEPOT_ID__"
+	"ContentRoot" "../Build/Release/Windows/"
+	"FileMapping"
+	{
+		"LocalPath" "*"
+		"DepotPath" "."
+		"Recursive" "1"
+	}
+	// Unity writes Burst debug symbols beside the player and names the folder so it is not shipped.
+	"FileExclusion" "*_BurstDebugInformation_DoNotShip*"
+	"FileExclusion" "*.pdb"
+}

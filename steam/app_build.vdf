@@ -1,0 +1,14 @@
+"AppBuild"
+{
+	"AppID" "__APP_ID__"
+	"Desc" "EmberDeck __VERSION__"
+	"ContentRoot" "../Build/Release/"
+	"BuildOutput" "../Build/SteamOutput/"
+	"Preview" "0"
+	"SetLive" ""
+	"Depots"
+	{
+		"__WINDOWS_DEPOT_ID__" "depot_build_windows.vdf"
+		"__MACOS_DEPOT_ID__" "depot_build_macos.vdf"
+	}
+}

@@ -1,0 +1,12 @@
+"DepotBuild"
+{
+	"DepotID" "__MACOS_DEPOT_ID__"
+	"ContentRoot" "../Build/Release/macOS/"
+	"FileMapping"
+	{
+		"LocalPath" "*"
+		"DepotPath" "."
+		"Recursive" "1"
+	}
+	"FileExclusion" "*_BurstDebugInformation_DoNotShip*"
+}

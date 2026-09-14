@@ -14,10 +14,9 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 export PATH="$HOME/.unity/bin:$PATH"
 LOG="$(mktemp -t emberdeck-generate).log"
 
-if pgrep -f "Unity.app/Contents/MacOS/Unity" >/dev/null; then
-  echo "[regenerate] another Unity process is running; close it first" >&2
-  exit 1
-fi
+# shellcheck source=unity-guards.sh
+source "$ROOT/tools/unity-guards.sh"
+unity_guards "[regenerate]" || exit 1
 
 unity run "$ROOT" --editor-version 6000.5.1f1 --no-banner --timeout 1800 \
   -- -executeMethod EmberDeck.EditorTools.ContentGenerator.Generate -logFile "$LOG" >/dev/null 2>&1 || true
