@@ -53,6 +53,13 @@ namespace EmberDeck.View
 
                 // Let layout settle. uGUI positions itself over a frame or two, so capturing
                 // immediately shows a half-built board and proves nothing.
+                // The real mouse still drives the event system, and the window opens wherever the
+                // cursor happens to be — so a card under it lifted and showed its tooltip in shots
+                // nobody asked for. The harness clicks through onClick and opens tooltips directly,
+                // so it needs no pointer at all.
+                foreach (var module in FindObjectsByType<UnityEngine.EventSystems.BaseInputModule>(FindObjectsSortMode.None))
+                    module.enabled = false;
+
                 yield return new WaitForSeconds(1.5f);
                 yield return Capture("01-map.png");
 
@@ -65,6 +72,34 @@ namespace EmberDeck.View
                     if (node != null) { Click(node); yield return new WaitForSeconds(1.2f); }
                 }
                 yield return Capture("02-combat-start.png");
+
+                // Tooltips, opened through the same trigger the pointer uses: the hand card with the
+                // most keywords, then an enemy's intent and statuses.
+                CardView richest = null;
+                int most = -1;
+                foreach (var candidate in FindObjectsByType<CardView>(FindObjectsSortMode.None))
+                {
+                    int count = Keywords.ForCard(candidate.Card.Data).Count;
+                    if (count > most) { most = count; richest = candidate; }
+                }
+                var cardTip = richest != null ? richest.GetComponent<TooltipTrigger>() : null;
+                if (cardTip != null)
+                {
+                    cardTip.ShowNow();
+                    yield return new WaitForSeconds(0.3f);
+                    yield return Capture("02a-card-tooltip.png");
+                    Tooltip.Hide();
+                }
+
+                var firstEnemy = FindFirstObjectByType<EnemyView>();
+                var enemyTip = firstEnemy != null ? firstEnemy.GetComponent<TooltipTrigger>() : null;
+                if (enemyTip != null)
+                {
+                    enemyTip.ShowNow();
+                    yield return new WaitForSeconds(0.3f);
+                    yield return Capture("02b-enemy-tooltip.png");
+                    Tooltip.Hide();
+                }
 
                 // Drive one full turn cycle through the real button, so the shot exercises
                 // enemy resolution and the redraw path rather than just the initial render.
@@ -122,6 +157,11 @@ namespace EmberDeck.View
                         // Nothing was consumed, so no card in hand is affordable.
                         if (FindObjectsByType<CardView>(FindObjectsSortMode.None).Length == cards.Length) break;
                     }
+
+                    // After the harness has played its hand and before the turn ends: the only
+                    // moment in the run where statuses, Block and Heat are all on the board.
+                    yield return new WaitForSeconds(1.0f);
+                    yield return Capture("03c-after-plays.png");
 
                     var endOfTurn = FindButton("EndTurn");
                     if (endOfTurn == null || !endOfTurn.interactable) break;

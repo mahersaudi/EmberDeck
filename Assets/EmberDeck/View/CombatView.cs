@@ -58,7 +58,7 @@ namespace EmberDeck.View
         Text _playerHealthLabel;
         Text _playerBlockLabel;
         Image _playerBlockBadge;
-        Text _playerStatusLabel;
+        StatusStrip _playerStatuses;
         Text _energyLabel;
         Image _heatFill;
         Text _heatLabel;
@@ -149,6 +149,7 @@ namespace EmberDeck.View
         {
             var panel = UiFactory.Panel(_root, "PlayerPanel", Palette.PanelDark);
             _playerPanel = panel;
+            TooltipTrigger.Attach(panel.gameObject, DescribePlayer);
             UiFactory.Place(panel, new Vector2(0f, 0f), new Vector2(0f, 0f),
                             new Vector2(40f, 340f), new Vector2(320f, 150f));
 
@@ -170,9 +171,9 @@ namespace EmberDeck.View
             _playerBlockLabel = UiFactory.Label(blockBadge, "BlockText", "", 21, Palette.Background);
             UiFactory.Stretch(_playerBlockLabel.rectTransform);
 
-            _playerStatusLabel = UiFactory.Label(panel, "Statuses", "", 17, Palette.InkMuted, TextAnchor.LowerLeft);
-            UiFactory.Place(_playerStatusLabel.rectTransform, new Vector2(0f, 0f), new Vector2(0f, 0f),
-                            new Vector2(14f, 10f), new Vector2(290f, 24f));
+            _playerStatuses = StatusStrip.Create(panel, "Statuses", TextAnchor.MiddleLeft);
+            UiFactory.Place((RectTransform)_playerStatuses.transform, new Vector2(0f, 0f), new Vector2(0f, 0f),
+                            new Vector2(14f, 8f), new Vector2(290f, 30f));
 
             // Created last so it draws over everything in the panel.
             var flash = UiFactory.Panel(panel, "HitFlash", new Color(1f, 0.2f, 0.2f, 0f));
@@ -184,6 +185,11 @@ namespace EmberDeck.View
         void BuildHud()
         {
             var energyOrb = UiFactory.Panel(_root, "EnergyOrb", Palette.Energy);
+            TooltipTrigger.Attach(energyOrb.gameObject, () => new[]
+            {
+                Tooltip.Entry.From(Keywords.Find("Energy"),
+                                   _session != null ? $"Energy {State.Energy}/{State.EnergyPerTurn}" : "Energy")
+            });
             // The bottom-left column is energy, then heat, then the player panel, stacked with
             // a gap. The orb sat at y=190 and its 96px height ran into the heat panel above.
             UiFactory.Place(energyOrb, new Vector2(0f, 0f), new Vector2(0f, 0f),
@@ -195,6 +201,7 @@ namespace EmberDeck.View
             // HP past the threshold, so a player who cannot see it is being charged for a
             // decision the game never showed them.
             var heatPanel = UiFactory.Panel(_root, "HeatPanel", Palette.PanelDark);
+            TooltipTrigger.Attach(heatPanel.gameObject, DescribeHeat);
             UiFactory.Place(heatPanel, new Vector2(0f, 0f), new Vector2(0f, 0f),
                             new Vector2(40f, 258f), new Vector2(320f, 62f));
 
@@ -354,6 +361,43 @@ namespace EmberDeck.View
             _seedLabel.text = $"seed {_run.Seed}";
             _runLabel.text = $"Fight {_run.FightNumber}    Deck {_run.Deck.Count}    Relics {_run.Relics.Count}";
             Redraw();
+        }
+
+        IReadOnlyList<Tooltip.Entry> DescribePlayer()
+        {
+            var entries = new List<Tooltip.Entry>();
+            if (_session == null) return entries;
+
+            var player = State.Player;
+            entries.Add(new Tooltip.Entry($"{_config.PlayerName}  {player.Hp}/{player.MaxHp} HP",
+                                          "Health carries over from fight to fight. Rest sites restore it.",
+                                          null, Palette.Health));
+            if (player.Block > 0)
+                entries.Add(Tooltip.Entry.From(Keywords.Find("Block"), $"Block {player.Block}"));
+
+            foreach (StatusType status in System.Enum.GetValues(typeof(StatusType)))
+            {
+                int value = player.GetStatus(status);
+                var keyword = Keywords.For(status);
+                if (value != 0 && keyword != null)
+                    entries.Add(Tooltip.Entry.From(keyword, $"{keyword.Word} {value}"));
+            }
+            return entries;
+        }
+
+        /// <summary>Heat with its real numbers: the threshold now, or exactly what overheating will cost.</summary>
+        IReadOnlyList<Tooltip.Entry> DescribeHeat()
+        {
+            var entries = new List<Tooltip.Entry>();
+            if (_session == null) return entries;
+
+            entries.Add(Tooltip.Entry.From(Keywords.Find("Heat"), $"Heat {State.Heat}"));
+            int threshold = State.OverheatThreshold;
+            string title = State.Heat > threshold
+                ? $"Overheating: -{State.Heat - threshold} HP at end of turn"
+                : $"Overheat threshold {threshold}";
+            entries.Add(Tooltip.Entry.From(Keywords.Find("Overheat"), title));
+            return entries;
         }
 
         RectTransform AnchorFor(Actor actor)
@@ -681,7 +725,7 @@ namespace EmberDeck.View
             _playerHealthLabel.text = $"{player.Hp} / {player.MaxHp}";
             _playerBlockBadge.gameObject.SetActive(player.Block > 0);
             _playerBlockLabel.text = player.Block.ToString();
-            _playerStatusLabel.text = EnemyView.DescribeStatuses(player);
+            _playerStatuses.Set(player);
 
             _energyLabel.text = $"{State.Energy}/{State.EnergyPerTurn}";
 

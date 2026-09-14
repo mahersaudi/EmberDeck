@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using EmberDeck.Content;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -100,7 +101,9 @@ namespace EmberDeck.View
             UiFactory.Place(_nameLabel.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
                             new Vector2(0f, -(ArtHeight + 14f)), new Vector2(Width - 24f, 34f));
 
-            _descriptionLabel = UiFactory.Label(face, "Description", card.Data.BuildDescription(), 16,
+            // Keywords are coloured so the words that have a definition look like it; pointing at
+            // the card shows the definitions.
+            _descriptionLabel = UiFactory.Label(face, "Description", Keywords.Highlight(card.Data.BuildDescription()), 16,
                                                 Palette.InkMuted);
             UiFactory.Place(_descriptionLabel.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
                             new Vector2(0f, 8f), new Vector2(Width - 26f, Height - ArtHeight - 66f));
@@ -110,6 +113,18 @@ namespace EmberDeck.View
             _button = gameObject.AddComponent<Button>();
             _button.targetGraphic = _frame;
             _button.onClick.AddListener(() => Clicked?.Invoke(this));
+
+            TooltipTrigger.Attach(gameObject, DescribeKeywords);
+        }
+
+        /// <summary>A definition for every keyword on the card.</summary>
+        IReadOnlyList<Tooltip.Entry> DescribeKeywords()
+        {
+            var entries = new List<Tooltip.Entry>();
+            if (_leaving || Card == null) return entries;
+            foreach (var keyword in Keywords.ForCard(Card.Data))
+                entries.Add(Tooltip.Entry.From(keyword));
+            return entries;
         }
 
         static Color RarityColor(CardRarity rarity) => rarity switch
@@ -146,6 +161,7 @@ namespace EmberDeck.View
             if (_leaving) return;
             _leaving = true;
             _group.blocksRaycasts = false;
+            Tooltip.Hide(GetComponent<TooltipTrigger>());
 
             var rect = (RectTransform)transform;
             Vector2 from = rect.anchoredPosition;

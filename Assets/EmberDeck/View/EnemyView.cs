@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Text;
 using EmberDeck.Combat;
 using EmberDeck.Content;
+using EmberDeck.Content.Effects;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -23,7 +25,11 @@ namespace EmberDeck.View
         Text _nameLabel;
         Text _healthLabel;
         Text _intentLabel;
-        Text _statusLabel;
+        RectTransform _intentRow;
+        Image _intentIcon;
+        readonly List<Image> _intentExtras = new();
+        string _intentSignature;
+        StatusStrip _statuses;
         Text _blockLabel;
         Image _blockBadge;
         Button _button;
@@ -48,9 +54,25 @@ namespace EmberDeck.View
             // Intent sits ABOVE the enemy, where the player looks first. Announcing the next
             // attack is what makes each turn a solvable problem rather than a coin flip, so
             // it gets the most legible position on the board.
-            _intentLabel = UiFactory.Label(rect, "Intent", "", 30, Palette.IntentAttack);
-            UiFactory.Place(_intentLabel.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 0f),
+            // An icon for the kind of move, the number, then a small icon for anything else the
+            // move does — so an attack that also applies Burn says so before it lands.
+            var intentRow = new GameObject("Intent", typeof(RectTransform));
+            intentRow.transform.SetParent(rect, false);
+            _intentRow = (RectTransform)intentRow.transform;
+            UiFactory.Place(_intentRow, new Vector2(0.5f, 1f), new Vector2(0.5f, 0f),
                             new Vector2(0f, 8f), new Vector2(260f, 44f));
+            var intentLayout = intentRow.AddComponent<HorizontalLayoutGroup>();
+            intentLayout.childAlignment = TextAnchor.MiddleCenter;
+            intentLayout.spacing = 5f;
+            intentLayout.childControlWidth = true;
+            intentLayout.childControlHeight = true;
+            intentLayout.childForceExpandWidth = false;
+            intentLayout.childForceExpandHeight = false;
+
+            _intentIcon = Icons.Create(_intentRow, "Kind", null, 40f);
+            _intentLabel = UiFactory.Label(_intentRow, "Value", "", 30, Palette.IntentAttack);
+            _intentLabel.horizontalOverflow = HorizontalWrapMode.Overflow;
+            _intentLabel.gameObject.AddComponent<LayoutElement>().preferredHeight = 44f;
 
             var body = UiFactory.Panel(rect, "Body", enemy.Data.TintColor);
             UiFactory.Place(body, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
@@ -91,13 +113,15 @@ namespace EmberDeck.View
             _blockLabel = UiFactory.Label(blockBadge, "BlockText", "", 20, Palette.Background);
             UiFactory.Stretch(_blockLabel.rectTransform);
 
-            _statusLabel = UiFactory.Label(rect, "Statuses", "", 17, Palette.InkMuted);
-            UiFactory.Place(_statusLabel.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
-                            new Vector2(0f, 8f), new Vector2(250f, 24f));
+            _statuses = StatusStrip.Create(rect, "Statuses", TextAnchor.MiddleCenter);
+            UiFactory.Place((RectTransform)_statuses.transform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
+                            new Vector2(0f, 4f), new Vector2(250f, 30f));
 
             _button = gameObject.AddComponent<Button>();
             _button.targetGraphic = GetComponent<Image>();
             _button.onClick.AddListener(() => Clicked?.Invoke(this));
+
+            TooltipTrigger.Attach(gameObject, DescribeForTooltip);
         }
 
         /// <summary>
@@ -132,36 +156,171 @@ namespace EmberDeck.View
             _blockBadge.gameObject.SetActive(Enemy.Block > 0);
             _blockLabel.text = Enemy.Block.ToString();
 
-            _statusLabel.text = DescribeStatuses(Enemy);
+            _statuses.Set(Enemy);
 
             if (!alive)
             {
-                _intentLabel.text = "";
+                _intentRow.gameObject.SetActive(false);
                 _nameLabel.color = Palette.InkMuted;
                 return;
             }
 
             var intent = Enemy.CurrentIntent;
+            _intentRow.gameObject.SetActive(true);
+            Icons.SetSprite(_intentIcon, Icons.For(intent.Kind));
             _intentLabel.color = intent.Kind switch
             {
                 IntentKind.Attack => Palette.IntentAttack,
                 IntentKind.Block  => Palette.IntentBlock,
+                IntentKind.Debuff => Keywords.VulnerableColor,
                 _                 => Palette.IntentBuff
             };
+            // A move with no number shows its name, so "Chant" still says something before the
+            // tooltip is opened.
             string intentText = intent.Kind switch
             {
                 IntentKind.Attack when intent.Hits > 1 => $"{intent.Value} x{intent.Hits}",
                 IntentKind.Attack                      => intent.Value.ToString(),
-                IntentKind.Block                       => $"[ {intent.Value} ]",
+                IntentKind.Block                       => intent.Value.ToString(),
                 _                                      => intent.Label
             };
+            _intentLabel.text = intentText;
+
+            var extras = IntentExtras(intent);
+            SetExtras(extras);
+
             // A changed intent pops, so a new threat is noticed rather than found.
-            if (intentText != _intentLabel.text)
+            string signature = $"{intent.Kind}|{intentText}|{extras.Count}";
+            if (signature != _intentSignature)
             {
-                bool first = string.IsNullOrEmpty(_intentLabel.text);
-                _intentLabel.text = intentText;
-                if (!first) Motion.Punch(_intentLabel.rectTransform, 0.28f, 0.32f);
+                bool first = _intentSignature == null;
+                _intentSignature = signature;
+                if (!first) Motion.Punch(_intentRow, 0.28f, 0.32f);
             }
+        }
+
+        /// <summary>
+        /// Everything a move does besides its headline, as small icons after the number. Scald used
+        /// to read "4": the 3 Burn it also applies stayed invisible until it had already landed.
+        /// </summary>
+        static List<Sprite> IntentExtras(Intent intent)
+        {
+            var extras = new List<Sprite>();
+            if (intent.Move == null) return extras;
+            foreach (var effect in intent.Move.Effects)
+            {
+                Sprite icon = effect switch
+                {
+                    ApplyStatusEffect status                             => Icons.For(status.Status),
+                    DealDamageEffect hit when hit.PerHitStatusAmount > 0 => Icons.For(hit.PerHitStatus),
+                    GainBlockEffect when intent.Kind != IntentKind.Block => Icons.Get("res_block"),
+                    _                                                    => null
+                };
+                if (icon != null) extras.Add(icon);
+            }
+            return extras;
+        }
+
+        void SetExtras(List<Sprite> extras)
+        {
+            while (_intentExtras.Count < extras.Count)
+                _intentExtras.Add(Icons.Create(_intentRow, "Extra", null, 30f));
+            for (int i = 0; i < _intentExtras.Count; i++)
+            {
+                bool used = i < extras.Count;
+                _intentExtras[i].gameObject.SetActive(used);
+                if (used) Icons.SetSprite(_intentExtras[i], extras[i]);
+            }
+        }
+
+        static string IntentIconId(IntentKind kind) => kind switch
+        {
+            IntentKind.Attack => "intent_attack",
+            IntentKind.Block  => "intent_block",
+            IntentKind.Buff   => "intent_buff",
+            IntentKind.Debuff => "intent_debuff",
+            _                 => "intent_unknown",
+        };
+
+        /// <summary>The intent spelled out, then every status on this enemy and every status it is about to apply.</summary>
+        IReadOnlyList<Tooltip.Entry> DescribeForTooltip()
+        {
+            var entries = new List<Tooltip.Entry>();
+            if (Enemy == null) return entries;
+
+            bool acting = Enemy.IsAlive && Enemy.CurrentIntent.Move != null;
+            if (acting)
+            {
+                var intent = Enemy.CurrentIntent;
+                entries.Add(new Tooltip.Entry($"Intent: {intent.Label}", DescribeMove(intent),
+                                              IntentIconId(intent.Kind), _intentLabel.color));
+            }
+
+            if (Enemy.Block > 0)
+                entries.Add(Tooltip.Entry.From(Keywords.Find("Block"), $"Block {Enemy.Block}"));
+
+            var explained = new List<StatusType>();
+            foreach (StatusType status in Enum.GetValues(typeof(StatusType)))
+            {
+                int value = Enemy.GetStatus(status);
+                var keyword = Keywords.For(status);
+                if (value == 0 || keyword == null) continue;
+                entries.Add(Tooltip.Entry.From(keyword, $"{keyword.Word} {value}"));
+                explained.Add(status);
+            }
+
+            // Statuses the move is about to apply, defined before they land.
+            if (acting)
+            {
+                foreach (var effect in Enemy.CurrentIntent.Move.Effects)
+                {
+                    StatusType? status = effect switch
+                    {
+                        ApplyStatusEffect apply                              => apply.Status,
+                        DealDamageEffect hit when hit.PerHitStatusAmount > 0 => hit.PerHitStatus,
+                        _                                                    => null
+                    };
+                    if (status == null || explained.Contains(status.Value)) continue;
+                    explained.Add(status.Value);
+                    var keyword = Keywords.For(status.Value);
+                    if (keyword != null) entries.Add(Tooltip.Entry.From(keyword));
+                }
+            }
+
+            return entries;
+        }
+
+        /// <summary>
+        /// A move in the player's words: "Deals 4 damage. Applies 3 Burn to you." The damage is the
+        /// engine's resolved number — after Strength, Weak and Vulnerable — the same one on the badge.
+        /// </summary>
+        string DescribeMove(Intent intent)
+        {
+            var parts = new List<string>();
+            foreach (var effect in intent.Move.Effects)
+            {
+                switch (effect)
+                {
+                    case DealDamageEffect hit:
+                        parts.Add(intent.Hits > 1 ? $"Deals {intent.Value} damage {intent.Hits} times." : $"Deals {intent.Value} damage.");
+                        if (hit.PerHitStatusAmount > 0)
+                            parts.Add($"Each hit applies {hit.PerHitStatusAmount} {hit.PerHitStatus.DisplayName()}.");
+                        break;
+                    case GainBlockEffect block:
+                        parts.Add($"Gains {block.Amount + Enemy.GetStatus(StatusType.Dexterity)} Block.");
+                        break;
+                    case ApplyStatusEffect status:
+                        parts.Add(status.ApplyToSelf
+                            ? $"Gains {status.Amount} {status.Status.DisplayName()}."
+                            : $"Applies {status.Amount} {status.Status.DisplayName()} to you.");
+                        break;
+                    default:
+                        var text = effect != null ? effect.Describe() : null;
+                        if (!string.IsNullOrEmpty(text)) parts.Add(text);
+                        break;
+                }
+            }
+            return string.Join(" ", parts);
         }
 
         public static string DescribeStatuses(Actor actor)

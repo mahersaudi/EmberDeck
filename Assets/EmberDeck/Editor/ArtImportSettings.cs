@@ -14,7 +14,9 @@ namespace EmberDeck.EditorTools
     {
         void OnPreprocessTexture()
         {
-            if (!assetPath.Contains("/EmberDeck/Art/")) return;
+            // Resources/Icons too: the UI icons are loaded by name at runtime, and Resources.Load<Sprite>
+            // returns null for a texture that was not imported as a Sprite.
+            if (!assetPath.Contains("/EmberDeck/Art/") && !assetPath.Contains("/EmberDeck/Resources/Icons/")) return;
 
             var importer = (TextureImporter)assetImporter;
             importer.textureType = TextureImporterType.Sprite;
