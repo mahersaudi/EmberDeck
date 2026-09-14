@@ -49,6 +49,17 @@ def thermometer(fill):
     <circle cx="50" cy="75" r="13" fill="{fill}"/>"""
 
 
+def bottle(liquid, highlight):
+    """A round-bellied flask. One silhouette for every potion, told apart by colour alone: a player
+    learns "red heals, blue guards" once and reads the belt at a glance after that."""
+    return f"""
+    <rect x="40" y="5" width="20" height="10" rx="3" fill="#8a6a4a"/>
+    <rect x="43" y="13" width="14" height="17" fill="#dbe6ec"/>
+    <path d="M42 28 L58 28 L58 34 C75 40 85 54 85 68 C85 86 70 96 50 96 C30 96 15 86 15 68 C15 54 25 40 42 34 Z" fill="#dbe6ec"/>
+    <path d="M21 66 C21 60 25 54 31 50 L69 50 C75 54 79 60 79 66 C79 82 67 90 50 90 C33 90 21 82 21 66 Z" fill="{liquid}"/>
+    <ellipse cx="37" cy="64" rx="6" ry="9" fill="{highlight}"/>"""
+
+
 ICONS = {
     # Intents: what an enemy will do next.
     "intent_attack": f'<g transform="rotate(45 50 50)">{sword("#f4efe6", "#e0573f")}</g>',
@@ -95,6 +106,14 @@ ICONS = {
                   f'<g transform="translate(38 30) scale(0.62)">{flame()}</g>',
     "kw_power": '<circle cx="50" cy="50" r="34" fill="none" stroke="#e86aa8" stroke-width="13"/>'
                 '<path d="M50 24 L57 43 L77 43 L61 55 L67 75 L50 63 L33 75 L39 55 L23 43 L43 43 Z" fill="#f9bcd9"/>',
+
+    # Potions: the same flask in six colours — heal, guard, fire, strength, draw, weaken.
+    "potion_red": bottle("#d9433b", "#f59a8f"),
+    "potion_blue": bottle("#4f86d6", "#a9c9f2"),
+    "potion_orange": bottle("#ef7a2a", "#ffc07a"),
+    "potion_gold": bottle("#e2b33e", "#f7df90"),
+    "potion_green": bottle("#4bb46a", "#a8e6b8"),
+    "potion_purple": bottle("#9a62d8", "#d3b5f5"),
 }
 
 TAG = re.compile(r"<(path|rect|circle|ellipse|polygon)\b([^>]*?)/>")

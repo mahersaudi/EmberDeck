@@ -14,3 +14,9 @@
 13	res_overheat
 14	kw_exhaust
 15	kw_power
+16	potion_red
+17	potion_blue
+18	potion_orange
+19	potion_gold
+20	potion_green
+21	potion_purple

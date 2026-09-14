@@ -162,13 +162,17 @@ namespace EmberDeck.Combat
             return true;
         }
 
-        void ResolveEffects(CardInstance card, Actor target)
+        void ResolveEffects(CardInstance card, Actor target) =>
+            ResolveEffects(card.Data.Effects, card.Data.Target, target, card);
+
+        /// <summary>Resolves a list of effects the way a card does. Potions share it, with no card.</summary>
+        void ResolveEffects(IReadOnlyList<CardEffect> effects, TargetMode mode, Actor target, CardInstance card)
         {
-            foreach (var effect in card.Data.Effects)
+            foreach (var effect in effects)
             {
                 if (effect == null) continue;
 
-                if (card.Data.Target == TargetMode.AllEnemies && effect.IsPerTarget)
+                if (mode == TargetMode.AllEnemies && effect.IsPerTarget)
                 {
                     // Snapshot: an effect may kill an enemy, and mutating the list mid-loop
                     // would skip the next one.
@@ -181,6 +185,24 @@ namespace EmberDeck.Combat
                     effect.Apply(new EffectContext(State, this, State.Player, target, card));
                 }
             }
+        }
+
+        /// <summary>
+        /// Drinks a potion: its effects resolve like a card's, for no energy, and without touching the
+        /// hand or the piles. Returns false when the potion needs a living enemy and was not given one.
+        /// </summary>
+        public bool UsePotion(PotionData potion, Actor target)
+        {
+            if (potion == null || State.IsOver) return false;
+            if (potion.Target == TargetMode.SingleEnemy && (target == null || target.IsPlayer || !target.IsAlive)) return false;
+
+            var resolvedTarget = potion.Target == TargetMode.Self ? State.Player : target;
+            ResolveEffects(potion.Effects, potion.Target, resolvedTarget, null);
+
+            State.Bus.Publish(new PotionUsedEvent { Potion = potion, Target = resolvedTarget });
+            CheckCombatOver();
+            State.Bus.Publish(new CombatStateChangedEvent());
+            return true;
         }
 
         // ── The mutating primitives every effect goes through ────────────────────────

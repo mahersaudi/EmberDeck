@@ -29,7 +29,7 @@ namespace EmberDeck.Run
         [Serializable]
         sealed class Data
         {
-            public int version = 5;
+            public int version = 6;
             public int seed;
             public int hp;
             public int maxHp;
@@ -43,6 +43,7 @@ namespace EmberDeck.Run
             public int gold = -1;            // version 4
             public int cardsRemoved;         // version 4
             public List<string> seenEvents = new();   // version 5
+            public List<string> potions = new();      // version 6
         }
 
         public static bool Exists() => File.Exists(Path);
@@ -73,6 +74,9 @@ namespace EmberDeck.Run
 
             foreach (var relic in run.Relics)
                 if (relic != null) data.relics.Add(relic.Id);
+
+            foreach (var potion in run.Potions)
+                if (potion != null) data.potions.Add(potion.Id);
 
             if (run.Map != null)
                 foreach (var row in run.Map.Grid)
@@ -106,7 +110,7 @@ namespace EmberDeck.Run
                 return null;
             }
 
-            if (data == null || (data.version < 1 || data.version > 5))
+            if (data == null || (data.version < 1 || data.version > 6))
             {
                 Debug.LogWarning("[EmberDeck] Save is from a different version, starting fresh.");
                 Delete();
@@ -126,6 +130,13 @@ namespace EmberDeck.Run
             if (data.seenEvents != null)
                 foreach (var id in data.seenEvents)
                     if (!string.IsNullOrEmpty(id)) run.SeenEvents.Add(id);
+            if (data.potions != null)
+                foreach (var id in data.potions)
+                {
+                    var potion = config.FindPotion(id);
+                    if (potion != null) PotionService.TryAdd(run, potion);
+                    else Debug.LogWarning($"[EmberDeck] Save names a potion that no longer exists: {id}");
+                }
 
             foreach (var id in data.deck)
             {

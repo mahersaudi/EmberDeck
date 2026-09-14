@@ -29,6 +29,15 @@ namespace EmberDeck.View
             public Text Price;
         }
 
+        sealed class PotionRow
+        {
+            public GameObject Root;
+            public Image Icon;
+            public Text Name;
+            public Button Buy;
+            public Text BuyLabel;
+        }
+
         RunState _run;
         ShopStock _stock;
 
@@ -43,6 +52,8 @@ namespace EmberDeck.View
 
         Button _remove;
         Text _removeLabel;
+
+        readonly List<PotionRow> _potionRows = new();
 
         RectTransform _picker;
         RectTransform _pickerGrid;
@@ -67,7 +78,7 @@ namespace EmberDeck.View
             _gold = UiFactory.Label(root, "ShopGold", "", 30, Palette.Energy);
             UiFactory.Place(_gold.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -108f), new Vector2(800f, 40f));
 
-            var hint = UiFactory.Label(root, "ShopHint", "Cards, a relic, or removing a card. Gold you keep carries on to the next shop.",
+            var hint = UiFactory.Label(root, "ShopHint", "Cards, a relic, potions, or removing a card. Gold you keep carries on to the next shop.",
                                        20, Palette.InkMuted);
             UiFactory.Place(hint.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -148f), new Vector2(1300f, 30f));
 
@@ -77,12 +88,12 @@ namespace EmberDeck.View
 
             // ── The relic ──
             var relicPanel = UiFactory.Panel(root, "RelicOffer", Palette.PanelDark);
-            UiFactory.Place(relicPanel, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-300f, -300f), new Vector2(560f, 170f));
+            UiFactory.Place(relicPanel, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-580f, -300f), new Vector2(520f, 170f));
             Header(relicPanel, "RELIC", Palette.RarityRare);
             _relicName = UiFactory.Label(relicPanel, "RelicName", "", 24, Palette.Ink, TextAnchor.UpperLeft);
-            UiFactory.Place(_relicName.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(18f, -40f), new Vector2(350f, 32f));
+            UiFactory.Place(_relicName.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(18f, -40f), new Vector2(320f, 32f));
             _relicText = UiFactory.Label(relicPanel, "RelicText", "", 18, Palette.InkMuted, TextAnchor.UpperLeft);
-            UiFactory.Place(_relicText.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(18f, -74f), new Vector2(350f, 86f));
+            UiFactory.Place(_relicText.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(18f, -74f), new Vector2(320f, 86f));
             _relicBuy = UiFactory.TextButton(relicPanel, "ShopBuyRelic", "", Palette.PanelRaised, Palette.Ink, 22);
             UiFactory.Place((RectTransform)_relicBuy.transform, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-16f, 0f), new Vector2(170f, 76f));
             _relicBuyLabel = _relicBuy.GetComponentInChildren<Text>();
@@ -90,16 +101,37 @@ namespace EmberDeck.View
 
             // ── Removal ──
             var removePanel = UiFactory.Panel(root, "RemoveOffer", Palette.PanelDark);
-            UiFactory.Place(removePanel, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(300f, -300f), new Vector2(560f, 170f));
+            UiFactory.Place(removePanel, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(580f, -300f), new Vector2(520f, 170f));
             Header(removePanel, "CARD REMOVAL", Palette.Victory);
             var removeText = UiFactory.Label(removePanel, "RemoveText",
                                              "Remove one card from your deck. Fewer weak cards means better draws. The price rises each time.",
                                              18, Palette.InkMuted, TextAnchor.UpperLeft);
-            UiFactory.Place(removeText.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(18f, -44f), new Vector2(350f, 110f));
+            UiFactory.Place(removeText.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(18f, -44f), new Vector2(320f, 110f));
             _remove = UiFactory.TextButton(removePanel, "ShopRemove", "", Palette.PanelRaised, Palette.Ink, 22);
             UiFactory.Place((RectTransform)_remove.transform, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-16f, 0f), new Vector2(170f, 76f));
             _removeLabel = _remove.GetComponentInChildren<Text>();
             _remove.onClick.AddListener(OpenPicker);
+
+            // ── Potions ──
+            var potionPanel = UiFactory.Panel(root, "PotionOffer", Palette.PanelDark);
+            UiFactory.Place(potionPanel, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, -300f), new Vector2(520f, 170f));
+            Header(potionPanel, "POTIONS", Palette.IntentBlock);
+            for (int i = 0; i < PotionService.ShopShelf; i++)
+            {
+                // Nearly transparent rather than invisible: it must still catch the pointer for its tooltip.
+                var row = UiFactory.Panel(potionPanel, $"PotionRow{i}", new Color(0f, 0f, 0f, 0.01f));
+                UiFactory.Place(row, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(10f, -40f - i * 64f), new Vector2(500f, 60f));
+                var icon = Icons.Create(row, "Icon", null, 44f);
+                UiFactory.Place((RectTransform)icon.transform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(8f, 0f), new Vector2(44f, 44f));
+                var name = UiFactory.Label(row, "Name", "", 22, Palette.Ink, TextAnchor.MiddleLeft);
+                UiFactory.Place(name.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(62f, 0f), new Vector2(260f, 40f));
+                var buy = UiFactory.TextButton(row, $"ShopBuyPotion{i}", "", Palette.PanelRaised, Palette.Ink, 20);
+                UiFactory.Place((RectTransform)buy.transform, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f), new Vector2(-8f, 0f), new Vector2(150f, 54f));
+                int slot = i;
+                buy.onClick.AddListener(() => BuyPotion(slot));
+                TooltipTrigger.Attach(row.gameObject, () => DescribePotion(slot));
+                _potionRows.Add(new PotionRow { Root = row.gameObject, Icon = icon, Name = name, Buy = buy, BuyLabel = buy.GetComponentInChildren<Text>() });
+            }
 
             var leave = UiFactory.TextButton(root, "ShopLeave", "Leave", Palette.PanelRaised, Palette.Ink, 28);
             UiFactory.Place((RectTransform)leave.transform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 40f), new Vector2(240f, 70f));
@@ -173,6 +205,16 @@ namespace EmberDeck.View
                 _offerViews.Add(offer);
             }
 
+            for (int i = 0; i < _potionRows.Count; i++)
+            {
+                var row = _potionRows[i];
+                bool stocked = i < stock.Potions.Count;
+                row.Root.SetActive(stocked);
+                if (!stocked) continue;
+                Icons.SetSprite(row.Icon, Icons.Get(stock.Potions[i].Potion.Icon));
+                row.Name.text = stock.Potions[i].Potion.DisplayName;
+            }
+
             Refresh();
             ClosePicker();
             gameObject.SetActive(true);
@@ -218,6 +260,17 @@ namespace EmberDeck.View
             _removeLabel.text = _stock.RemovalUsed ? "USED" : $"Remove\n{_stock.RemovalPrice} gold";
             _removeLabel.color = !canRemove ? Palette.InkMuted
                                : _run.Gold >= _stock.RemovalPrice ? Palette.Ink : Palette.Defeat;
+
+            for (int i = 0; i < _potionRows.Count && i < _stock.Potions.Count; i++)
+            {
+                var row = _potionRows[i];
+                var item = _stock.Potions[i];
+                bool room = PotionService.HasRoom(_run);
+                row.Buy.interactable = !item.Sold;
+                row.BuyLabel.text = item.Sold ? "SOLD" : room ? $"Buy\n{item.Price} gold" : "Belt full";
+                row.BuyLabel.color = item.Sold || !room ? Palette.InkMuted
+                                   : _run.Gold >= item.Price ? Palette.Ink : Palette.Defeat;
+            }
         }
 
         void BuyCard(Offer offer)
@@ -243,6 +296,25 @@ namespace EmberDeck.View
             }
             AudioDirector.Play(Sfx.Relic);
             Refresh();
+        }
+
+        void BuyPotion(int slot)
+        {
+            if (slot >= _stock.Potions.Count || _stock.Potions[slot].Sold) return;
+            if (!ShopService.BuyPotion(_run, _stock.Potions[slot]))
+            {
+                Deny((RectTransform)_potionRows[slot].Buy.transform);
+                return;
+            }
+            AudioDirector.Play(Sfx.Reward);
+            Refresh();
+        }
+
+        IReadOnlyList<Tooltip.Entry> DescribePotion(int slot)
+        {
+            if (_stock == null || slot >= _stock.Potions.Count) return Array.Empty<Tooltip.Entry>();
+            var potion = _stock.Potions[slot].Potion;
+            return new[] { new Tooltip.Entry(potion.DisplayName, potion.BuildDescription(), potion.Icon) };
         }
 
         /// <summary>Not enough gold: the price shakes rather than a dialog appearing.</summary>

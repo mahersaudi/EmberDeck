@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.EnemyData
   Id: forge_tyrant
   DisplayName: Forge Tyrant
-  MinHp: 90
-  MaxHp: 100
+  MinHp: 110
+  MaxHp: 120
   Pattern: 0
   Moves:
   - {fileID: 11400000, guid: e7367f11e5b34462dae122c8ddfe0c70, type: 2}

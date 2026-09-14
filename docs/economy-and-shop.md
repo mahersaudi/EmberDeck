@@ -110,3 +110,57 @@ So, as with shops, the lever is routing more than rewards: the bot takes an even
 whenever both are offered, which means slightly fewer fights per run. Tuning further would tune the
 game to that bot. It was left here — about one run in three or four won by a deliberately plain
 player — for real play to judge.
+
+## Potions
+
+A potion is a single-use effect carried between fights and drunk during the player's turn for no
+energy. Each is an existing card effect used without a card, so no potion needs a rule of its own.
+Colour carries the kind, so the belt reads at a glance.
+
+| potion | effect | colour |
+|---|---|---|
+| Healing Draught | heal 15 HP | red |
+| Iron Tonic | gain 14 Block | blue |
+| Fire Flask | deal 8 damage to ALL enemies | orange |
+| Burning Oil | apply 7 Burn to an enemy | orange |
+| Strength Brew | gain 2 Strength | gold |
+| Energy Draught | gain 2 Energy | gold |
+| Swift Elixir | draw 3 cards | green |
+| Weakening Ash | apply 1 Weak and 2 Vulnerable to an enemy | purple |
+
+- **Two slots.** A full belt refuses a new potion rather than replacing one; the reward screen says so.
+- Fights drop a potion 20% of the time, elites 40%, the boss never. Shops sell two for 40–60 gold.
+- Aimed potions are selected and then aimed at an enemy, exactly like a card.
+- Drops and shelves are position-derived; carried potions travel in the save (format version 6).
+- The simulator's bot drinks attack and buff potions on the first turn of an elite or the boss, and
+  healing or Block below 40% health.
+
+### Balance: the boss fight was the lever
+
+| change | run wins |
+|---|---|
+| before potions | 27–32% |
+| potions: 3 slots, drops 35% / 60% | **44–50%** |
+| drops 20% / 40% | 37–44% |
+| 2 slots, Fire Flask 10 → 8, Weakening Ash Weak 2 → 1 | 37–43% |
+
+Cutting drops removed about half the potions and a third of the effect; a smaller belt and weaker
+potions then changed nothing measurable. So the simulator gained a switch that lets potions drop
+and be bought as usual but never be drunk. With it off, run wins returned exactly to 27–32%:
+potions themselves were worth about ten points, from about **one potion drunk per run**.
+
+One potion is worth that much because the boss fight is close. When the bot lost to the Forge
+Tyrant, the boss had about 20% of its health left; a single Fire Flask or Strength Brew turns many
+of those losses into wins. Weakening potions further would have made them not worth finding.
+Shops, events and potions have all added player power, so the challenge was retuned instead: the
+Forge Tyrant's health went from 90–100 to 100–110.
+
+| Forge Tyrant health | potions on | potions off |
+|---|---|---|
+| 90–100 | 37–43% | 27–32% |
+| 100–110 | 33–37% | 22–26% |
+| **110–120** | **26–30%** | 20–22% |
+
+At 110–120 the game is back where it was before gold, shops, events and potions — about one run in
+three or four won by the deliberately plain bot — while potions are still worth about eight points.
+That is where it was left for real play to judge.

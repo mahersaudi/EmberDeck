@@ -53,6 +53,9 @@ namespace EmberDeck.View
         Image _playerFlash;
         CardInstance _lastPlayedCard;
 
+        readonly List<(Image frame, Image icon)> _potionSlots = new();
+        int _selectedPotion = -1;
+
         // Hand-row coordinates for cards entering and leaving: the two pile labels, and the board.
         static readonly Vector2 DrawPilePoint = new(-820f, -170f);
         static readonly Vector2 DiscardPilePoint = new(820f, -170f);
@@ -345,6 +348,8 @@ namespace EmberDeck.View
             _seedLabel = UiFactory.Label(_root, "Seed", "", 17, new Color(0.4f, 0.4f, 0.46f), TextAnchor.UpperLeft);
             UiFactory.Place(_seedLabel.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f),
                             new Vector2(40f, -30f), new Vector2(400f, 26f));
+
+            BuildPotionBelt();
         }
 
         void BuildScreens()
@@ -438,6 +443,7 @@ namespace EmberDeck.View
             _enemyViews.Clear();
             _cardViews.Clear();
             _selectedCard = null;
+            _selectedPotion = -1;
             _endOfRun?.Hide();
 
             // One stream per fight, derived from the run seed, so a run replays exactly.
@@ -543,6 +549,70 @@ namespace EmberDeck.View
                 : $"Overheat threshold {threshold}";
             entries.Add(Tooltip.Entry.From(Keywords.Find("Overheat"), title));
             return entries;
+        }
+
+        /// <summary>
+        /// Three potion slots under the run line, top-left. Potions are consulted every turn, and the
+        /// corner is otherwise empty; putting them by the hand would crowd the one place a player
+        /// already looks hardest.
+        /// </summary>
+        void BuildPotionBelt()
+        {
+            for (int i = 0; i < PotionService.Slots; i++)
+            {
+                var slot = UiFactory.Panel(_root, $"PotionSlot{i}", Palette.PanelDark);
+                UiFactory.Place(slot, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(40f + i * 64f, -94f), new Vector2(56f, 56f));
+                var icon = Icons.Create(slot, "Icon", null, 46f);
+                UiFactory.Place((RectTransform)icon.transform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero,
+                                new Vector2(46f, 46f));
+                var button = slot.gameObject.AddComponent<Button>();
+                button.targetGraphic = slot.GetComponent<Image>();
+                int index = i;
+                button.onClick.AddListener(() => OnPotionClicked(index));
+                TooltipTrigger.Attach(slot.gameObject, () => DescribePotionSlot(index));
+                _potionSlots.Add((slot.GetComponent<Image>(), icon));
+            }
+        }
+
+        void RefreshPotions()
+        {
+            for (int i = 0; i < _potionSlots.Count; i++)
+            {
+                var (frame, icon) = _potionSlots[i];
+                var potion = _run != null && i < _run.Potions.Count ? _run.Potions[i] : null;
+                Icons.SetSprite(icon, potion != null ? Icons.Get(potion.Icon) : null);
+                frame.color = i == _selectedPotion ? Palette.CardSelected : Palette.PanelDark;
+            }
+        }
+
+        void OnPotionClicked(int slot)
+        {
+            if (_session == null || State.IsOver || _run == null || slot >= _run.Potions.Count) return;
+
+            var potion = _run.Potions[slot];
+            if (potion.Target == TargetMode.SingleEnemy)
+            {
+                // Aimed like a card: select it, then click an enemy.
+                _selectedPotion = _selectedPotion == slot ? -1 : slot;
+                _selectedCard = null;
+                AudioDirector.Play(Sfx.Click, 0.7f);
+                Redraw();
+                return;
+            }
+
+            PotionService.Use(_run, slot, Engine, null);
+            _selectedPotion = -1;
+            Redraw();
+        }
+
+        IReadOnlyList<Tooltip.Entry> DescribePotionSlot(int slot)
+        {
+            if (_run == null || slot >= _run.Potions.Count)
+                return new[] { new Tooltip.Entry("Empty potion slot", "Potions drop from fights and are sold in shops. Drinking one costs no energy.") };
+
+            var potion = _run.Potions[slot];
+            string how = potion.Target == TargetMode.SingleEnemy ? "Click it, then click an enemy." : "Click to drink.";
+            return new[] { new Tooltip.Entry(potion.DisplayName, $"{potion.BuildDescription()} {how} Costs no energy.", potion.Icon) };
         }
 
         RectTransform AnchorFor(Actor actor)
@@ -713,10 +783,14 @@ namespace EmberDeck.View
             int gold = GoldService.ForVictory(_run);
             GoldService.Earn(_run, gold);
 
-            ShowRewards(_run.IsBoss ? "RUN COMPLETE" : _run.IsElite ? "ELITE DEFEATED" : "VICTORY", relic, gold);
+            var potion = PotionService.RollDrop(_run, _config);
+            bool potionKept = PotionService.TryAdd(_run, potion);
+
+            ShowRewards(_run.IsBoss ? "RUN COMPLETE" : _run.IsElite ? "ELITE DEFEATED" : "VICTORY", relic, gold, potion, potionKept);
         }
 
-        void ShowRewards(string title, Content.Relics.RelicData relic = null, int gold = 0)
+        void ShowRewards(string title, Content.Relics.RelicData relic = null, int gold = 0,
+                         PotionData potion = null, bool potionKept = false)
         {
             foreach (var view in _rewardViews)
                 if (view != null) Destroy(view.gameObject);
@@ -725,9 +799,11 @@ namespace EmberDeck.View
             var offers = RewardService.Roll(_config.RewardPool, _run.RewardRng(),
                                             eliteOdds: _run.IsElite || _run.ActiveNode?.Type == NodeType.Treasure);
             _rewardTitle.text = title;
-            string goldText = gold > 0 ? $"+{gold} gold" : "";
-            string relicText = relic != null ? $"Relic gained: {relic.DisplayName}  —  {relic.Description}" : "";
-            _relicLabel.text = goldText.Length > 0 && relicText.Length > 0 ? $"{goldText}      {relicText}" : goldText + relicText;
+            var gains = new List<string>();
+            if (gold > 0) gains.Add($"+{gold} gold");
+            if (potion != null) gains.Add(potionKept ? $"Potion: {potion.DisplayName}" : $"Found {potion.DisplayName}, but the belt is full");
+            if (relic != null) gains.Add($"Relic gained: {relic.DisplayName}  —  {relic.Description}");
+            _relicLabel.text = string.Join("      ", gains);
             if (relic != null) Motion.After(0.5f, () => AudioDirector.Play(Sfx.Relic));
 
             float spacing = CardView.Width + 60f;
@@ -777,6 +853,7 @@ namespace EmberDeck.View
         void OnCardClicked(CardView view)
         {
             if (_session == null || State.IsOver) return;
+            _selectedPotion = -1;
 
             // Cards that need no target play on the first click; cards that do are selected
             // first and then aimed. One interaction model, no modes to explain.
@@ -795,7 +872,16 @@ namespace EmberDeck.View
 
         void OnEnemyClicked(EnemyView view)
         {
-            if (_session == null || State.IsOver || _selectedCard == null || !view.Enemy.IsAlive) return;
+            if (_session == null || State.IsOver || !view.Enemy.IsAlive) return;
+
+            if (_selectedPotion >= 0)
+            {
+                PotionService.Use(_run, _selectedPotion, Engine, view.Enemy);
+                _selectedPotion = -1;
+                Redraw();
+                return;
+            }
+            if (_selectedCard == null) return;
 
             Engine.TryPlayCard(_selectedCard.Card, view.Enemy);
             _selectedCard = null;
@@ -858,6 +944,15 @@ namespace EmberDeck.View
             OpenShop();
         }
 
+        /// <summary>Capture-harness only: fills the potion belt from the pool.</summary>
+        public void DebugGivePotions()
+        {
+            if (_run == null || _config == null) return;
+            foreach (var potion in _config.PotionPool)
+                if (!PotionService.TryAdd(_run, potion)) break;
+            Redraw();
+        }
+
         /// <summary>Capture-harness only: opens a named event at the current position.</summary>
         public void DebugOpenEvent(string id)
         {
@@ -904,6 +999,7 @@ namespace EmberDeck.View
         {
             if (_session == null || State.IsOver) return;
             _selectedCard = null;
+            _selectedPotion = -1;
             Engine.EndPlayerTurn();
             Redraw();
         }
@@ -916,7 +1012,8 @@ namespace EmberDeck.View
 
             SyncHand();
 
-            bool targeting = _selectedCard != null;
+            RefreshPotions();
+            bool targeting = _selectedCard != null || _selectedPotion >= 0;
             foreach (var enemyView in _enemyViews)
                 enemyView.Refresh(targeting);
 

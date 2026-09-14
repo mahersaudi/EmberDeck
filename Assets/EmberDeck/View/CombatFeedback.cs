@@ -54,6 +54,7 @@ namespace EmberDeck.View
             bus.Subscribe<HeatGainedEvent>(OnHeat);
             bus.Subscribe<TurnStartedEvent>(OnTurnStarted);
             bus.Subscribe<CombatEndedEvent>(OnCombatEnded);
+            bus.Subscribe<PotionUsedEvent>(OnPotion);
         }
 
         void NewFrameCheck()
@@ -166,6 +167,15 @@ namespace EmberDeck.View
             if (!e.IsPlayerTurn) return;
             // After the enemy turn's staggered hits, not on top of them.
             Motion.After(NextDelay() + 0.15f, () => AudioDirector.Play(Sfx.TurnStart, 0.8f));
+        }
+
+        void OnPotion(PotionUsedEvent e)
+        {
+            // A bright, rising whoosh — the heat sound pitched up reads as a cork and a swallow.
+            AudioDirector.Play(Sfx.Heat, 0.9f, 1.35f, 0f);
+            var anchor = _anchorFor(_state.Player);
+            if (anchor != null)
+                Motion.FloatText(_layer, PointAbove(anchor, 110f), e.Potion.DisplayName, Palette.IntentBlock, 30, 0f, rise: 40f);
         }
 
         void OnCombatEnded(CombatEndedEvent e)

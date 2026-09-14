@@ -149,6 +149,7 @@ namespace EmberDeck.View
                 ("Cards upgraded", stats.CardsUpgraded.ToString()),
                 ("Cards removed", stats.CardsRemoved.ToString()),
                 ("Gold earned", stats.GoldEarned.ToString()),
+                ("Potions used", stats.PotionsUsed.ToString()),
                 ("Relics", run.Relics.Count.ToString()),
                 ("Time", FormatTime(stats.Seconds)),
                 ("Seed", run.Seed.ToString()),

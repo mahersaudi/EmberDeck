@@ -34,6 +34,9 @@ namespace EmberDeck.Run
         /// <summary>Events already met this run. An event is never offered twice in one run.</summary>
         public readonly List<string> SeenEvents = new();
 
+        /// <summary>Potions carried, at most PotionService.Slots.</summary>
+        public readonly List<PotionData> Potions = new();
+
         /// <summary>1 for the first fight. Enemy scaling reads this.</summary>
         public int FightNumber = 1;
 

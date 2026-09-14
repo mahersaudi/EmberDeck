@@ -57,10 +57,20 @@ namespace EmberDeck.Content
         [Tooltip("Relics an elite victory can grant. Starting relics are not in this pool.")]
         public List<RelicData> RelicPool = new();
 
+        [Tooltip("Potions that fights drop and shops sell.")]
+        public List<PotionData> PotionPool = new();
+
         public CardData FindCard(string id)
         {
             foreach (var card in AllCards)
                 if (card != null && card.Id == id) return card;
+            return null;
+        }
+
+        public PotionData FindPotion(string id)
+        {
+            foreach (var potion in PotionPool)
+                if (potion != null && potion.Id == id) return potion;
             return null;
         }
 

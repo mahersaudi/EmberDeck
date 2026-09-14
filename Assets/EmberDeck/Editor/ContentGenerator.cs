@@ -306,7 +306,12 @@ namespace EmberDeck.EditorTools
                                Status("Str_Tyrant_Self", StatusType.Strength, 2, toSelf: true),
                                Block("Blk_Tyrant", 10));
             var scourge = Move("Move_Scourge", "Scourge", IntentKind.Attack, 2, Damage("Dmg_Scourge", 5, hits: 3));
-            var tyrant = MakeEnemy("forge_tyrant", "Forge Tyrant", 90, 100, MovePattern.Sequence,
+            // 110-120 (was 90-100; 100-110 left run wins at 33-37%). Shops, events and potions all added
+            // player power, and the boss fight
+            // is close enough that one potion turned a loss at 20% boss health into a win: potions alone
+            // added about ten points of run wins. The challenge is retuned rather than the new systems
+            // weakened until they stop being worth finding.
+            var tyrant = MakeEnemy("forge_tyrant", "Forge Tyrant", 110, 120, MovePattern.Sequence,
                                    new Color(0.86f, 0.34f, 0.22f), crush, scourge, forge, crush);
 
             // ── Encounter variety ───────────────────────────────────────────────────
@@ -426,6 +431,26 @@ namespace EmberDeck.EditorTools
                            Status("Burn_3_Relic", StatusType.Burn, 3)),
             };
 
+            // ── Potions ─────────────────────────────────────────────────────────────
+            // Every potion is an existing effect used without a card. Colour carries the kind: red
+            // heals, blue guards, orange burns, gold empowers, green draws, purple weakens.
+            var potions = new List<PotionData>
+            {
+                PotionAsset("healing_draught", "Healing Draught", TargetMode.Self, "potion_red",
+                            Asset<HealEffect>("Potion_Heal_15", e => e.Amount = 15)),
+                PotionAsset("iron_tonic", "Iron Tonic", TargetMode.Self, "potion_blue", Block("Potion_Block_14", 14)),
+                PotionAsset("fire_flask", "Fire Flask", TargetMode.AllEnemies, "potion_orange", Damage("Potion_Fire_8", 8)),
+                PotionAsset("burning_oil", "Burning Oil", TargetMode.SingleEnemy, "potion_orange",
+                            Status("Potion_Burn_7", StatusType.Burn, 7)),
+                PotionAsset("strength_brew", "Strength Brew", TargetMode.Self, "potion_gold",
+                            Status("Potion_Strength_2", StatusType.Strength, 2, toSelf: true)),
+                PotionAsset("energy_draught", "Energy Draught", TargetMode.Self, "potion_gold",
+                            Asset<GainEnergyEffect>("Potion_Energy_2", e => e.Amount = 2)),
+                PotionAsset("swift_elixir", "Swift Elixir", TargetMode.Self, "potion_green", Draw("Potion_Draw_3", 3)),
+                PotionAsset("weakening_ash", "Weakening Ash", TargetMode.SingleEnemy, "potion_purple",
+                            Status("Potion_Weak_1", StatusType.Weak, 1), Status("Potion_Vulnerable_2", StatusType.Vulnerable, 2)),
+            };
+
             // ── Run config ──────────────────────────────────────────────────────────
             var config = CreateAsset<RunConfig>(ConfigPath, cfg =>
             {
@@ -455,6 +480,7 @@ namespace EmberDeck.EditorTools
                 cfg.EnemyScalingPerFight = 0.08f;
                 cfg.Relics = new List<RelicData> { emberCore };
                 cfg.RelicPool = relicPool;
+                cfg.PotionPool = potions;
                 // The hallway fight is two enemies. The first full-run simulation showed the
                 // old three-enemy group was elite difficulty wearing a hallway's name: the
                 // starter deck won it 83% of the time but finished at 16 of 63 HP, and with
@@ -692,6 +718,16 @@ namespace EmberDeck.EditorTools
             return upgraded;
         }
 
+        static PotionData PotionAsset(string id, string name, TargetMode target, string icon, params CardEffect[] effects) =>
+            Asset<PotionData>($"Potions/Potion_{id}", potion =>
+            {
+                potion.Id = id;
+                potion.DisplayName = name;
+                potion.Target = target;
+                potion.Icon = icon;
+                potion.Effects = new List<CardEffect>(effects);
+            });
+
         static EffectRelic RelicAsset(string id, string name, string description, params CardEffect[] effects) =>
             Asset<EffectRelic>($"Relics/Relic_{id}", relic =>
             {
@@ -861,7 +897,7 @@ namespace EmberDeck.EditorTools
                      {
                          Root, ContentRoot,
                          ContentRoot + "/Effects", ContentRoot + "/Cards",
-                         ContentRoot + "/Enemies", ContentRoot + "/Relics",
+                         ContentRoot + "/Enemies", ContentRoot + "/Relics", ContentRoot + "/Potions",
                          Root + "/Scenes"
                      })
             {

@@ -13,6 +13,13 @@ namespace EmberDeck.Run
         public bool Sold;
     }
 
+    public sealed class ShopPotion
+    {
+        public PotionData Potion;
+        public int Price;
+        public bool Sold;
+    }
+
     /// <summary>What one shop has for sale, and what has already been bought from it.</summary>
     public sealed class ShopStock
     {
@@ -22,6 +29,7 @@ namespace EmberDeck.Run
         public bool RelicSold;
         public int RemovalPrice;
         public bool RemovalUsed;
+        public readonly List<ShopPotion> Potions = new();
     }
 
     /// <summary>
@@ -69,6 +77,9 @@ namespace EmberDeck.Run
             }
 
             stock.RemovalPrice = RemovalPrice(run);
+
+            foreach (var (potion, price) in PotionService.RollShelf(config, rng))
+                stock.Potions.Add(new ShopPotion { Potion = potion, Price = price });
             return stock;
         }
 
@@ -95,6 +106,14 @@ namespace EmberDeck.Run
             if (stock.Relic == null || stock.RelicSold || !GoldService.Spend(run, stock.RelicPrice)) return false;
             stock.RelicSold = true;
             run.Relics.Add(stock.Relic);
+            return true;
+        }
+
+        public static bool BuyPotion(RunState run, ShopPotion item)
+        {
+            if (item == null || item.Sold || !PotionService.HasRoom(run) || !GoldService.Spend(run, item.Price)) return false;
+            item.Sold = true;
+            PotionService.TryAdd(run, item.Potion);
             return true;
         }
 

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text;
 using EmberDeck.Combat;
 using EmberDeck.Content;
+using EmberDeck.Content.Effects;
 using EmberDeck.Run;
 using UnityEditor;
 using UnityEngine;
@@ -36,6 +37,13 @@ namespace EmberDeck.EditorTools
         /// </summary>
         static bool ShopsEnabled = true;
 
+        /// <summary>
+        /// Experiment knob: whether the bot drinks potions. Off, potions still drop and are still bought —
+        /// the belt fills exactly as before — but none is ever used, so the difference between the passes
+        /// is what drinking is worth.
+        /// </summary>
+        static bool PotionsEnabled = true;
+
         // Hunter and Avoider exist because Cautious and Greedy turned out to behave almost
         // alike — 0.17 elites per run apart — which is too little difference for a comparison
         // between them to show whether elites pay off. These two plan their route.
@@ -61,6 +69,8 @@ namespace EmberDeck.EditorTools
             public int Upgrades;
             public int Shops, CardsBought, CardsRemoved, RelicsBought;
             public int Events;
+            public int PotionsBought;
+            public RunStats Stats;
             public readonly List<int> HallwayCost = new();
             public readonly List<int> EliteCost = new();
             /// <summary>Every fight entered: which encounter, and the HP it cost if won (-1 if lost).</summary>
@@ -85,12 +95,14 @@ namespace EmberDeck.EditorTools
             // Add 2 here to test multi-card elite rewards. Tested once: granting two cards
             // instead of one moved greedy boss-reach from 27.7% to 27.3% — no effect — so it is
             // off by default rather than doubling the run time of every simulation.
-            foreach (bool shopping in new[] { true, false })
+            // The current experiment is potions. Shops were measured the same way; see docs/economy-and-shop.md.
+            foreach (bool drinking in new[] { true, false })
             {
-                ShopsEnabled = shopping;
+                ShopsEnabled = true;
+                PotionsEnabled = drinking;
                 int picks = EliteRewardPicks;
                 report.AppendLine();
-                report.AppendLine(shopping ? "[shops on]" : "[shops off: same maps and gold, nothing bought]");
+                report.AppendLine(drinking ? "[potions on]" : "[potions off: same drops, never drunk]");
                 report.AppendLine("policy     boss win%  reach boss%  elites/run  HP@boss  deck@boss  win|reached  boss HP left at death");
                 report.AppendLine("----------------------------------------------------------------------------------------------------");
 
@@ -99,7 +111,7 @@ namespace EmberDeck.EditorTools
                     var results = new List<Result>(Runs);
                     for (int i = 0; i < Runs; i++)
                         results.Add(PlayRun(config, seed: 10_000 + i, policy));
-                    if (shopping) allResults.AddRange(results);
+                    if (drinking) allResults.AddRange(results);
 
                     int wins = results.Count(r => r.BeatBoss);
                     var reached = results.Where(r => r.HpAtBoss >= 0).ToList();
@@ -112,7 +124,7 @@ namespace EmberDeck.EditorTools
                         $"{results.Average(r => r.ElitesFought),9:F2}  {Median(reached.Select(r => r.HpAtBoss)),7}  " +
                         $"{Median(reached.Select(r => r.DeckAtBoss)),9}  {winGivenReach,10:F1}  {Median(bossDeaths),14}%");
 
-                    if (!shopping) continue;
+                    if (!drinking) continue;
 
                     details.AppendLine(
                         $"-- {policy}: HP cost of a won hallway {Median(results.SelectMany(r => r.HallwayCost))}, " +
@@ -121,7 +133,8 @@ namespace EmberDeck.EditorTools
                         $"upgrades per run {results.Average(r => r.Upgrades):F2}, " +
                         $"shops {results.Average(r => r.Shops):F2}, bought {results.Average(r => r.CardsBought):F2}, " +
                         $"removed {results.Average(r => r.CardsRemoved):F2}, relics bought {results.Average(r => r.RelicsBought):F2}, " +
-                        $"events {results.Average(r => r.Events):F2}");
+                        $"events {results.Average(r => r.Events):F2}, potions bought {results.Average(r => r.PotionsBought):F2}, " +
+                        $"potions drunk {results.Average(r => r.Stats.PotionsUsed):F2}");
                     details.AppendLine($"-- {policy}: where runs ended --");
                     foreach (var group in results.Where(r => !r.BeatBoss)
                                                  .GroupBy(r => (r.DiedAt, r.DiedOnRow))
@@ -159,6 +172,7 @@ namespace EmberDeck.EditorTools
         {
             var run = RunState.Start(config, seed);
             var result = new Result();
+            result.Stats = run.Stats;
 
             for (int step = 0; step < 64; step++)
             {
@@ -256,6 +270,7 @@ namespace EmberDeck.EditorTools
 
                 // Mirrors CombatView: gold is paid before the card reward, from the same position.
                 GoldService.Earn(run, GoldService.ForVictory(run));
+                PotionService.TryAdd(run, PotionService.RollDrop(run, config));
                 Tally(result, TakeReward(run, config, eliteOdds: node.Type == NodeType.Elite));
                 if (node.Type == NodeType.Elite)
                     for (int extra = 1; extra < EliteRewardPicks; extra++)
@@ -280,6 +295,8 @@ namespace EmberDeck.EditorTools
             var state = session.State;
             for (int turn = 0; !state.IsOver && turn < TurnLimit; turn++)
             {
+                DrinkPotions(run, session);
+                if (state.IsOver) break;
                 BalanceSimulator.PlayTurn(session);
                 if (state.IsOver) break;
                 session.Engine.EndPlayerTurn();
@@ -342,6 +359,33 @@ namespace EmberDeck.EditorTools
             }
 
             if (ShopService.BuyRelic(run, stock)) result.RelicsBought++;
+
+            foreach (var potion in stock.Potions)
+                if (ShopService.BuyPotion(run, potion)) result.PotionsBought++;
+        }
+
+        /// <summary>
+        /// A plain drinker: attack and buff potions on the first turn of an elite or the boss, where they
+        /// matter most; healing and Block only when below 40% health, in any fight.
+        /// </summary>
+        static void DrinkPotions(RunState run, CombatSession session)
+        {
+            if (!PotionsEnabled) return;
+            var state = session.State;
+            bool bigFight = run.IsElite || run.IsBoss;
+            for (int slot = run.Potions.Count - 1; slot >= 0; slot--)
+            {
+                if (state.IsOver) return;
+                var potion = run.Potions[slot];
+                bool defensive = potion.Effects.Any(e => e is HealEffect || e is GainBlockEffect);
+                bool drink = defensive ? state.Player.Hp < state.Player.MaxHp * 0.4f : bigFight && state.TurnNumber == 1;
+                if (!drink) continue;
+
+                Actor target = potion.Target == TargetMode.SingleEnemy
+                    ? state.LivingEnemies().OrderByDescending(e => e.Hp).FirstOrDefault()
+                    : null;
+                PotionService.Use(run, slot, session.Engine, target);
+            }
         }
 
         /// <summary>Takes the available choice the event values most; leaving is worth 0.</summary>

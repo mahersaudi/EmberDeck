@@ -236,5 +236,14 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 5ef392e9e6d1244cfbc616e743b5eb87, type: 2}
   - {fileID: 11400000, guid: 33fd5c941321a493597868a5855b6993, type: 2}
   - {fileID: 11400000, guid: dbdcf216da1d64d79903de6adf4d2d69, type: 2}
+  PotionPool:
+  - {fileID: 11400000, guid: 57d66cf085f5743d1ab859d9dfc28488, type: 2}
+  - {fileID: 11400000, guid: b16952abc47c645cd944bf3f6915fe92, type: 2}
+  - {fileID: 11400000, guid: ff115de1629c44965b59406d780046ef, type: 2}
+  - {fileID: 11400000, guid: abd1a11409a794da4af0edd7824e167d, type: 2}
+  - {fileID: 11400000, guid: 4ce92121e399d44018b4a1f05d216cae, type: 2}
+  - {fileID: 11400000, guid: ed1e89210889f4dc68e3d4b94a323d7c, type: 2}
+  - {fileID: 11400000, guid: 4e14c0db4f2c1451a8b5ffa2b784557f, type: 2}
+  - {fileID: 11400000, guid: dde09c85e932d45f9997418dcf0b9f69, type: 2}
   EnemyScalingPerFight: 0.08
   StartingGold: 75

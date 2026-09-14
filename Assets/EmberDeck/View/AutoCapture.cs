@@ -135,6 +135,20 @@ namespace EmberDeck.View
                     Tooltip.Hide();
                 }
 
+                // The potion belt, filled, with one potion's tooltip open.
+                var potionHost = FindFirstObjectByType<CombatView>();
+                if (potionHost != null)
+                {
+                    potionHost.DebugGivePotions();
+                    yield return new WaitForSeconds(0.3f);
+                    var slotObject = GameObject.Find("PotionSlot1");
+                    var slotTrigger = slotObject != null ? slotObject.GetComponent<TooltipTrigger>() : null;
+                    if (slotTrigger != null) slotTrigger.ShowNow();
+                    yield return new WaitForSeconds(0.3f);
+                    yield return Capture("02c-potions.png");
+                    Tooltip.Hide();
+                }
+
                 // Drive one full turn cycle through the real button, so the shot exercises
                 // enemy resolution and the redraw path rather than just the initial render.
                 var endTurn = FindButton("EndTurn");

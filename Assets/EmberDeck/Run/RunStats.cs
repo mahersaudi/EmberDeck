@@ -26,6 +26,7 @@ namespace EmberDeck.Run
         public int CardsRemoved;
         public int GoldEarned;
         public int GoldSpent;
+        public int PotionsUsed;
         public float Seconds;
 
         /// <summary>The enemies of the most recent fight — the ones that ended the run, when it was lost.</summary>

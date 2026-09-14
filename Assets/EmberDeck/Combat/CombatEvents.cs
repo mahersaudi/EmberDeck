@@ -105,4 +105,11 @@ namespace EmberDeck.Combat
     public sealed class CombatStateChangedEvent
     {
     }
+
+    /// <summary>A potion was drunk. Published after its effects have resolved.</summary>
+    public sealed class PotionUsedEvent
+    {
+        public PotionData Potion;
+        public Actor Target;
+    }
 }
