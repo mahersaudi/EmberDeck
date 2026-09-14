@@ -27,6 +27,10 @@ namespace EmberDeck.View
         RunState _run;
         MapView _mapView;
         RestView _restView;
+        MainMenuView _mainMenu;
+        SettingsView _settings;
+        PauseMenuView _pause;
+        bool _settingsFromPause;
         Text _restLabel;
         RectTransform _rewardPanel;
         Text _rewardTitle;
@@ -89,7 +93,94 @@ namespace EmberDeck.View
         {
             EnsureEventSystem();
             BuildStaticUi();
-            StartNewCombat();
+            BuildMenus();
+            ShowMainMenu();
+        }
+
+        /// <summary>Escape backs out one layer at a time: settings first, then the pause menu.</summary>
+        void Update()
+        {
+            if (!Input.GetKeyDown(KeyCode.Escape)) return;
+            if (_settings.IsOpen) { _settings.Close(); return; }
+            if (_mainMenu.IsOpen) return;
+            TogglePause();
+        }
+
+        void BuildMenus()
+        {
+            Sprite backdrop = _config != null && _config.BossEncounter.Count > 0 && _config.BossEncounter[0] != null
+                ? _config.BossEncounter[0].Art
+                : null;
+
+            _mainMenu = MainMenuView.Create(_root, backdrop);
+            _mainMenu.ContinueChosen += () => BeginRun(resume: true);
+            _mainMenu.NewRunChosen += () => BeginRun(resume: false);
+            _mainMenu.SettingsChosen += () => OpenSettings(fromPause: false);
+            _mainMenu.QuitChosen += () => Application.Quit();
+
+            _pause = PauseMenuView.Create(_root);
+            _pause.Resumed += () => _pause.Hide();
+            _pause.SettingsChosen += () => OpenSettings(fromPause: true);
+            _pause.MainMenuChosen += ShowMainMenu;
+            _pause.QuitChosen += () => Application.Quit();
+
+            _settings = SettingsView.Create(_root);
+            _settings.Closed += () => { if (_settingsFromPause) _pause.Show(); };
+        }
+
+        /// <summary>
+        /// Leaves whatever is on screen and shows the main menu. Nothing is saved here: the run on
+        /// disk is the one written at the last map, which is what Continue will offer.
+        /// </summary>
+        void ShowMainMenu()
+        {
+            _pause.Hide();
+            if (_settings.IsOpen) _settings.gameObject.SetActive(false);
+            Tooltip.Hide();
+
+            _session?.End();
+            _session = null;
+            ClearChildren(_enemyRow);
+            ClearChildren(_handRow);
+            _enemyViews.Clear();
+            _cardViews.Clear();
+            _selectedCard = null;
+            _mapView?.Hide();
+            _restView?.Hide();
+            _overlay.gameObject.SetActive(false);
+            _rewardPanel.gameObject.SetActive(false);
+            _run = null;
+
+            string detail = null;
+            if (_config != null)
+            {
+                var saved = RunSave.Read(_config);
+                if (saved != null)
+                    detail = $"Fight {saved.FightNumber}    {saved.Hp}/{saved.MaxHp} HP    {saved.Deck.Count} cards";
+            }
+
+            _mainMenu.Show(detail);
+            AudioDirector.PlayMusic(MusicTrack.Map);
+        }
+
+        /// <summary>Opens or closes the pause menu during a run. Public so the capture harness can photograph it.</summary>
+        public void TogglePause()
+        {
+            if (_mainMenu.IsOpen || _run == null) return;
+            if (_pause.IsOpen)
+            {
+                _pause.Hide();
+                return;
+            }
+            Tooltip.Hide();
+            _pause.Show();
+        }
+
+        void OpenSettings(bool fromPause)
+        {
+            _settingsFromPause = fromPause;
+            _pause.Hide();
+            _settings.Show();
         }
 
         // ── Setup ────────────────────────────────────────────────────────────────────
@@ -257,7 +348,12 @@ namespace EmberDeck.View
             var again = UiFactory.TextButton(_overlay, "Again", "New Run", Palette.PanelRaised, Palette.Ink, 30);
             UiFactory.Place((RectTransform)again.transform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
                             new Vector2(0f, -70f), new Vector2(260f, 78f));
-            again.onClick.AddListener(() => { RunSave.Delete(); StartNewCombat(); });
+            again.onClick.AddListener(() => BeginRun(resume: false));
+
+            var menu = UiFactory.TextButton(_overlay, "OverlayMenu", "Main Menu", Palette.PanelRaised, Palette.InkMuted, 26);
+            UiFactory.Place((RectTransform)menu.transform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
+                            new Vector2(0f, -165f), new Vector2(260f, 64f));
+            menu.onClick.AddListener(ShowMainMenu);
 
             _overlay.gameObject.SetActive(false);
 
@@ -305,8 +401,12 @@ namespace EmberDeck.View
 
         // ── Combat lifecycle ─────────────────────────────────────────────────────────
 
-        void StartNewCombat()
+        void BeginRun(bool resume)
         {
+            _mainMenu.Hide();
+            _pause.Hide();
+            if (!resume) RunSave.Delete();
+
             if (_config == null)
             {
                 Debug.LogError("[EmberDeck] CombatView has no RunConfig assigned.");
@@ -314,7 +414,7 @@ namespace EmberDeck.View
                 return;
             }
 
-            var resumed = RunSave.Read(_config);
+            var resumed = resume ? RunSave.Read(_config) : null;
             if (resumed != null)
             {
                 Debug.Log($"[EmberDeck] Resumed run: fight {resumed.FightNumber}, "

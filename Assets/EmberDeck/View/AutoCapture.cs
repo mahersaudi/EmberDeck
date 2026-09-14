@@ -61,7 +61,37 @@ namespace EmberDeck.View
                     module.enabled = false;
 
                 yield return new WaitForSeconds(1.5f);
+                yield return Capture("00-main-menu.png");
+
+                // Settings and back, then a new run — all through the menu's own buttons.
+                var settingsButton = FindButton("Settings");
+                if (settingsButton != null)
+                {
+                    Click(settingsButton);
+                    yield return new WaitForSeconds(0.6f);
+                    yield return Capture("00b-settings.png");
+                    Click(FindButton("SettingsBack"));
+                    yield return new WaitForSeconds(0.3f);
+                }
+
+                // New Run asks for a second click when a saved run would be abandoned.
+                for (int attempt = 0; attempt < 2 && FindButton("NewRun") != null; attempt++)
+                {
+                    Click(FindButton("NewRun"));
+                    yield return new WaitForSeconds(0.4f);
+                }
+                yield return new WaitForSeconds(0.8f);
                 yield return Capture("01-map.png");
+
+                var pauseHost = FindFirstObjectByType<CombatView>();
+                if (pauseHost != null)
+                {
+                    pauseHost.TogglePause();
+                    yield return new WaitForSeconds(0.4f);
+                    yield return Capture("01b-pause.png");
+                    pauseHost.TogglePause();
+                    yield return new WaitForSeconds(0.2f);
+                }
 
                 // A run opens on the map, so the harness has to walk it: take the first
                 // available node, which is always a fight on the opening row.
