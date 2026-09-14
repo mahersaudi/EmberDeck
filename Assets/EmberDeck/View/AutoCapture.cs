@@ -75,7 +75,14 @@ namespace EmberDeck.View
                     // capture run that hangs costs far more than a missing screenshot.
                     try { endTurn.onClick.Invoke(); }
                     catch (System.Exception e) { Debug.LogError($"[AutoCapture] end turn threw: {e}"); }
-                    yield return new WaitForSeconds(1.0f);
+                    // Two frames mid-replay: the enemy turn resolves in one call and the view
+                    // replays it staggered, so a shot taken after everything settles cannot show
+                    // whether anything moved. These catch the numbers and shakes in flight.
+                    yield return new WaitForSeconds(0.12f);
+                    yield return Capture("03a-motion-0.12s.png");
+                    yield return new WaitForSeconds(0.23f);
+                    yield return Capture("03b-motion-0.35s.png");
+                    yield return new WaitForSeconds(0.65f);
                     yield return Capture("03-after-end-turn.png");
                 }
                 else

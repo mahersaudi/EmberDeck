@@ -56,6 +56,7 @@ namespace EmberDeck.View
             var rect = Panel(parent, name, background);
             var button = rect.gameObject.AddComponent<Button>();
             button.targetGraphic = rect.GetComponent<Image>();
+            button.onClick.AddListener(() => AudioDirector.Play(Sfx.Click));
 
             var label = Label(rect, "Label", text, fontSize, foreground);
             Stretch(label.rectTransform);

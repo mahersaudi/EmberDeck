@@ -41,6 +41,16 @@ namespace EmberDeck.View
         RectTransform _overlay;
 
         readonly List<EnemyView> _enemyViews = new();
+
+        RectTransform _fxLayer;
+        RectTransform _playerPanel;
+        Image _playerFlash;
+        CardInstance _lastPlayedCard;
+
+        // Hand-row coordinates for cards entering and leaving: the two pile labels, and the board.
+        static readonly Vector2 DrawPilePoint = new(-820f, -170f);
+        static readonly Vector2 DiscardPilePoint = new(820f, -170f);
+        static readonly Vector2 PlayedPoint = new(0f, 330f);
         readonly List<CardView> _cardViews = new();
         CardView _selectedCard;
 
@@ -125,12 +135,20 @@ namespace EmberDeck.View
 
             BuildPlayerPanel();
             BuildHud();
+
+            // Above the board, below the overlay and the map: floating numbers must never hide
+            // behind the enemy they belong to, and never float over a reward screen.
+            _fxLayer = UiFactory.Panel(_root, "Effects", new Color(0f, 0f, 0f, 0f));
+            UiFactory.Stretch(_fxLayer);
+            _fxLayer.GetComponent<Image>().raycastTarget = false;
+
             BuildOverlay();
         }
 
         void BuildPlayerPanel()
         {
             var panel = UiFactory.Panel(_root, "PlayerPanel", Palette.PanelDark);
+            _playerPanel = panel;
             UiFactory.Place(panel, new Vector2(0f, 0f), new Vector2(0f, 0f),
                             new Vector2(40f, 340f), new Vector2(320f, 150f));
 
@@ -155,6 +173,12 @@ namespace EmberDeck.View
             _playerStatusLabel = UiFactory.Label(panel, "Statuses", "", 17, Palette.InkMuted, TextAnchor.LowerLeft);
             UiFactory.Place(_playerStatusLabel.rectTransform, new Vector2(0f, 0f), new Vector2(0f, 0f),
                             new Vector2(14f, 10f), new Vector2(290f, 24f));
+
+            // Created last so it draws over everything in the panel.
+            var flash = UiFactory.Panel(panel, "HitFlash", new Color(1f, 0.2f, 0.2f, 0f));
+            UiFactory.Stretch(flash);
+            _playerFlash = flash.GetComponent<Image>();
+            _playerFlash.raycastTarget = false;
         }
 
         void BuildHud()
@@ -320,9 +344,34 @@ namespace EmberDeck.View
             _session.Begin();
 
             BuildEnemyViews();
+
+            _session.State.Bus.Subscribe<CardPlayedEvent>(e => _lastPlayedCard = e.Card);
+            // Attached after Begin so the views it animates exist. Nothing needs an effect
+            // before the first turn: the opening hand already deals itself in.
+            new CombatFeedback(_session.State, _fxLayer, AnchorFor, FlashFor);
+            AudioDirector.PlayMusic(_run.IsBoss ? MusicTrack.Boss : MusicTrack.Combat);
+            AudioDirector.Play(Sfx.TurnStart, 0.8f);
             _seedLabel.text = $"seed {_run.Seed}";
             _runLabel.text = $"Fight {_run.FightNumber}    Deck {_run.Deck.Count}    Relics {_run.Relics.Count}";
             Redraw();
+        }
+
+        RectTransform AnchorFor(Actor actor)
+        {
+            if (actor == null) return null;
+            if (actor.IsPlayer) return _playerPanel;
+            foreach (var view in _enemyViews)
+                if (view != null && view.Enemy == actor) return (RectTransform)view.transform;
+            return null;
+        }
+
+        Graphic FlashFor(Actor actor)
+        {
+            if (actor == null) return null;
+            if (actor.IsPlayer) return _playerFlash;
+            foreach (var view in _enemyViews)
+                if (view != null && view.Enemy == actor) return view.FlashGraphic;
+            return null;
         }
 
         void BuildEnemyViews()
@@ -355,6 +404,7 @@ namespace EmberDeck.View
             _rewardPanel.gameObject.SetActive(false);
             _runLabel.text = $"Fight {_run.FightNumber}    Deck {_run.Deck.Count}    Relics {_run.Relics.Count}    HP {_run.Hp}/{_run.MaxHp}";
             _mapView.Show(_run.Map);
+            AudioDirector.PlayMusic(MusicTrack.Map);
             // Saving here rather than on every state change means the file is only ever
             // written at a point the game can actually be restarted from.
             RunSave.Write(_run);
@@ -372,6 +422,7 @@ namespace EmberDeck.View
         /// </summary>
         void OnNodeChosen(MapNode node)
         {
+            AudioDirector.Play(Sfx.MapSelect);
             _run.Map.Current = node;
             _run.ActiveNode = node;
             node.Visited = true;
@@ -404,12 +455,14 @@ namespace EmberDeck.View
 
         void OnRestHeal()
         {
+            AudioDirector.Play(Sfx.Reward);
             _run.Heal(Mathf.RoundToInt(_run.MaxHp * _config.RestHealFraction));
             ShowMap();
         }
 
         void OnRestUpgrade(CardData card)
         {
+            AudioDirector.Play(Sfx.Upgrade);
             _run.UpgradeCard(card);
             ShowMap();
         }
@@ -419,6 +472,7 @@ namespace EmberDeck.View
             if (!evt.PlayerWon)
             {
                 RunSave.Delete();
+                AudioDirector.PlayMusic(MusicTrack.None);
                 _overlay.gameObject.SetActive(true);
                 _overlayLabel.text = "DEFEAT";
                 _overlayLabel.color = Palette.Defeat;
@@ -451,6 +505,7 @@ namespace EmberDeck.View
                                             eliteOdds: _run.IsElite || _run.ActiveNode?.Type == NodeType.Treasure);
             _rewardTitle.text = title;
             _relicLabel.text = relic != null ? $"Relic gained: {relic.DisplayName}  —  {relic.Description}" : "";
+            if (relic != null) Motion.After(0.5f, () => AudioDirector.Play(Sfx.Relic));
 
             float spacing = CardView.Width + 60f;
             float startX = -(offers.Count - 1) * spacing * 0.5f;
@@ -464,6 +519,7 @@ namespace EmberDeck.View
                 // Refresh re-applies the card's rest position, so setting it through Place
                 // alone leaves every reward stacked at the centre — three cards occupying
                 // one spot, which reads as a single offer.
+                view.SpawnAt(new Vector2(startX + i * spacing, -460f), 0.7f);   // dealt up from below
                 view.SetRestPosition(new Vector2(startX + i * spacing, -10f));
                 view.Refresh(playable: true, selected: false, displayedCost: offers[i].Cost);
 
@@ -478,6 +534,7 @@ namespace EmberDeck.View
         void TakeReward(CardData card)
         {
             _run.AddCard(card);
+            AudioDirector.Play(Sfx.Reward);
             _rewardPanel.gameObject.SetActive(false);
 
             if (_run.IsBoss)
@@ -504,6 +561,7 @@ namespace EmberDeck.View
             if (view.Card.Data.Target == TargetMode.SingleEnemy)
             {
                 _selectedCard = _selectedCard == view ? null : view;
+                AudioDirector.Play(Sfx.Click, 0.7f);
                 Redraw();
                 return;
             }
@@ -659,35 +717,33 @@ namespace EmberDeck.View
         /// </summary>
         void SyncHand()
         {
-            bool matches = _cardViews.Count == State.Hand.Count;
-            if (matches)
-            {
-                for (int i = 0; i < _cardViews.Count; i++)
-                {
-                    if (_cardViews[i].Card == State.Hand[i]) continue;
-                    matches = false;
-                    break;
-                }
-            }
-            if (matches) { LayoutHand(); return; }
-
-            var selectedInstance = _selectedCard != null ? _selectedCard.Card : null;
-            if (selectedInstance != null && !State.Hand.Contains(selectedInstance))
-                selectedInstance = null;
-
-            ClearChildren(_handRow);
-            _cardViews.Clear();
-
+            // Views are matched to cards by identity. A card that stays in hand keeps its view and
+            // glides to its new slot; a new card flies in from the draw pile; a card that left
+            // flies to wherever it went. Rebuilding the hand from scratch — as this did before
+            // there was motion — would make every card re-deal itself on every play.
+            var next = new List<CardView>(State.Hand.Count);
             foreach (var card in State.Hand)
             {
-                var view = CardView.Create(_handRow, card);
-                view.Clicked += OnCardClicked;
-                _cardViews.Add(view);
+                var view = _cardViews.Find(v => v != null && v.Card == card);
+                if (view == null)
+                {
+                    view = CardView.Create(_handRow, card);
+                    view.Clicked += OnCardClicked;
+                    view.SpawnAt(DrawPilePoint, 0.3f);
+                }
+                next.Add(view);
             }
 
-            _selectedCard = selectedInstance != null
-                ? _cardViews.Find(view => view.Card == selectedInstance)
-                : null;
+            foreach (var view in _cardViews)
+            {
+                if (view == null || next.Contains(view)) continue;
+                bool played = view.Card == _lastPlayedCard;
+                view.FlyAway(played ? PlayedPoint : DiscardPilePoint, played ? 1.1f : 0.3f, played ? 0.45f : 0.35f);
+            }
+
+            _cardViews.Clear();
+            _cardViews.AddRange(next);
+            if (_selectedCard != null && !_cardViews.Contains(_selectedCard)) _selectedCard = null;
 
             LayoutHand();
         }

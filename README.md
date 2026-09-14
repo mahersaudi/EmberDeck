@@ -70,7 +70,7 @@ That is the practical payoff: balance becomes measurable instead of a matter of 
 | UI generated in code | Prefabs and scenes are YAML: unreviewable in a diff, and they merge badly while layout changes hourly | Authored prefabs once the layout settles |
 | Legacy `Text`, not TextMeshPro | TMP needs its Essential Resources imported through a dialog before any text renders — that breaks a fresh clone and headless runs | TMP, after importing TMP Essentials once |
 | Legacy Input Manager, not the Input System package | Every Input System version available for this Editor fails to compile against it (deprecated APIs are errors in 6000.5) | The Input System package, once a version compiles — needed for gamepad and rebinding |
-| No animation or audio | The slice answers "is one fight interesting?", which juice cannot fix if the answer is no | DOTween after the fight itself reads well |
+| ~~No animation or audio~~ | Done: code tweens and synthesised audio | See `docs/audio-and-motion.md` |
 | No `.asmdef` files | Everything compiles into Assembly-CSharp with no configuration to get wrong | Split runtime/editor assemblies when compile times bite |
 | Content generated, not committed | Asset YAML carries hand-assigned GUIDs; a wrong one is a silent null at runtime | Hand-authoring, once content stops being regenerated wholesale |
 

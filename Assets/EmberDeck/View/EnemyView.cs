@@ -13,6 +13,12 @@ namespace EmberDeck.View
 
         Image _body;
         bool _hasArt;
+        Image _flash;
+        Vector2 _bodyRest;
+        float _breathPhase;
+
+        /// <summary>The overlay a hit flashes on.</summary>
+        public Graphic FlashGraphic => _flash;
         Image _healthFill;
         Text _nameLabel;
         Text _healthLabel;
@@ -58,6 +64,15 @@ namespace EmberDeck.View
                 _hasArt = true;
             }
 
+            // The flash sits over the portrait, so a hit reads on the thing that was hit rather
+            // than on the panel around it.
+            var flash = UiFactory.Panel(body, "HitFlash", new Color(1f, 1f, 1f, 0f));
+            UiFactory.Stretch(flash);
+            _flash = flash.GetComponent<Image>();
+            _flash.raycastTarget = false;
+            _bodyRest = body.anchoredPosition;
+            _breathPhase = UnityEngine.Random.value * Mathf.PI * 2f;
+
             _nameLabel = UiFactory.Label(rect, "Name", enemy.Name, 22, Palette.Ink);
             UiFactory.Place(_nameLabel.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
                             new Vector2(0f, 76f), new Vector2(250f, 28f));
@@ -83,6 +98,20 @@ namespace EmberDeck.View
             _button = gameObject.AddComponent<Button>();
             _button.targetGraphic = GetComponent<Image>();
             _button.onClick.AddListener(() => Clicked?.Invoke(this));
+        }
+
+        /// <summary>
+        /// A slow idle breath, offset per enemy so a group never moves in lockstep. A portrait that
+        /// never moves reads as a picture of a monster; three pixels of motion make it the monster.
+        /// </summary>
+        void Update()
+        {
+            if (Enemy == null || !Enemy.IsAlive || _body == null) return;
+            float t = Time.time * 1.7f + _breathPhase;
+            var rect = _body.rectTransform;
+            rect.anchoredPosition = _bodyRest + new Vector2(0f, Mathf.Sin(t) * 3f);
+            float s = 1f + Mathf.Sin(t + 0.8f) * 0.012f;
+            rect.localScale = new Vector3(s, s, 1f);
         }
 
         public void Refresh(bool targetable)
@@ -119,13 +148,20 @@ namespace EmberDeck.View
                 IntentKind.Block  => Palette.IntentBlock,
                 _                 => Palette.IntentBuff
             };
-            _intentLabel.text = intent.Kind switch
+            string intentText = intent.Kind switch
             {
                 IntentKind.Attack when intent.Hits > 1 => $"{intent.Value} x{intent.Hits}",
                 IntentKind.Attack                      => intent.Value.ToString(),
                 IntentKind.Block                       => $"[ {intent.Value} ]",
                 _                                      => intent.Label
             };
+            // A changed intent pops, so a new threat is noticed rather than found.
+            if (intentText != _intentLabel.text)
+            {
+                bool first = string.IsNullOrEmpty(_intentLabel.text);
+                _intentLabel.text = intentText;
+                if (!first) Motion.Punch(_intentLabel.rectTransform, 0.28f, 0.32f);
+            }
         }
 
         public static string DescribeStatuses(Actor actor)

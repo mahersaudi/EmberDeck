@@ -1,6 +1,7 @@
 using System;
 using EmberDeck.Content;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace EmberDeck.View
@@ -13,7 +14,7 @@ namespace EmberDeck.View
     /// square, which is smaller than the detail in the art — a painting at that size is mud,
     /// and the whole point of having art is lost.
     /// </summary>
-    public sealed class CardView : MonoBehaviour
+    public sealed class CardView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
         public const float Width = 202f;
         public const float Height = 296f;
@@ -34,6 +35,12 @@ namespace EmberDeck.View
         Button _button;
 
         Vector2 _restPosition;
+        CanvasGroup _group;
+        bool _placed;
+        bool _selected;
+        bool _hovered;
+        bool _leaving;
+        int _siblingBeforeHover = -1;
 
         public event Action<CardView> Clicked;
 
@@ -98,6 +105,8 @@ namespace EmberDeck.View
             UiFactory.Place(_descriptionLabel.rectTransform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
                             new Vector2(0f, 8f), new Vector2(Width - 26f, Height - ArtHeight - 66f));
 
+            _group = gameObject.AddComponent<CanvasGroup>();
+
             _button = gameObject.AddComponent<Button>();
             _button.targetGraphic = _frame;
             _button.onClick.AddListener(() => Clicked?.Invoke(this));
@@ -110,10 +119,79 @@ namespace EmberDeck.View
             _                   => Palette.RarityCommon,
         };
 
+        /// <summary>
+        /// Where the card belongs. The first call places it there; later calls make it glide, so a
+        /// hand that re-fans after a play slides into its new shape instead of jumping.
+        /// </summary>
         public void SetRestPosition(Vector2 position)
         {
             _restPosition = position;
+            if (_placed) return;
+            _placed = true;
             ((RectTransform)transform).anchoredPosition = position;
+        }
+
+        /// <summary>Starts the card somewhere else — the draw pile — so it travels to its rest position.</summary>
+        public void SpawnAt(Vector2 position, float scale)
+        {
+            _placed = true;
+            var rect = (RectTransform)transform;
+            rect.anchoredPosition = position;
+            rect.localScale = new Vector3(scale, scale, 1f);
+        }
+
+        /// <summary>Sends the card off — to the board when played, to the discard pile otherwise — and destroys it.</summary>
+        public void FlyAway(Vector2 to, float endScale, float duration)
+        {
+            if (_leaving) return;
+            _leaving = true;
+            _group.blocksRaycasts = false;
+
+            var rect = (RectTransform)transform;
+            Vector2 from = rect.anchoredPosition;
+            float fromScale = rect.localScale.x;
+            var fromRotation = rect.localRotation;
+
+            Motion.Run(this, "leave", duration, t =>
+            {
+                rect.anchoredPosition = Vector2.LerpUnclamped(from, to, t);
+                float s = Mathf.LerpUnclamped(fromScale, endScale, t);
+                rect.localScale = new Vector3(s, s, 1f);
+                rect.localRotation = Quaternion.Slerp(fromRotation, Quaternion.identity, t);
+                _group.alpha = t < 0.55f ? 1f : 1f - (t - 0.55f) / 0.45f;
+            }, Motion.OutCubic, 0f, () => { if (this != null) Destroy(gameObject); });
+        }
+
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+            if (_leaving) return;
+            _hovered = true;
+            // Brought to the front so an overlapped card can be read in full while it is pointed at.
+            _siblingBeforeHover = transform.GetSiblingIndex();
+            transform.SetAsLastSibling();
+        }
+
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            _hovered = false;
+            if (_siblingBeforeHover < 0 || transform.parent == null) return;
+            transform.SetSiblingIndex(Mathf.Min(_siblingBeforeHover, transform.parent.childCount - 1));
+            _siblingBeforeHover = -1;
+        }
+
+        void Update()
+        {
+            if (_leaving) return;
+
+            // Exponential smoothing rather than a timed tween: the target changes whenever the hand
+            // re-fans or the selection moves, and this follows a moving target without restarts.
+            var rect = (RectTransform)transform;
+            Vector2 target = _restPosition + (_selected ? new Vector2(0f, 46f) : _hovered ? new Vector2(0f, 14f) : Vector2.zero);
+            float scale = _selected ? 1.06f : _hovered ? 1.04f : 1f;
+            float k = 1f - Mathf.Exp(-Time.unscaledDeltaTime * 14f);
+            rect.anchoredPosition = Vector2.Lerp(rect.anchoredPosition, target, k);
+            float s = Mathf.Lerp(rect.localScale.x, scale, k);
+            rect.localScale = new Vector3(s, s, 1f);
         }
 
         /// <summary>
@@ -138,9 +216,7 @@ namespace EmberDeck.View
             if (_art.sprite != null)
                 _art.color = playable ? Color.white : new Color(1f, 1f, 1f, 0.42f);
 
-            var rect = (RectTransform)transform;
-            rect.anchoredPosition = _restPosition + (selected ? new Vector2(0f, 46f) : Vector2.zero);
-            rect.localScale = Vector3.one * (selected ? 1.06f : 1f);
+            _selected = selected;
         }
     }
 }
