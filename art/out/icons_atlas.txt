@@ -26,4 +26,7 @@
 25	node_treasure
 26	node_shop
 27	node_event
-28	node_boss
+28	frame_card
+29	frame_panel
+30	frame_button
+31	node_boss

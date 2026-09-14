@@ -139,6 +139,27 @@ ICONS = {
                   '<path d="M37 38 C37 22 63 22 63 38 C63 50 50 50 50 62" fill="none" stroke="#f4eefc" '
                   'stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>'
                   '<circle cx="50" cy="76" r="6" fill="#f4eefc"/>',
+    # Frames: 9-sliced sprites for cards, panels and buttons. Drawn in greys and white so the UI's own
+    # colour carries through (a card frame takes its rarity colour, a panel its palette colour). They
+    # fill their tile edge to edge with no outline, and only the corners are decorated, because
+    # everything between the corners is stretched when the frame is sliced.
+    "frame_card": '<path fill-rule="evenodd" fill="#d6d6dc" d="M9 0 H91 Q100 0 100 9 V91 Q100 100 91 100 H9 Q0 100 0 91 V9 Q0 0 9 0 Z '
+                  'M15 12 H85 Q88 12 88 15 V85 Q88 88 85 88 H15 Q12 88 12 85 V15 Q12 12 15 12 Z"/>'
+                  '<path fill="#f2f2f6" d="M9 1.5 H91 Q98.5 1.5 98.5 9 V11 H1.5 V9 Q1.5 1.5 9 1.5 Z"/>'
+                  '<path fill-rule="evenodd" fill="#8f8f99" d="M13 10.5 H87 Q89.5 10.5 89.5 13 V87 Q89.5 89.5 87 89.5 H13 Q10.5 89.5 10.5 87 V13 Q10.5 10.5 13 10.5 Z '
+                  'M15 12 H85 Q88 12 88 15 V85 Q88 88 85 88 H15 Q12 88 12 85 V15 Q12 12 15 12 Z"/>'
+                  '<circle cx="6" cy="6" r="3.4" fill="#7a7a84"/><circle cx="94" cy="6" r="3.4" fill="#7a7a84"/>'
+                  '<circle cx="6" cy="94" r="3.4" fill="#7a7a84"/><circle cx="94" cy="94" r="3.4" fill="#7a7a84"/>'
+                  '<circle cx="6" cy="6" r="2.2" fill="#ffffff"/><circle cx="94" cy="6" r="2.2" fill="#ffffff"/>'
+                  '<circle cx="6" cy="94" r="2.2" fill="#ffffff"/><circle cx="94" cy="94" r="2.2" fill="#ffffff"/>',
+    "frame_panel": '<rect x="0" y="0" width="100" height="100" rx="7" fill="#ffffff"/>'
+                   '<rect x="3" y="3" width="94" height="94" rx="5" fill="#d2d2d8"/>'
+                   '<rect x="3" y="3" width="94" height="7" rx="3" fill="#e4e4ea"/>',
+    "frame_button": '<rect x="0" y="0" width="100" height="100" rx="9" fill="#ffffff"/>'
+                    '<rect x="3" y="3" width="94" height="94" rx="7" fill="#cfcfd6"/>'
+                    '<rect x="3" y="3" width="94" height="44" rx="7" fill="#e3e3e9"/>'
+                    '<rect x="3" y="86" width="94" height="11" rx="5" fill="#a6a6b0"/>',
+
     "node_boss": '<path d="M24 30 L32 10 L42 24 L50 6 L58 24 L68 10 L76 30 Z" fill="#e2b33e"/>'
                  '<path d="M22 54 C22 30 78 30 78 54 C78 68 70 74 66 76 L66 90 L34 90 L34 76 C30 74 22 68 22 54 Z" fill="#e6e0d4"/>'
                  '<circle cx="38" cy="54" r="8" fill="#2a1410"/><circle cx="62" cy="54" r="8" fill="#2a1410"/>'
@@ -179,9 +200,14 @@ def main():
 
     parts, index = [], []
     for i, (name, markup) in enumerate(ICONS.items()):
-        x = (i % COLUMNS) * TILE + offset
-        y = (i // COLUMNS) * TILE + offset
-        parts.append(f'<g transform="translate({x:.2f} {y:.2f}) scale({scale:.4f})">{outlined(markup)}{markup}</g>')
+        if name.startswith("frame_"):
+            # Frames must reach the tile's edges to slice cleanly: no margin, no outline.
+            x, y = (i % COLUMNS) * TILE, (i // COLUMNS) * TILE
+            parts.append(f'<g transform="translate({x} {y}) scale({TILE / 100:.4f})">{markup}</g>')
+        else:
+            x = (i % COLUMNS) * TILE + offset
+            y = (i // COLUMNS) * TILE + offset
+            parts.append(f'<g transform="translate({x:.2f} {y:.2f}) scale({scale:.4f})">{outlined(markup)}{markup}</g>')
         index.append(f"{i}\t{name}")
 
     width, height = COLUMNS * TILE, rows * TILE

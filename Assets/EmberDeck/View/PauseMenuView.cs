@@ -33,6 +33,7 @@ namespace EmberDeck.View
         void Build(RectTransform root)
         {
             var card = UiFactory.Panel(root, "Card", Palette.PanelDark);
+            UiFactory.Frame(card.GetComponent<Image>(), "frame_panel", 5f);
             UiFactory.Place(card, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(560f, 600f));
 
             var title = UiFactory.Label(card, "PauseTitle", "PAUSED", 44, Palette.Ink);

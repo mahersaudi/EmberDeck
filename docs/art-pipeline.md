@@ -132,3 +132,20 @@ outlined SVG style as the status icons. A node is now a coloured ring around a d
 icon: colour still reads from across the map, and the icon reads up close, where a letter only hinted.
 Reachable nodes pulse in step; unreachable ones fade and visited ones grey out. Every node has a
 tooltip saying what it holds.
+
+## Card and panel frames
+
+Three 9-slice frames, drawn in `art/icons.py` alongside the icons: `frame_card`, `frame_panel` and
+`frame_button`. Each is a bevelled edge (light top-left, dark bottom-right) over a transparent
+centre, so the Image's own colour still shows through and a card's rarity or a panel's tint keeps
+working unchanged.
+
+- `ArtImportSettings` sets the sprite border at import (card 26, button 14, panel 12 texels), and
+  `UiFactory.Frame(image, id, thickness)` switches the Image to Sliced and scales the border with
+  `pixelsPerUnitMultiplier`, so one texture serves any size at an on-screen thickness chosen in
+  code: 8 px for cards, 5 for buttons and the pause card, 4 for enemy, player, heat, shop and
+  tooltip panels.
+- Frames are rendered full tile with no outline pass; the outline that suits icons would draw a
+  second, blurry edge around a frame.
+- Every `UiFactory.TextButton` is framed, so new buttons get the look for free. A missing frame
+  sprite leaves the plain flat panel.

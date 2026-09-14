@@ -34,6 +34,13 @@ namespace EmberDeck.EditorTools
                 importer.textureCompression = TextureImporterCompression.CompressedHQ;
                 importer.maxTextureSize = 2048;
             }
+
+            // Frames are 9-sliced. The border has to be declared at import: without it Unity stretches the
+            // whole image and the corners smear. Sizes are in the 128px source tile.
+            string file = System.IO.Path.GetFileNameWithoutExtension(assetPath);
+            if (file == "frame_card") importer.spriteBorder = new UnityEngine.Vector4(26, 26, 26, 26);
+            else if (file == "frame_button") importer.spriteBorder = new UnityEngine.Vector4(14, 14, 14, 14);
+            else if (file == "frame_panel") importer.spriteBorder = new UnityEngine.Vector4(12, 12, 12, 12);
         }
     }
 }

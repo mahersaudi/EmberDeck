@@ -256,6 +256,7 @@ namespace EmberDeck.View
         {
             var panel = UiFactory.Panel(_root, "PlayerPanel", Palette.PanelDark);
             _playerPanel = panel;
+            UiFactory.Frame(panel.GetComponent<Image>(), "frame_panel", 4f);
             TooltipTrigger.Attach(panel.gameObject, DescribePlayer);
             UiFactory.Place(panel, new Vector2(0f, 0f), new Vector2(0f, 0f),
                             new Vector2(40f, 340f), new Vector2(320f, 150f));
@@ -308,6 +309,7 @@ namespace EmberDeck.View
             // HP past the threshold, so a player who cannot see it is being charged for a
             // decision the game never showed them.
             var heatPanel = UiFactory.Panel(_root, "HeatPanel", Palette.PanelDark);
+            UiFactory.Frame(heatPanel.GetComponent<Image>(), "frame_panel", 4f);
             TooltipTrigger.Attach(heatPanel.gameObject, DescribeHeat);
             UiFactory.Place(heatPanel, new Vector2(0f, 0f), new Vector2(0f, 0f),
                             new Vector2(40f, 258f), new Vector2(320f, 62f));

@@ -88,6 +88,7 @@ namespace EmberDeck.View
 
             // ── The relic ──
             var relicPanel = UiFactory.Panel(root, "RelicOffer", Palette.PanelDark);
+            UiFactory.Frame(relicPanel.GetComponent<Image>(), "frame_panel", 4f);
             UiFactory.Place(relicPanel, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-580f, -300f), new Vector2(520f, 170f));
             Header(relicPanel, "RELIC", Palette.RarityRare);
             _relicName = UiFactory.Label(relicPanel, "RelicName", "", 24, Palette.Ink, TextAnchor.UpperLeft);
@@ -101,6 +102,7 @@ namespace EmberDeck.View
 
             // ── Removal ──
             var removePanel = UiFactory.Panel(root, "RemoveOffer", Palette.PanelDark);
+            UiFactory.Frame(removePanel.GetComponent<Image>(), "frame_panel", 4f);
             UiFactory.Place(removePanel, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(580f, -300f), new Vector2(520f, 170f));
             Header(removePanel, "CARD REMOVAL", Palette.Victory);
             var removeText = UiFactory.Label(removePanel, "RemoveText",
@@ -114,6 +116,7 @@ namespace EmberDeck.View
 
             // ── Potions ──
             var potionPanel = UiFactory.Panel(root, "PotionOffer", Palette.PanelDark);
+            UiFactory.Frame(potionPanel.GetComponent<Image>(), "frame_panel", 4f);
             UiFactory.Place(potionPanel, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(0f, -300f), new Vector2(520f, 170f));
             Header(potionPanel, "POTIONS", Palette.IntentBlock);
             for (int i = 0; i < PotionService.ShopShelf; i++)

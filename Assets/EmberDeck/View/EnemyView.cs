@@ -40,6 +40,7 @@ namespace EmberDeck.View
         {
             var root = UiFactory.Panel(parent, $"Enemy_{enemy.Data.Id}", Palette.PanelDark);
             root.sizeDelta = new Vector2(260f, 300f);
+            UiFactory.Frame(root.GetComponent<Image>(), "frame_panel", 4f);
 
             var view = root.gameObject.AddComponent<EnemyView>();
             view.Build(enemy);

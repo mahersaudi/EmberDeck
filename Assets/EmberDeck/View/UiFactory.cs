@@ -50,10 +50,26 @@ namespace EmberDeck.View
             return label;
         }
 
+        /// <summary>
+        /// Gives a panel or button a 9-sliced frame from Resources/Icons, with its border drawn
+        /// <paramref name="thickness"/> units wide. Opt-in rather than built into Panel: Panel also makes
+        /// health bars, fills, stripes and flash overlays, none of which should have a frame. A missing
+        /// frame leaves the plain rectangle, which still works.
+        /// </summary>
+        public static void Frame(Image image, string spriteId, float thickness)
+        {
+            var sprite = Icons.Get(spriteId);
+            if (image == null || sprite == null) return;
+            image.sprite = sprite;
+            image.type = Image.Type.Sliced;
+            image.pixelsPerUnitMultiplier = sprite.border.x > 0f ? sprite.border.x / thickness : 1f;
+        }
+
         public static Button TextButton(Transform parent, string name, string text, Color background,
                                         Color foreground, int fontSize = 26)
         {
             var rect = Panel(parent, name, background);
+            Frame(rect.GetComponent<Image>(), "frame_button", 5f);
             var button = rect.gameObject.AddComponent<Button>();
             button.targetGraphic = rect.GetComponent<Image>();
             button.onClick.AddListener(() => AudioDirector.Play(Sfx.Click));

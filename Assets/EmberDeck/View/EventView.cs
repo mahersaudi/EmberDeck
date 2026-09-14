@@ -87,6 +87,7 @@ namespace EmberDeck.View
                 string blocked = choice.Blocked(context);
 
                 var panel = UiFactory.Panel(_choices, $"EventChoice{i}", blocked == null ? Palette.PanelRaised : Palette.PanelDark);
+                UiFactory.Frame(panel.GetComponent<Image>(), "frame_button", 5f);
                 UiFactory.Place(panel, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -i * (ChoiceHeight + ChoiceGap)),
                                 new Vector2(900f, ChoiceHeight));
 

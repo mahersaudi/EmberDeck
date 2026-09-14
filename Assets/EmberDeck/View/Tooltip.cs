@@ -73,6 +73,7 @@ namespace EmberDeck.View
 
             var panel = UiFactory.Panel(host.transform, "Panel", new Color(0.06f, 0.06f, 0.08f, 0.96f));
             panel.GetComponent<Image>().raycastTarget = false;
+            UiFactory.Frame(panel.GetComponent<Image>(), "frame_panel", 4f);
             panel.pivot = new Vector2(0f, 1f);
             panel.sizeDelta = new Vector2(Width, 10f);
 

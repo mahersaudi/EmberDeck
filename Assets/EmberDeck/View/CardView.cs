@@ -20,7 +20,8 @@ namespace EmberDeck.View
         public const float Width = 202f;
         public const float Height = 296f;
 
-        const float Border = 3f;
+        // The face sits inside the frame's metal border, which is drawn 8 units wide.
+        const float Border = 7f;
         const float ArtHeight = 128f;
 
         public CardInstance Card { get; private set; }
@@ -64,6 +65,7 @@ namespace EmberDeck.View
             // object doing both would mean the border could not change colour independently.
             _frame = GetComponent<Image>();
             _frame.color = RarityColor(card.Data.Rarity);
+            UiFactory.Frame(_frame, "frame_card", 8f);
 
             var face = UiFactory.Panel(rect, "Face", Palette.CardIdle);
             UiFactory.Stretch(face, Border);
