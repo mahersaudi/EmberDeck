@@ -13,6 +13,8 @@ policy's win rate cannot answer it.
 | Cautious | never, unless forced | below 60% HP |
 | Balanced | above 75% HP | below 45% HP |
 | Greedy | above 50% HP | below 35% HP |
+| Hunter | routes toward elites, enters every one | below 35% HP |
+| Avoider | routes away from elites | below 45% HP |
 
 ## Where it landed
 
@@ -69,6 +71,24 @@ starts one combat per relic and confirms each changes what it claims — none is
 same seeds, run wins rose 4-6 points for all three policies. The gap between cautious and
 greedy play narrowed from 2.7 to 2.0 points but did not reverse.
 
+**Elites, answered — by making the policies actually differ.** Cautious and Greedy turned out
+to take almost the same number of elites (0.49 vs 0.66 per run): both decide one step at a time,
+and an elite is rarely on offer when health allows it. Hunter and Avoider plan their route
+instead, and differ by 4.6x (1.16 vs 0.25 elites per run):
+
+| policy | run win | reach boss | win if reached | relics per run |
+|---|---|---|---|---|
+| Hunter | 17.0% | 28.7% | **59.3%** | 0.80 |
+| Avoider | **22.3%** | **44.3%** | 50.4% | 0.16 |
+
+Elites are a real trade, and the trade currently loses. Hunting them builds a deck that beats the
+boss 59% of the time instead of 50% — the payoff exists. But elites kill the run before it gets
+there: boss-reach falls from 44% to 29%, a gap of about four standard errors. Net, avoiding elites
+wins about five points more runs.
+
+So the reward is not the problem any more; the risk of dying *inside* the elite is. That points
+at elite lethality — or at what follows an elite on the map — rather than at bigger rewards.
+
 ## A tooling failure that cost two passes
 
 Content regeneration crashed Unity natively twice during this work. The batch log contained no
@@ -82,12 +102,10 @@ complained.**
 
 ## Still wrong
 
-- **Whether elites pay off is still unanswered — and the measurement is the reason.** With
-  relics, cautious play wins 22.0% against greedy 20.0%, inside the ~2.3-point standard error.
-  But greedy takes only 0.17 more elites per run than cautious (0.66 vs 0.49): both policies
-  decide one step at a time, and an elite is rarely on offer at the moment health allows it. Two
-  policies that behave almost identically cannot show whether a choice between them matters.
-  Answering it needs a policy that routes its path toward elites.
+- **Elites are a losing bet.** They pay off at the boss (59% vs 50%) but cost more runs on the
+  way than they save there. Whether that is wrong is a design decision: elites could be a *good*
+  bet for a healthy deck, or a deliberate boss-preparation gamble. If the former, reduce how often
+  elites kill rather than raising their reward.
 - **Mid-run attrition is the main killer.** Most deaths are hallway fights on rows 5-7, where
   8%-per-fight scaling has accumulated and the bot has rested less than once per run.
 - **The reward bot is weak.** "Take the rarest card" builds seventeen-card decks with no

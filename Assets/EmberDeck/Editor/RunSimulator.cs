@@ -29,7 +29,10 @@ namespace EmberDeck.EditorTools
         /// <summary>Experiment knob: how many card rewards a won elite grants.</summary>
         static int EliteRewardPicks = 1;
 
-        enum Policy { Cautious, Balanced, Greedy }
+        // Hunter and Avoider exist because Cautious and Greedy turned out to behave almost
+        // alike — 0.17 elites per run apart — which is too little difference for a comparison
+        // between them to show whether elites pay off. These two plan their route.
+        enum Policy { Cautious, Balanced, Greedy, Hunter, Avoider }
 
         sealed class Result
         {
@@ -271,11 +274,54 @@ namespace EmberDeck.EditorTools
                     if (health < 0.35f && First(NodeType.Rest) is { } greedyRest) return greedyRest;
                     return First(NodeType.Treasure) ?? First(NodeType.Fight) ?? options[0];
 
+                case Policy.Hunter:
+                    // Routes toward the nearest elite and enters every one it reaches, resting
+                    // only when close to death.
+                    if (health < 0.35f && First(NodeType.Rest) is { } hunterRest) return hunterRest;
+                    return options.OrderBy(DistanceToElite)
+                                  .ThenBy(n => PreferenceRank(n.Type))
+                                  .First();
+
+                case Policy.Avoider:
+                    // Never enters an elite it can step around, and steers away from them.
+                    if (health < 0.45f && First(NodeType.Rest) is { } avoiderRest) return avoiderRest;
+                    return options.OrderBy(n => n.Type == NodeType.Elite ? 1 : 0)
+                                  .ThenByDescending(DistanceToElite)
+                                  .ThenBy(n => PreferenceRank(n.Type))
+                                  .First();
+
                 default:
                     if (health < 0.45f && First(NodeType.Rest) is { } balancedRest) return balancedRest;
                     if (health > 0.75f && First(NodeType.Elite) is { } balancedElite) return balancedElite;
                     return First(NodeType.Treasure) ?? First(NodeType.Fight) ?? options[0];
             }
+        }
+
+        static int PreferenceRank(NodeType type) => type switch
+        {
+            NodeType.Treasure => 0,
+            NodeType.Fight    => 1,
+            NodeType.Rest     => 2,
+            NodeType.Elite    => 3,
+            _                 => 4,
+        };
+
+        /// <summary>Steps from this node to the nearest reachable elite; 99 when none is reachable.</summary>
+        static int DistanceToElite(MapNode start)
+        {
+            var frontier = new Queue<(MapNode node, int depth)>();
+            var seen = new HashSet<MapNode>();
+            frontier.Enqueue((start, 0));
+
+            while (frontier.Count > 0)
+            {
+                var (node, depth) = frontier.Dequeue();
+                if (!seen.Add(node)) continue;
+                if (node.Type == NodeType.Elite) return depth;
+                foreach (var next in node.Next)
+                    frontier.Enqueue((next, depth + 1));
+            }
+            return 99;
         }
 
         static int Median(IEnumerable<int> values)
