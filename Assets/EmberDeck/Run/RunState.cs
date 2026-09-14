@@ -31,6 +31,9 @@ namespace EmberDeck.Run
         /// <summary>Cards removed at shops this run; each removal costs more than the last.</summary>
         public int CardsRemoved;
 
+        /// <summary>Events already met this run. An event is never offered twice in one run.</summary>
+        public readonly List<string> SeenEvents = new();
+
         /// <summary>1 for the first fight. Enemy scaling reads this.</summary>
         public int FightNumber = 1;
 

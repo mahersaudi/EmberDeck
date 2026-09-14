@@ -63,9 +63,50 @@ The bot never bought a relic: after a removal and a card, it never had 140 gold 
 skips cards to save for a relic can; whether relic prices are right needs real play to judge.
 
 Measured shape of a run with shops on: about 0.65 shop visits, 0.52 cards bought and 0.52 removals.
-Map audit: shop 7.2%, treasure 8.4% of nodes, no dead ends, nothing unreachable.
+Map audit before events existed: shop 7.2%, treasure 8.4% of nodes, no dead ends, nothing unreachable.
 
 ## Saved
 
 Gold and the number of removals travel in the run save (format version 4). Older saves continue
 with the starting 75. The end-of-run screen shows cards removed and gold earned.
+
+## Events
+
+A "?" node holds a short scene and a choice. Every event trades one thing the run has for another,
+using only what the player already understands: health, maximum health, gold, the deck and upgrades.
+
+| event | choice | trade |
+|---|---|---|
+| The Cinder Shrine | Offer blood | lose 10 HP, upgrade 2 random cards |
+| The Ember Merchant | Trade | a random starter card for a random uncommon |
+| The Abandoned Forge | Lift the hammer / Sift the ash | a random rare for 5 max HP, or 35 gold |
+| The Hot Spring | Bathe / Drink | heal 15 HP, or gain 3 max HP |
+| The Gambler's Coals | Bet 50 gold | half the time win 110 gold |
+| The Ash Tithe | Pay the tithe | lose 5 HP, remove a Strike |
+| The Wandering Smith | Pay 40 gold | upgrade a random card |
+
+- Every event can be left, and every choice states its effect before it is taken.
+- **A choice that cannot be taken stays on screen with the reason** ("not enough gold"). Hiding it
+  would hide that it existed.
+- Health lost to an event never kills.
+- No event repeats within a run; the seen list travels in the save (format version 5). The event at a
+  position, and any gamble, is derived from the seed, so a resumed run meets the same event with the
+  same outcome.
+- `EventService` holds the events and the rules; `EventView` and `RunSimulator` both take choices
+  through it. Each choice carries a `BotValue`, so a new event cannot ship without telling the
+  simulator how a plain player would treat it.
+
+Events take their map share from treasure and shops, never from fights: shop 5.0%, treasure 5.5%,
+event 5.2% of nodes, with no dead ends and nothing unreachable.
+
+### Balance, and where it was left
+
+Adding events raised run wins by about 3.5 points for every policy (24–29% to 28–32%). Making the
+events less generous — the shrine costs 10 HP instead of 8, the spring heals 15 instead of 20 and
+grants 3 max HP instead of 4, the forge's gold is 35 instead of 40 — moved it by less than a point
+(27–32%).
+
+So, as with shops, the lever is routing more than rewards: the bot takes an event over a fight
+whenever both are offered, which means slightly fewer fights per run. Tuning further would tune the
+game to that bot. It was left here — about one run in three or four won by a deliberately plain
+player — for real play to judge.

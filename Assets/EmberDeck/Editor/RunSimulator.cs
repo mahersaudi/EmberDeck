@@ -60,6 +60,7 @@ namespace EmberDeck.EditorTools
             public int RelicsGained;
             public int Upgrades;
             public int Shops, CardsBought, CardsRemoved, RelicsBought;
+            public int Events;
             public readonly List<int> HallwayCost = new();
             public readonly List<int> EliteCost = new();
             /// <summary>Every fight entered: which encounter, and the HP it cost if won (-1 if lost).</summary>
@@ -119,7 +120,8 @@ namespace EmberDeck.EditorTools
                         $"relics gained per run {results.Average(r => r.RelicsGained):F2}, " +
                         $"upgrades per run {results.Average(r => r.Upgrades):F2}, " +
                         $"shops {results.Average(r => r.Shops):F2}, bought {results.Average(r => r.CardsBought):F2}, " +
-                        $"removed {results.Average(r => r.CardsRemoved):F2}, relics bought {results.Average(r => r.RelicsBought):F2}");
+                        $"removed {results.Average(r => r.CardsRemoved):F2}, relics bought {results.Average(r => r.RelicsBought):F2}, " +
+                        $"events {results.Average(r => r.Events):F2}");
                     details.AppendLine($"-- {policy}: where runs ended --");
                     foreach (var group in results.Where(r => !r.BeatBoss)
                                                  .GroupBy(r => (r.DiedAt, r.DiedOnRow))
@@ -184,6 +186,13 @@ namespace EmberDeck.EditorTools
                         var target = upgradable.OrderByDescending(c => (int)c.Rarity).First();
                         if (run.UpgradeCard(target)) result.Upgrades++;
                     }
+                    continue;
+                }
+
+                if (node.Type == NodeType.Event)
+                {
+                    result.Events++;
+                    PlayEvent(run, config);
                     continue;
                 }
 
@@ -335,6 +344,24 @@ namespace EmberDeck.EditorTools
             if (ShopService.BuyRelic(run, stock)) result.RelicsBought++;
         }
 
+        /// <summary>Takes the available choice the event values most; leaving is worth 0.</summary>
+        static void PlayEvent(RunState run, RunConfig config)
+        {
+            var evt = EventService.Pick(run);
+            var context = EventService.Context(run, config);
+            EventChoice best = null;
+            int bestValue = int.MinValue;
+            foreach (var choice in evt.Choices)
+            {
+                if (choice.Blocked(context) != null) continue;
+                int value = choice.BotValue(context);
+                if (value <= bestValue) continue;
+                bestValue = value;
+                best = choice;
+            }
+            if (best != null) EventService.Take(evt, best, context);
+        }
+
         static MapNode ChooseNode(RunState run, List<MapNode> options, Policy policy)
         {
             float health = (float)run.Hp / run.MaxHp;
@@ -348,14 +375,14 @@ namespace EmberDeck.EditorTools
                 case Policy.Cautious:
                     // Never takes an elite; rests early.
                     if (health < 0.6f && First(NodeType.Rest) is { } rest) return rest;
-                    return First(NodeType.Treasure) ?? ShopIfRich() ?? First(NodeType.Fight) ?? First(NodeType.Rest)
+                    return First(NodeType.Treasure) ?? ShopIfRich() ?? First(NodeType.Event) ?? First(NodeType.Fight) ?? First(NodeType.Rest)
                            ?? options.FirstOrDefault(n => n.Type != NodeType.Elite) ?? options[0];
 
                 case Policy.Greedy:
                     // Takes every elite it can survive a guess at.
                     if (health > 0.5f && First(NodeType.Elite) is { } greedyElite) return greedyElite;
                     if (health < 0.35f && First(NodeType.Rest) is { } greedyRest) return greedyRest;
-                    return First(NodeType.Treasure) ?? ShopIfRich() ?? First(NodeType.Fight) ?? options[0];
+                    return First(NodeType.Treasure) ?? ShopIfRich() ?? First(NodeType.Event) ?? First(NodeType.Fight) ?? options[0];
 
                 case Policy.Hunter:
                     // Routes toward the nearest elite and enters every one it reaches, resting
@@ -376,7 +403,7 @@ namespace EmberDeck.EditorTools
                 default:
                     if (health < 0.45f && First(NodeType.Rest) is { } balancedRest) return balancedRest;
                     if (health > 0.75f && First(NodeType.Elite) is { } balancedElite) return balancedElite;
-                    return First(NodeType.Treasure) ?? ShopIfRich() ?? First(NodeType.Fight) ?? options[0];
+                    return First(NodeType.Treasure) ?? ShopIfRich() ?? First(NodeType.Event) ?? First(NodeType.Fight) ?? options[0];
             }
         }
 
@@ -385,6 +412,7 @@ namespace EmberDeck.EditorTools
             NodeType.Treasure => 0,
             NodeType.Fight    => 1,
             NodeType.Shop     => 1,
+            NodeType.Event    => 1,
             NodeType.Rest     => 2,
             NodeType.Elite    => 3,
             _                 => 4,

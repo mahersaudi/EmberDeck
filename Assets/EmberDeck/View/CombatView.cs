@@ -28,6 +28,7 @@ namespace EmberDeck.View
         MapView _mapView;
         RestView _restView;
         ShopView _shopView;
+        EventView _eventView;
         MainMenuView _mainMenu;
         SettingsView _settings;
         PauseMenuView _pause;
@@ -156,6 +157,7 @@ namespace EmberDeck.View
             _mapView?.Hide();
             _restView?.Hide();
             _shopView?.Hide();
+            _eventView?.Hide();
             _endOfRun?.Hide();
             _rewardPanel.gameObject.SetActive(false);
             _run = null;
@@ -358,6 +360,9 @@ namespace EmberDeck.View
 
             _shopView = ShopView.Create(_root);
             _shopView.Left += ShowMap;
+
+            _eventView = EventView.Create(_root);
+            _eventView.Left += ShowMap;
         }
 
         /// <summary>
@@ -579,6 +584,7 @@ namespace EmberDeck.View
         {
             _restView?.Hide();
             _shopView?.Hide();
+            _eventView?.Hide();
             _session?.End();
             _session = null;
             ClearChildren(_enemyRow);
@@ -621,6 +627,10 @@ namespace EmberDeck.View
 
                 case NodeType.Shop:
                     OpenShop();
+                    break;
+
+                case NodeType.Event:
+                    _eventView.Show(EventService.Pick(_run), EventService.Context(_run, _config));
                     break;
 
                 case NodeType.Treasure:
@@ -846,6 +856,16 @@ namespace EmberDeck.View
             _mapView.Hide();
             _run.Gold = 160;
             OpenShop();
+        }
+
+        /// <summary>Capture-harness only: opens a named event at the current position.</summary>
+        public void DebugOpenEvent(string id)
+        {
+            if (_run == null) return;
+            var evt = EventService.Find(id);
+            if (evt == null) return;
+            _mapView.Hide();
+            _eventView.Show(evt, EventService.Context(_run, _config));
         }
 
 

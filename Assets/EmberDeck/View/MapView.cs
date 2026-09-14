@@ -50,7 +50,7 @@ namespace EmberDeck.View
 
             var legend = UiFactory.Label(root, "Legend",
                                          "Fight      Elite — harder, better reward      "
-                                         + "Rest — heal or upgrade      Treasure — card and gold      Shop — spend gold", 18, Palette.InkMuted);
+                                         + "Rest — heal or upgrade      Treasure — card and gold      Shop — spend gold      ? — event", 18, Palette.InkMuted);
             UiFactory.Place(legend.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
                             new Vector2(0f, -86f), new Vector2(1200f, 28f));
 
@@ -142,6 +142,7 @@ namespace EmberDeck.View
                 NodeType.Rest     => Palette.Victory,
                 NodeType.Treasure => Palette.RarityUncommon,
                 NodeType.Shop     => Palette.Energy,
+                NodeType.Event    => new Color(0.68f, 0.58f, 0.9f),
                 NodeType.Boss     => Palette.Defeat,
                 _                 => Palette.InkMuted,
             };
@@ -157,6 +158,7 @@ namespace EmberDeck.View
             NodeType.Rest     => "+",
             NodeType.Treasure => "$",
             NodeType.Shop     => "S",
+            NodeType.Event    => "?",
             NodeType.Boss     => "!!",
             _                 => "?",
         };

@@ -265,6 +265,20 @@ namespace EmberDeck.View
                     yield return new WaitForSeconds(0.4f);
                 }
 
+                // An event, then the outcome of its second choice (+40 gold).
+                var eventHost = FindFirstObjectByType<CombatView>();
+                if (eventHost != null)
+                {
+                    eventHost.DebugOpenEvent("abandoned_forge");
+                    yield return new WaitForSeconds(0.6f);
+                    yield return Capture("08d-event.png");
+                    Click(FindButton("EventChoice1"));
+                    yield return new WaitForSeconds(0.5f);
+                    yield return Capture("08e-event-outcome.png");
+                    Click(FindButton("EventContinue"));
+                    yield return new WaitForSeconds(0.4f);
+                }
+
                 // One screenshot per encounter, so every portrait and every group's layout — three
                 // Ash Mites is the widest — is checked in the real player rather than assumed.
                 var encounterHost = FindFirstObjectByType<CombatView>();

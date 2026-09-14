@@ -156,8 +156,10 @@ namespace EmberDeck.Run
                         < 55 => NodeType.Fight,
                         < 70 => elitesAllowed ? NodeType.Elite : NodeType.Fight,
                         < 80 => NodeType.Rest,
-                        < 89 => NodeType.Treasure,
-                        _    => shopsAllowed ? NodeType.Shop : NodeType.Treasure,
+                        // Events take their share from treasure and shops, never from fights.
+                        < 86 => NodeType.Treasure,
+                        < 93 => shopsAllowed ? NodeType.Shop : NodeType.Treasure,
+                        _    => NodeType.Event,
                     };
                 }
             }
