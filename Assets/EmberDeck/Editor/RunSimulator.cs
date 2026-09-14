@@ -54,6 +54,8 @@ namespace EmberDeck.EditorTools
             public int Upgrades;
             public readonly List<int> HallwayCost = new();
             public readonly List<int> EliteCost = new();
+            /// <summary>Every fight entered: which encounter, and the HP it cost if won (-1 if lost).</summary>
+            public readonly List<(string Encounter, int Cost)> Fights = new();
         }
 
         [MenuItem("EmberDeck/Run Full-Run Simulation")]
@@ -69,6 +71,7 @@ namespace EmberDeck.EditorTools
             var report = new StringBuilder();
             report.AppendLine($"=== EmberDeck full runs ({Runs} per policy) ===");
             var details = new StringBuilder();
+            var allResults = new List<Result>();
 
             // Add 2 here to test multi-card elite rewards. Tested once: granting two cards
             // instead of one moved greedy boss-reach from 27.7% to 27.3% — no effect — so it is
@@ -86,6 +89,7 @@ namespace EmberDeck.EditorTools
                     var results = new List<Result>(Runs);
                     for (int i = 0; i < Runs; i++)
                         results.Add(PlayRun(config, seed: 10_000 + i, policy));
+                    allResults.AddRange(results);
 
                     int wins = results.Count(r => r.BeatBoss);
                     var reached = results.Where(r => r.HpAtBoss >= 0).ToList();
@@ -111,6 +115,24 @@ namespace EmberDeck.EditorTools
                                                  .OrderBy(g => g.Key.DiedOnRow))
                         details.AppendLine($"   row {group.Key.DiedOnRow,2}  {group.Key.DiedAt,-8} {group.Count(),4}");
                 }
+            }
+
+            // Which fights are doing the damage. Pooled across policies: an encounter's cost barely
+            // depends on the route that led to it, and pooling gives each row enough fights to read.
+            report.AppendLine();
+            report.AppendLine("encounter              tier    fights  deaths  death%  median HP cost of a win");
+            report.AppendLine("------------------------------------------------------------------------------");
+            var tiers = config.Encounters.Where(e => e != null).ToDictionary(e => e.Id, e => e.Tier);
+            foreach (var group in allResults.SelectMany(r => r.Fights)
+                                            .GroupBy(f => f.Encounter)
+                                            .OrderBy(g => tiers.TryGetValue(g.Key, out var t) ? (int)t : 9)
+                                            .ThenBy(g => g.Key))
+            {
+                int fights = group.Count();
+                int deaths = group.Count(f => f.Cost < 0);
+                string tier = tiers.TryGetValue(group.Key, out var tierValue) ? tierValue.ToString() : "?";
+                report.AppendLine($"{group.Key,-22} {tier,-7} {fights,6}  {deaths,6}  {100f * deaths / fights,5:F1}  " +
+                                  $"{Median(group.Where(f => f.Cost >= 0).Select(f => f.Cost)),10}");
             }
 
             report.AppendLine();
@@ -171,7 +193,9 @@ namespace EmberDeck.EditorTools
                 if (node.Type == NodeType.Fight) result.Hallways++;
 
                 int hpBefore = run.Hp;
-                if (!Fight(run, config, out int enemyPctLeft))
+                bool won = Fight(run, config, out int enemyPctLeft, out string encounterId);
+                result.Fights.Add((encounterId, won ? hpBefore - run.Hp : -1));
+                if (!won)
                 {
                     result.DiedAt = node.Type;
                     result.DiedOnRow = node.Row;
@@ -216,11 +240,12 @@ namespace EmberDeck.EditorTools
         /// Mirrors CombatView's fight exactly — same seed derivation, same session, same turn
         /// policy — so a number here describes the game the player actually plays.
         /// </summary>
-        static bool Fight(RunState run, RunConfig config, out int enemyPctLeft)
+        static bool Fight(RunState run, RunConfig config, out int enemyPctLeft, out string encounterId)
         {
             int seed = run.Seed ^ (run.FightNumber * unchecked((int)0x9E3779B1));
             var session = new CombatSession(config, seed, run);
             session.Begin();
+            encounterId = session.EncounterId;
 
             var state = session.State;
             for (int turn = 0; !state.IsOver && turn < TurnLimit; turn++)

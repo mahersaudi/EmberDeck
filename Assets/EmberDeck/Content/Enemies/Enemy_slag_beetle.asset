@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f010fd5b1388f4fdd8472225f49570d0, type: 3}
+  m_Name: Enemy_slag_beetle
+  m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.EnemyData
+  Id: slag_beetle
+  DisplayName: Slag Beetle
+  MinHp: 36
+  MaxHp: 40
+  Pattern: 0
+  Moves:
+  - {fileID: 11400000, guid: c66126fcf8a564346bc1c9a639ff6240, type: 2}
+  - {fileID: 11400000, guid: 3bd5194fe4cac4a2aa1c24c28290630e, type: 2}
+  - {fileID: 11400000, guid: 3bd5194fe4cac4a2aa1c24c28290630e, type: 2}
+  TintColor: {r: 0.4, g: 0.36, b: 0.34, a: 1}
+  Art: {fileID: 21300000, guid: 26d2c57de27ba4e659fd6a13cf429665, type: 3}

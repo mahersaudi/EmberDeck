@@ -39,6 +39,12 @@ namespace EmberDeck.Content
         public List<EnemyData> EliteEncounter = new();
         public List<EnemyData> BossEncounter = new();
 
+        [Tooltip("Encounter pools for a run. The fixed lists above remain for one-off fights.")]
+        public List<EncounterData> Encounters = new();
+
+        [Tooltip("Hallway fights on rows below this draw from the Early pool; the rest from Late.")]
+        public int EarlyRows = 3;
+
         [Tooltip("Fraction of max HP restored at a Rest node.")]
         public float RestHealFraction = 0.3f;
 

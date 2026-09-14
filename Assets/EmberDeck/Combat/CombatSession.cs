@@ -21,6 +21,12 @@ namespace EmberDeck.Combat
 
         readonly List<RelicBehaviour> _relics = new();
 
+        /// <summary>Id of the encounter being fought; empty for a fight outside the pools.</summary>
+        public string EncounterId { get; private set; } = "";
+
+        /// <summary>Overrides the pool pick. Set before Begin; used by the capture harness.</summary>
+        public EncounterData ForcedEncounter;
+
         public CombatSession(RunConfig config, int seed, Run.RunState run = null)
         {
             Config = config;
@@ -50,8 +56,17 @@ namespace EmberDeck.Combat
                 ? 1f
                 : 1f + Config.EnemyScalingPerFight * ((Run?.FightNumber ?? 1) - 1);
 
+            // A run draws from the encounter pools. A one-off fight (the balance simulator) has no
+            // run and no map position, so it keeps the fixed lists.
             var encounter = Config.Encounter;
-            if (Run != null && Run.IsBoss && Config.BossEncounter.Count > 0) encounter = Config.BossEncounter;
+            var picked = ForcedEncounter
+                         ?? (Run != null ? global::EmberDeck.Run.EncounterService.Pick(Run, Config) : null);
+            if (picked != null)
+            {
+                encounter = picked.Enemies;
+                EncounterId = picked.Id;
+            }
+            else if (Run != null && Run.IsBoss && Config.BossEncounter.Count > 0) encounter = Config.BossEncounter;
             else if (Run != null && Run.IsElite && Config.EliteEncounter.Count > 0) encounter = Config.EliteEncounter;
 
             foreach (var enemyData in encounter)

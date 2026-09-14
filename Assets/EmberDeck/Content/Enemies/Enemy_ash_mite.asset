@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f010fd5b1388f4fdd8472225f49570d0, type: 3}
+  m_Name: Enemy_ash_mite
+  m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.EnemyData
+  Id: ash_mite
+  DisplayName: Ash Mite
+  MinHp: 9
+  MaxHp: 11
+  Pattern: 1
+  Moves:
+  - {fileID: 11400000, guid: 5b1681457d2994a409c2323c59f4b625, type: 2}
+  - {fileID: 11400000, guid: 2423cfaf7e14548dea9094557b08b51e, type: 2}
+  TintColor: {r: 0.55, g: 0.52, b: 0.5, a: 1}
+  Art: {fileID: 21300000, guid: f9878a0e664b446d497e8a6a29334ef8, type: 3}

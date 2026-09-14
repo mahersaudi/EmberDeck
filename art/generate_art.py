@@ -163,6 +163,20 @@ ENEMIES = {
     "forge_tyrant": "a colossal armoured forge titan of blackened iron and molten seams, "
                     "enormous hammer arm, furnace burning in its chest, towering and regal, "
                     "boss monster, imposing scale",
+    "ash_mite": "a small skittering insect creature of grey ash and glowing ember joints, "
+                "many thin legs, cinders drifting from its shell, mandibles glowing orange",
+    "slag_beetle": "a huge armoured beetle with a shell of cooled black slag and molten cracks, "
+                   "heavy horned head lowered to charge, immovable and ancient",
+    "kiln_imp": "a mischievous grinning fire imp perched on a clay kiln, cupped hands full of "
+                "boiling orange flame, sharp ears, glowing yellow eyes",
+    "ash_wraith": "a hovering spectral wraith of pale ash and cold blue smoke, hollow glowing eyes, "
+                  "tattered shroud dissolving into drifting embers, reaching claws, eerie",
+    "cinder_cultist": "a hooded cultist in scorched crimson robes, face hidden in shadow, "
+                      "holding a ritual dagger over a burning brazier, glowing runes",
+    "molten_golem": "a massive golem of cracked basalt with rivers of lava pouring through its body, "
+                    "huge fists dripping magma, steam rising, elite monster",
+    "salamander": "a sleek fire salamander lizard with glossy black and orange scales, "
+                  "flames running along its spine and tail, coiled to strike, fierce eyes",
 }
 
 

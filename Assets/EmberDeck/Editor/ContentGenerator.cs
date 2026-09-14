@@ -309,6 +309,89 @@ namespace EmberDeck.EditorTools
             var tyrant = MakeEnemy("forge_tyrant", "Forge Tyrant", 90, 100, MovePattern.Sequence,
                                    new Color(0.86f, 0.34f, 0.22f), crush, scourge, forge, crush);
 
+            // ── Encounter variety ───────────────────────────────────────────────────
+            // Every hallway used to be Emberling + Cinder Rat, so after two fights there was nothing
+            // left to read. Each new enemy asks the deck one question, built only from effects that
+            // already exist — no new engine code:
+            //   Ash Mite, in threes  can the deck hit more than one target?
+            //   Slag Beetle          can it get through heavy Block? (Burn ignores Block)
+            //   Kiln Imp             can it live with Burn on the player?
+            //   Ash Wraith           can it play through Vulnerable and Weak?
+            //   Cinder Cultist       can it race an enemy that keeps getting stronger?
+            //   Molten Golem, Salamanders — elites asking the same questions, harder.
+            // Effect files are prefixed EnemyFx_: CreateAsset reuses a file by name, so a shared
+            // name would silently give two moves the last configuration written.
+            var nibble  = Move("Move_Nibble", "Nibble", IntentKind.Attack, 3, Damage("EnemyFx_Nibble", 6));
+            var burrow  = Move("Move_Burrow", "Burrow", IntentKind.Block, 1, Block("EnemyFx_Burrow", 6));
+            var ashMite = MakeEnemy("ash_mite", "Ash Mite", 9, 11, MovePattern.WeightedRandom,
+                                    new Color(0.55f, 0.52f, 0.50f), nibble, burrow);
+
+            var harden  = Move("Move_Harden", "Harden", IntentKind.Block, 1, Block("EnemyFx_Harden", 12));
+            var ram     = Move("Move_Ram", "Ram", IntentKind.Attack, 1, Damage("EnemyFx_Ram", 12));
+            var slagBeetle = MakeEnemy("slag_beetle", "Slag Beetle", 36, 40, MovePattern.Sequence,
+                                       new Color(0.40f, 0.36f, 0.34f), harden, ram, ram);
+
+            var scald   = Move("Move_Scald", "Scald", IntentKind.Attack, 1,
+                               Damage("EnemyFx_Scald", 4), Status("EnemyFx_Scald_Burn", StatusType.Burn, 3));
+            var flick   = Move("Move_Flick", "Flick", IntentKind.Attack, 1, Damage("EnemyFx_Flick", 8));
+            var cower   = Move("Move_Cower", "Cower", IntentKind.Block, 1, Block("EnemyFx_Cower", 9));
+            var kilnImp = MakeEnemy("kiln_imp", "Kiln Imp", 34, 38, MovePattern.Sequence,
+                                    new Color(0.88f, 0.42f, 0.18f), scald, flick, cower);
+
+            var wail    = Move("Move_Wail", "Wail", IntentKind.Debuff, 1,
+                               Status("EnemyFx_Wail_Vulnerable", StatusType.Vulnerable, 2),
+                               Status("EnemyFx_Wail_Weak", StatusType.Weak, 1));
+            var chill   = Move("Move_ChillTouch", "Chill Touch", IntentKind.Attack, 1, Damage("EnemyFx_Chill", 8));
+            var ashWraith = MakeEnemy("ash_wraith", "Ash Wraith", 24, 28, MovePattern.Sequence,
+                                      new Color(0.50f, 0.55f, 0.66f), wail, chill, chill);
+
+            var chant   = Move("Move_Chant", "Chant", IntentKind.Buff, 1,
+                               Status("EnemyFx_Chant_Strength", StatusType.Strength, 2, toSelf: true));
+            var stab    = Move("Move_Stab", "Stab", IntentKind.Attack, 1, Damage("EnemyFx_Stab", 5));
+            var cultist = MakeEnemy("cinder_cultist", "Cinder Cultist", 20, 23, MovePattern.Sequence,
+                                    new Color(0.62f, 0.22f, 0.24f), chant, stab, stab, stab);
+
+            var slam    = Move("Move_Slam", "Slam", IntentKind.Attack, 1, Damage("EnemyFx_Slam", 11));
+            var spray   = Move("Move_MagmaSpray", "Magma Spray", IntentKind.Attack, 1,
+                               Asset<DealDamageEffect>("EnemyFx_MagmaSpray", e =>
+                               {
+                                   e.Amount = 3;
+                                   e.Hits = 3;
+                                   e.PerHitStatus = StatusType.Burn;
+                                   e.PerHitStatusAmount = 1;
+                               }));
+            var cool    = Move("Move_Cool", "Cool", IntentKind.Buff, 1,
+                               Status("EnemyFx_Cool_Strength", StatusType.Strength, 1, toSelf: true),
+                               Block("EnemyFx_Cool", 10));
+            var golem   = MakeEnemy("molten_golem", "Molten Golem", 46, 50, MovePattern.Sequence,
+                                    new Color(0.80f, 0.30f, 0.15f), slam, spray, cool);
+
+            var firebite = Move("Move_Firebite", "Firebite", IntentKind.Attack, 3,
+                                Damage("EnemyFx_Firebite", 6), Status("EnemyFx_Firebite_Burn", StatusType.Burn, 1));
+            var coil     = Move("Move_Coil", "Coil", IntentKind.Block, 1, Block("EnemyFx_Coil", 9));
+            var tailWhip = Move("Move_TailWhip", "Tail Whip", IntentKind.Attack, 2, Damage("EnemyFx_TailWhip", 4, hits: 2));
+            var salamander = MakeEnemy("salamander", "Salamander", 22, 25, MovePattern.WeightedRandom,
+                                       new Color(0.90f, 0.50f, 0.20f), firebite, coil, tailWhip);
+
+            var encounters = new List<EncounterData>
+            {
+                Encounter("embers_and_rat", EncounterTier.Early, emberling, cinderRat),
+                Encounter("mite_swarm", EncounterTier.Early, ashMite, ashMite, ashMite),
+                Encounter("kiln_imp", EncounterTier.Early, kilnImp),
+                Encounter("slag_beetle", EncounterTier.Early, slagBeetle),
+
+                Encounter("wraith_and_emberling", EncounterTier.Late, ashWraith, emberling),
+                Encounter("cultists", EncounterTier.Late, cultist, cultist),
+                Encounter("beetle_and_mite", EncounterTier.Late, slagBeetle, ashMite),
+                Encounter("imp_and_emberling", EncounterTier.Late, kilnImp, emberling),
+
+                Encounter("hound_pack", EncounterTier.Elite, emberling, ashHound),
+                Encounter("molten_golem", EncounterTier.Elite, golem),
+                Encounter("salamanders", EncounterTier.Elite, salamander, salamander),
+
+                Encounter("forge_tyrant", EncounterTier.Boss, tyrant),
+            };
+
             var emberCore = Asset<EmberCoreRelic>("Relics/Relic_EmberCore", relic =>
             {
                 relic.Id = "ember_core";
@@ -390,6 +473,8 @@ namespace EmberDeck.EditorTools
                 // elite gets cheaper in health instead.
                 cfg.EliteEncounter = new List<EnemyData> { emberling, ashHound };
                 cfg.BossEncounter = new List<EnemyData> { tyrant };
+                cfg.Encounters = encounters;
+                cfg.EarlyRows = 3;
                 cfg.RestHealFraction = 0.3f;
             });
 
@@ -691,6 +776,14 @@ namespace EmberDeck.EditorTools
                 move.Kind = kind;
                 move.Weight = weight;
                 move.Effects = new List<CardEffect>(effects);
+            });
+
+        static EncounterData Encounter(string id, EncounterTier tier, params EnemyData[] enemies) =>
+            CreateAsset<EncounterData>($"{ContentRoot}/Enemies/Encounter_{id}.asset", encounter =>
+            {
+                encounter.Id = id;
+                encounter.Tier = tier;
+                encounter.Enemies = new List<EnemyData>(enemies);
             });
 
         static EnemyData MakeEnemy(string id, string name, int minHp, int maxHp, MovePattern pattern, Color tint,

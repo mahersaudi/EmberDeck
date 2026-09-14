@@ -105,6 +105,48 @@ difference between two such rates. Elites moved from a clear losing bet to rough
 Hunter still beats the boss ten points more often, and still loses about as many runs on the way.
 A won elite now costs 16 HP instead of 20.
 
+## Encounter variety
+
+Every hallway used to be Emberling + Cinder Rat. Fights now draw from **pools of authored
+groups**: four early hallways (rows 0-2), four late hallways, three elites and the boss. Each
+tier's pool is shuffled once per run from the seed and walked in order, so a run meets every
+encounter of a tier before any repeats; the position in the pool is the count of visited nodes of
+that tier, which the save already holds, so resumes and the simulator see the same fights.
+
+Seven enemies were added, each asking the deck one question with effects that already existed:
+Ash Mite (in groups: area damage), Slag Beetle (heavy Block: Burn or big hits), Kiln Imp (Burn on
+the player), Ash Wraith (Vulnerable and Weak), Cinder Cultist (a race against growing Strength),
+and two elites, Molten Golem and a pair of Salamanders.
+
+The simulator now reports **deaths and HP cost per encounter**, pooled across policies. Comparing
+encounters within a tier is fair, since they are entered under the same conditions; that table is
+what made tuning take two passes instead of guesswork.
+
+| encounter | tier | first draft death% | after pass 1 | after pass 2 |
+|---|---|---|---|---|
+| mite swarm, kiln imp, slag beetle, embers + rat | Early | 0-0.1 | 0-0.1 | 0-0.1 |
+| beetle + mites | Late | **36.5** (two mites) | 23.0 (one mite) | 19.3 |
+| imp + rat | Late | **36.8** | 22.4 (rat → emberling) | 19.7 |
+| wraith + emberling | Late | 13.4 | 11.1 | 12.0 |
+| cultists | Late | 8.1 | 8.2 | 7.4 |
+| hound pack | Elite | 16.2 | 12.4 | 12.8 |
+| molten golem | Elite | **50.0** (68-74 HP) | 21.3 (52-56 HP) | 19.9 (46-50 HP) |
+| salamanders | Elite | **52.5** | 15.9 (22-25 HP, lighter Burn) | 15.6 |
+
+Pass 2 also trimmed the Beetle (Block 15 → 12) and the Imp (Flick 10 → 8), and gave Ash Mite's
+Nibble +1 so the early swarm is not free.
+
+| policy | run win before | first draft | pass 2 |
+|---|---|---|---|
+| Cautious | 23.7% | 15.0% | 27.0% |
+| Hunter | 21.7% | 8.3% | 25.0% |
+| Avoider | 22.3% | 16.3% | 28.7% |
+
+**Still off, deliberately left:** runs are now a little easier than before (24-29% against 21-23%),
+the early tier kills almost nobody, and within the late tier the Beetle and Imp pairs are still
+about twice as lethal as the Cultists. A spread inside a tier is part of what variety is; the
+overall rate is the number to revisit if play-testing says the run is too kind.
+
 ## A tooling failure that cost two passes
 
 Content regeneration crashed Unity natively twice during this work. The batch log contained no

@@ -23,22 +23,24 @@ CARD_CROP="crop=1024:736:0:144,scale=768:552"
 # Enemy panels are near square; trim a little to fill rather than letterbox.
 ENEMY_CROP="crop=1024:900:0:62,scale=640:562"
 
+# Enemy ids come from generate_art.py's ENEMIES rather than a list repeated here: the boss
+# portrait was once filed as a card because a hand-written list predated it.
+ENEMY_IDS=" $(cd "$ROOT/art" && python3 -c 'import generate_art; print(" ".join(generate_art.ENEMIES))') "
+[ "$ENEMY_IDS" != "  " ] || { echo "could not read enemy ids from generate_art.py" >&2; exit 1; }
+
 cards=0
 enemies=0
 for file in "$SRC"/*.png; do
   [ -e "$file" ] || continue
   id="$(basename "$file" .png)"
-  case "$id" in
-    test_*) continue ;;
-    # Read from the generator rather than repeating the list here: the boss portrait was
-    # filed as a card because this case statement was written before it existed.
-    emberling|cinder_rat|ash_hound|forge_tyrant)
-      ffmpeg -y -loglevel error -i "$file" -vf "$ENEMY_CROP" "$ENEMIES/$id.png"
-      enemies=$((enemies + 1)) ;;
-    *)
-      ffmpeg -y -loglevel error -i "$file" -vf "$CARD_CROP" "$CARDS/$id.png"
-      cards=$((cards + 1)) ;;
-  esac
+  [[ "$id" == test_* ]] && continue
+  if [[ "$ENEMY_IDS" == *" $id "* ]]; then
+    ffmpeg -y -loglevel error -i "$file" -vf "$ENEMY_CROP" "$ENEMIES/$id.png"
+    enemies=$((enemies + 1))
+  else
+    ffmpeg -y -loglevel error -i "$file" -vf "$CARD_CROP" "$CARDS/$id.png"
+    cards=$((cards + 1))
+  fi
 done
 
 echo "[painted] installed $cards card paintings, $enemies enemy portraits"

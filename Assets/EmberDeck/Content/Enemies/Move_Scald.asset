@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 51e73d21f55cc4d3fabfe8e1ecd27240, type: 3}
+  m_Name: Move_Scald
+  m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.EnemyMove
+  Label: Scald
+  Kind: 0
+  Weight: 1
+  Effects:
+  - {fileID: 11400000, guid: ca21f47537bbb474ba5470b24eccebbd, type: 2}
+  - {fileID: 11400000, guid: f199078ad1fc246cdb5f6c187104439b, type: 2}

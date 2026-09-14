@@ -168,6 +168,17 @@ namespace EmberDeck.View
                     yield return Capture("08-map-after-upgrade.png");
                 }
 
+                // One screenshot per encounter, so every portrait and every group's layout — three
+                // Ash Mites is the widest — is checked in the real player rather than assumed.
+                var encounterHost = FindFirstObjectByType<CombatView>();
+                if (encounterHost != null)
+                    foreach (var id in encounterHost.DebugEncounterIds())
+                    {
+                        encounterHost.DebugFightEncounter(id);
+                        yield return new WaitForSeconds(0.8f);
+                        yield return Capture($"enc-{id}.png");
+                    }
+
                 // Report the state the save should restore to, so a second launch can be
                 // checked against it rather than eyeballed.
                 var runInfo = FindFirstObjectByType<CombatView>();

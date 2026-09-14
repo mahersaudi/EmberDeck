@@ -35,6 +35,20 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 3cedddfa93b0444979c3cbea782b1107, type: 2}
   BossEncounter:
   - {fileID: 11400000, guid: 95034449f8515417f8745a1e0d551758, type: 2}
+  Encounters:
+  - {fileID: 11400000, guid: b9aa01afb97414085a5cef7dfa448402, type: 2}
+  - {fileID: 11400000, guid: 21905e713fc7d46259bebdb3e647db17, type: 2}
+  - {fileID: 11400000, guid: 2559a0bbf2ec2407f90d4bda08055572, type: 2}
+  - {fileID: 11400000, guid: 0a0306c61264a4c02ad4e2835e047b80, type: 2}
+  - {fileID: 11400000, guid: 1cb85f4d07e02405f9ea1e45a363690f, type: 2}
+  - {fileID: 11400000, guid: 4a63da3719a9b4e2780741e8e59f7234, type: 2}
+  - {fileID: 11400000, guid: 11373c47a396a4ee6857c1549fff58c4, type: 2}
+  - {fileID: 11400000, guid: 58506c07986b34ad2b334ee5fb6fabcb, type: 2}
+  - {fileID: 11400000, guid: 623d440fef21b4aa9ac55c3ab3edfc73, type: 2}
+  - {fileID: 11400000, guid: 61be24f007345417cb5a19dbfac39b78, type: 2}
+  - {fileID: 11400000, guid: cbae14dfc25704ea9a65f3762fcfb2ae, type: 2}
+  - {fileID: 11400000, guid: 30a11f4ae338341dfbdf728b483c3112, type: 2}
+  EarlyRows: 3
   RestHealFraction: 0.3
   RewardPool:
   - {fileID: 11400000, guid: 4ce58d14c496e4c5a9aa3a42fbb9a9a5, type: 2}

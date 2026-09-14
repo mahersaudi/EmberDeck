@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f010fd5b1388f4fdd8472225f49570d0, type: 3}
+  m_Name: Enemy_kiln_imp
+  m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.EnemyData
+  Id: kiln_imp
+  DisplayName: Kiln Imp
+  MinHp: 34
+  MaxHp: 38
+  Pattern: 0
+  Moves:
+  - {fileID: 11400000, guid: 6fef883ec36924454ab4224700d93b98, type: 2}
+  - {fileID: 11400000, guid: 75e7944342f5b4817824c97839f4eaf9, type: 2}
+  - {fileID: 11400000, guid: 13707f2bac0c048d284492f2756640c8, type: 2}
+  TintColor: {r: 0.88, g: 0.42, b: 0.18, a: 1}
+  Art: {fileID: 21300000, guid: dd2197a9dd3094f32bcbbc5ee5922525, type: 3}

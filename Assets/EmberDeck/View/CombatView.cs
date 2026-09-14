@@ -300,7 +300,7 @@ namespace EmberDeck.View
         }
 
         /// <summary>Starts the next fight of the current run, keeping deck and health.</summary>
-        void StartFight()
+        void StartFight(EncounterData forced = null)
         {
             _session?.End();
             ClearChildren(_enemyRow);
@@ -312,7 +312,7 @@ namespace EmberDeck.View
 
             // One stream per fight, derived from the run seed, so a run replays exactly.
             int seed = _run.Seed ^ (_run.FightNumber * unchecked((int)0x9E3779B1));
-            _session = new CombatSession(_config, seed, _run);
+            _session = new CombatSession(_config, seed, _run) { ForcedEncounter = forced };
 
             _session.State.Bus.Subscribe<CombatStateChangedEvent>(OnStateChanged);
             _session.State.Bus.Subscribe<CombatEndedEvent>(OnCombatEnded);
@@ -544,6 +544,26 @@ namespace EmberDeck.View
             if (_run == null) return;
             _mapView.Hide();
             OpenRest();
+        }
+
+        /// <summary>Capture-harness only: every encounter id in the pools, in authored order.</summary>
+        public List<string> DebugEncounterIds()
+        {
+            var ids = new List<string>();
+            foreach (var encounter in _config.Encounters)
+                if (encounter != null) ids.Add(encounter.Id);
+            return ids;
+        }
+
+        /// <summary>Capture-harness only: starts a fight against one named encounter.</summary>
+        public void DebugFightEncounter(string id)
+        {
+            if (_run == null) return;
+            var encounter = _config.Encounters.Find(e => e != null && e.Id == id);
+            if (encounter == null) return;
+            _mapView.Hide();
+            _restView?.Hide();
+            StartFight(encounter);
         }
 
 
