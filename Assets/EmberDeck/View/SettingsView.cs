@@ -28,6 +28,7 @@ namespace EmberDeck.View
         UiControls.Stepper _resolutionStepper;
         UiControls.Stepper _vsyncStepper;
         Text _displayNote;
+        UiControls.Stepper _tipsStepper;
 
         List<Vector2Int> _resolutions = new();
         int _resolutionIndex;
@@ -97,6 +98,14 @@ namespace EmberDeck.View
             _displayNote = UiFactory.Label(root, "DisplayNote", "", 20, Palette.InkMuted);
             UiFactory.Place(_displayNote.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
                             new Vector2(0f, y), new Vector2(900f, 30f));
+            y -= 62f;
+
+            // Applies at once, unlike display: turning tips back on starts them over.
+            Section(root, "GAMEPLAY", y);
+            y -= 48f;
+            var tips = UiControls.Row(root, "Tips", "Tutorial tips", y);
+            _tipsStepper = UiControls.AddStepper(tips, "Tips", () => Coach.Enabled ? "On" : "Off",
+                                                 _ => Coach.SetEnabled(!Coach.Enabled));
 
             var apply = UiFactory.TextButton(root, "ApplyDisplay", "Apply display", Palette.PanelRaised, Palette.Ink, 26);
             UiFactory.Place((RectTransform)apply.transform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
@@ -144,6 +153,7 @@ namespace EmberDeck.View
             _windowStepper.Refresh();
             _resolutionStepper.Refresh();
             _vsyncStepper.Refresh();
+            _tipsStepper.Refresh();
             _displayNote.text = "Display changes take effect when applied.";
 
             gameObject.SetActive(true);

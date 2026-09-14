@@ -136,9 +136,10 @@ tooltip saying what it holds.
 ## Card and panel frames
 
 Three 9-slice frames, drawn in `art/icons.py` alongside the icons: `frame_card`, `frame_panel` and
-`frame_button`. Each is a bevelled edge (light top-left, dark bottom-right) over a transparent
-centre, so the Image's own colour still shows through and a card's rarity or a panel's tint keeps
-working unchanged.
+`frame_button`. All are drawn in light greys and tinted by the Image's own colour, so a card's rarity
+or a panel's tint keeps working unchanged. The card frame is a ring with an open centre and corner
+rivets, since the card face is drawn inside it; the panel and button frames fill their centre with a
+lighter bevel (a highlight along the top, and a shadow along the bottom of a button).
 
 - `ArtImportSettings` sets the sprite border at import (card 26, button 14, panel 12 texels), and
   `UiFactory.Frame(image, id, thickness)` switches the Image to Sliced and scales the border with

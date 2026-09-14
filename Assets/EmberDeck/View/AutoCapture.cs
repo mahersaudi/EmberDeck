@@ -64,6 +64,9 @@ namespace EmberDeck.View
                 foreach (var module in FindObjectsByType<UnityEngine.EventSystems.BaseInputModule>(FindObjectsSortMode.None))
                     module.enabled = false;
 
+                // Every first-run tip unseen, and the player's own record of seen tips left untouched.
+                Coach.UseMemoryOnly();
+
                 yield return new WaitForSeconds(1.5f);
                 yield return Capture("00-main-menu.png");
 
@@ -107,6 +110,15 @@ namespace EmberDeck.View
                 }
                 yield return Capture("02-combat-start.png");
 
+                // The first fight opens with the hand tip; dismissing it brings up the intent tip.
+                Debug.Log($"[AutoCapture] tip at combat start: {Coach.CurrentId ?? "none"}");
+                Click(FindButton("CoachGotIt"));
+                yield return new WaitForSeconds(0.4f);
+                Debug.Log($"[AutoCapture] tip after dismissing: {Coach.CurrentId ?? "none"}");
+                yield return Capture("02t-intent-tip.png");
+                Click(FindButton("CoachGotIt"));
+                yield return new WaitForSeconds(0.2f);
+
                 // Tooltips, opened through the same trigger the pointer uses: the hand card with the
                 // most keywords, then an enemy's intent and statuses.
                 CardView richest = null;
@@ -147,6 +159,9 @@ namespace EmberDeck.View
                     yield return new WaitForSeconds(0.3f);
                     yield return Capture("02c-potions.png");
                     Tooltip.Hide();
+                    Debug.Log($"[AutoCapture] tip with potions: {Coach.CurrentId ?? "none"}");
+                    Click(FindButton("CoachGotIt"));
+                    yield return new WaitForSeconds(0.2f);
                 }
 
                 // Drive one full turn cycle through the real button, so the shot exercises
@@ -210,6 +225,24 @@ namespace EmberDeck.View
                     // moment in the run where statuses, Block and Heat are all on the board.
                     yield return new WaitForSeconds(1.0f);
                     yield return Capture("03c-after-plays.png");
+
+                    // The tips that wait for their moment: out of Energy, and Heat past the threshold.
+                    var lateTips = FindFirstObjectByType<CombatView>();
+                    if (lateTips != null)
+                    {
+                        // The End Turn press above already completed the end-turn tip.
+                        Coach.Forget("endturn");
+                        lateTips.DebugRaiseLateTips();
+                        yield return new WaitForSeconds(0.4f);
+                        for (int shown = 0; shown < 3 && Coach.CurrentId != null; shown++)
+                        {
+                            string id = Coach.CurrentId;
+                            Debug.Log($"[AutoCapture] late tip: {id}");
+                            yield return Capture($"03d-tip-{id}.png");
+                            Click(FindButton("CoachGotIt"));
+                            yield return new WaitForSeconds(0.4f);
+                        }
+                    }
 
                     var endOfTurn = FindButton("EndTurn");
                     if (endOfTurn == null || !endOfTurn.interactable) break;

@@ -168,6 +168,13 @@ namespace EmberDeck.View
             panel.gameObject.AddComponent<NodePulse>();
         }
 
+        /// <summary>The nodes that can be entered now, for the first-run tip to point at.</summary>
+        public IEnumerable<RectTransform> AvailableNodes()
+        {
+            foreach (var item in _drawn)
+                if (item != null && item.GetComponent<NodePulse>() != null) yield return (RectTransform)item.transform;
+        }
+
         static Color NodeColor(MapNode node, bool available)
         {
             var baseColour = node.Type switch

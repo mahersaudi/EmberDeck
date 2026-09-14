@@ -79,6 +79,8 @@ namespace EmberDeck.View
         Text _seedLabel;
         Text _runLabel;
         Button _endTurnButton;
+        RectTransform _heatPanel;
+        int _cardsPlayedThisFight;
 
 #if UNITY_EDITOR
         /// <summary>
@@ -139,6 +141,8 @@ namespace EmberDeck.View
 
             _settings = SettingsView.Create(_root);
             _settings.Closed += () => { if (_settingsFromPause) _pause.Show(); };
+
+            Coach.Suspended = () => _mainMenu.IsOpen || _pause.IsOpen || _settings.IsOpen || _endOfRun.IsOpen;
         }
 
         /// <summary>
@@ -150,6 +154,7 @@ namespace EmberDeck.View
             _pause.Hide();
             if (_settings.IsOpen) _settings.gameObject.SetActive(false);
             Tooltip.Hide();
+            Coach.EndScreen();
 
             _session?.End();
             _session = null;
@@ -309,6 +314,7 @@ namespace EmberDeck.View
             // HP past the threshold, so a player who cannot see it is being charged for a
             // decision the game never showed them.
             var heatPanel = UiFactory.Panel(_root, "HeatPanel", Palette.PanelDark);
+            _heatPanel = heatPanel;
             UiFactory.Frame(heatPanel.GetComponent<Image>(), "frame_panel", 4f);
             TooltipTrigger.Attach(heatPanel.gameObject, DescribeHeat);
             UiFactory.Place(heatPanel, new Vector2(0f, 0f), new Vector2(0f, 0f),
@@ -449,6 +455,20 @@ namespace EmberDeck.View
             _selectedCard = null;
             _selectedPotion = -1;
             _endOfRun?.Hide();
+            _cardsPlayedThisFight = 0;
+
+            // Queued before anything else so they come first; potion and Heat tips can be raised by the
+            // redraws inside Begin.
+            Coach.EndScreen();
+            Coach.Show("hand", "Play your cards",
+                       $"Each card costs the Energy in its corner, and you get {_config.EnergyPerTurn} Energy every turn "
+                       + "(the orb, bottom left). To attack, click a card and then click an enemy. "
+                       + "Cards with no target, like Guard, play on one click.",
+                       HandRects, Coach.Side.Above);
+            Coach.Show("intent", "Read the enemy",
+                       "The icon above an enemy is its next move. A red number is damage coming at you; a shield "
+                       + "means it will gain Block. Hover over an enemy to see exactly what it will do.",
+                       IntentRects, Coach.Side.Right);
 
             // One stream per fight, derived from the run seed, so a run replays exactly.
             int seed = _run.Seed ^ (_run.FightNumber * unchecked((int)0x9E3779B1));
@@ -462,6 +482,11 @@ namespace EmberDeck.View
             BuildEnemyViews();
 
             _session.State.Bus.Subscribe<CardPlayedEvent>(e => _lastPlayedCard = e.Card);
+            _session.State.Bus.Subscribe<CardPlayedEvent>(_ =>
+            {
+                _cardsPlayedThisFight++;
+                Coach.Complete("hand");
+            });
             // Attached after Begin so the views it animates exist. Nothing needs an effect
             // before the first turn: the opening hand already deals itself in.
             new CombatFeedback(_session.State, _fxLayer, AnchorFor, FlashFor);
@@ -514,6 +539,7 @@ namespace EmberDeck.View
         {
             if (_run == null) return;
             Tooltip.Hide();
+            Coach.EndScreen();
             _pause.Hide();
             _rewardPanel.gameObject.SetActive(false);
 
@@ -610,8 +636,59 @@ namespace EmberDeck.View
             }
 
             PotionService.Use(_run, slot, Engine, null);
+            Coach.Complete("potion");
             _selectedPotion = -1;
             Redraw();
+        }
+
+        // What the first-run tips point at. Read every frame, so a ring follows cards as they move.
+        IEnumerable<RectTransform> HandRects()
+        {
+            foreach (var view in _cardViews)
+                if (view != null) yield return (RectTransform)view.transform;
+        }
+
+        IEnumerable<RectTransform> IntentRects()
+        {
+            foreach (var view in _enemyViews)
+                if (view != null && view.Enemy.IsAlive) yield return view.IntentRect;
+        }
+
+        IEnumerable<RectTransform> PotionRects()
+        {
+            foreach (var (frame, _) in _potionSlots)
+                yield return frame.rectTransform;
+        }
+
+        IEnumerable<RectTransform> RewardRects()
+        {
+            foreach (var view in _rewardViews)
+                if (view != null) yield return (RectTransform)view.transform;
+        }
+
+        /// <summary>Tips that wait for their moment: the first Heat, the first potion, the first time nothing is playable.</summary>
+        void RaiseCombatTips(bool anyPlayable)
+        {
+            if (State.IsOver) return;
+
+            if (State.Heat > 0)
+                Coach.Show("heat", "Heat",
+                           "Fire cards build Heat, and it stays between turns. At the end of your turn you lose 1 HP "
+                           + $"for each point of Heat above {State.OverheatThreshold}. Some cards spend Heat for a big effect.",
+                           () => new[] { _heatPanel }, Coach.Side.Right);
+
+            if (_run != null && _run.Potions.Count > 0)
+                Coach.Show("potion", "Potions",
+                           "Potions cost no Energy. Click one to drink it; a potion that hits an enemy is aimed like an "
+                           + $"attack, by clicking the enemy next. You can carry {PotionService.Slots}.",
+                           PotionRects, Coach.Side.Below);   // beside them it covered the run line
+
+            // Only after a card has been played: before the opening hand is dealt nothing is playable either.
+            if (_cardsPlayedThisFight > 0 && !anyPlayable)
+                Coach.Show("endturn", "End your turn",
+                           "Nothing left to play? End the turn. Enemies act, then you draw a new hand with full Energy. "
+                           + "Block you gained this turn protects you while they attack.",
+                           () => new[] { (RectTransform)_endTurnButton.transform }, Coach.Side.Above);
         }
 
         IReadOnlyList<Tooltip.Entry> DescribePotionSlot(int slot)
@@ -675,6 +752,7 @@ namespace EmberDeck.View
             _restView?.Hide();
             _shopView?.Hide();
             _eventView?.Hide();
+            Coach.EndScreen();
             _session?.End();
             _session = null;
             ClearChildren(_enemyRow);
@@ -685,6 +763,11 @@ namespace EmberDeck.View
             _rewardPanel.gameObject.SetActive(false);
             _runLabel.text = $"Fight {_run.FightNumber}    Deck {_run.Deck.Count}    Relics {_run.Relics.Count}    Gold {_run.Gold}    HP {_run.Hp}/{_run.MaxHp}";
             _mapView.Show(_run.Map);
+            Coach.Show("map", "The map",
+                       "Climb from the bottom to the boss at the top. The glowing nodes are where you can go next; "
+                       + "hover over any node to see what it holds. Fights give cards and gold, rest sites heal, "
+                       + "and ? is an event.",
+                       _mapView.AvailableNodes, Coach.Side.Left);
             AudioDirector.PlayMusic(MusicTrack.Map);
             // Saving here rather than on every state change means the file is only ever
             // written at a point the game can actually be restarted from.
@@ -704,6 +787,7 @@ namespace EmberDeck.View
         void OnNodeChosen(MapNode node)
         {
             AudioDirector.Play(Sfx.MapSelect);
+            Coach.EndScreen();
             _run.Map.Current = node;
             _run.ActiveNode = node;
             node.Visited = true;
@@ -848,6 +932,12 @@ namespace EmberDeck.View
             }
 
             _rewardPanel.gameObject.SetActive(true);
+
+            Coach.EndScreen();
+            Coach.Show("reward", "Choose a reward",
+                       "Take one card, or Skip. A smaller deck draws its best cards more often, so only take cards "
+                       + "that make it stronger.",
+                       RewardRects, Coach.Side.Right);
         }
 
         void TakeReward(CardData card)
@@ -952,6 +1042,15 @@ namespace EmberDeck.View
             StartFight(encounter);
         }
 
+        /// <summary>Capture-harness only: no Energy left and Heat past the threshold, so the end-turn and Heat tips come up.</summary>
+        public void DebugRaiseLateTips()
+        {
+            if (_session == null) return;
+            State.Energy = 0;
+            State.Heat = State.OverheatThreshold + 2;
+            Redraw();
+        }
+
         /// <summary>Capture-harness only: shows the end-of-run screen for the current run without ending it.</summary>
         public void DebugShowEndOfRun(bool won) => ShowEndOfRun(won);
 
@@ -1020,6 +1119,7 @@ namespace EmberDeck.View
             if (_session == null || State.IsOver) return;
             _selectedCard = null;
             _selectedPotion = -1;
+            Coach.Complete("endturn");
             Engine.EndPlayerTurn();
             Redraw();
         }
@@ -1062,13 +1162,17 @@ namespace EmberDeck.View
                                  (State.ExhaustPile.Count > 0 ? $"    Exhaust {State.ExhaustPile.Count}" : "");
             _endTurnButton.interactable = !State.IsOver;
 
+            bool anyPlayable = false;
             foreach (var cardView in _cardViews)
             {
                 var card = cardView.Card;
                 int cost = Engine.GetCardCost(card);
                 bool playable = !State.IsOver && cost <= State.Energy;
+                anyPlayable |= playable;
                 cardView.Refresh(playable, cardView == _selectedCard, cost);
             }
+
+            RaiseCombatTips(anyPlayable);
         }
 
         /// <summary>

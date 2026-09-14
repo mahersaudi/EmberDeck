@@ -19,6 +19,9 @@ namespace EmberDeck.View
         Vector2 _bodyRest;
         float _breathPhase;
 
+        /// <summary>The row above the portrait showing the next move.</summary>
+        public RectTransform IntentRect => _intentRow;
+
         /// <summary>The overlay a hit flashes on.</summary>
         public Graphic FlashGraphic => _flash;
         Image _healthFill;
