@@ -14,5 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.EncounterData
   Id: molten_golem
   Tier: 2
+  Act: 1
   Enemies:
   - {fileID: 11400000, guid: 6aad214fd7303473f9d9087738e7e819, type: 2}

@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.EncounterData
   Id: hound_pack
   Tier: 2
+  Act: 1
   Enemies:
   - {fileID: 11400000, guid: 47adfd6a5e2e04b9e9f1f89cf6ef4d27, type: 2}
   - {fileID: 11400000, guid: 3cedddfa93b0444979c3cbea782b1107, type: 2}

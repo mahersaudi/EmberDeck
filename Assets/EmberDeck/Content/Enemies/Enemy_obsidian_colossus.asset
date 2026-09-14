@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f010fd5b1388f4fdd8472225f49570d0, type: 3}
+  m_Name: Enemy_obsidian_colossus
+  m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.EnemyData
+  Id: obsidian_colossus
+  DisplayName: Obsidian Colossus
+  MinHp: 66
+  MaxHp: 70
+  Pattern: 0
+  Moves:
+  - {fileID: 11400000, guid: ca6e0a07ab6224641a0094fef6a5cc3e, type: 2}
+  - {fileID: 11400000, guid: 52642e6fa48164e66b668cd40ad98258, type: 2}
+  - {fileID: 11400000, guid: 0e53c035bc53c420c851f476295cfd28, type: 2}
+  TintColor: {r: 0.36, g: 0.28, b: 0.5, a: 1}
+  Art: {fileID: 21300000, guid: 58717b0e566bc4d7985bffcec0441c2b, type: 3}

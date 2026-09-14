@@ -11,7 +11,8 @@ different run from a route through two elites.
 | hallway fight | 10–16 |
 | elite fight | 25–35, on top of its relic |
 | treasure | 20–30, on top of its card |
-| boss | none: the run ends there |
+| Act 1 boss | 55–70, on top of its relic, to spend in Act 2 |
+| Act 2 boss | nothing that matters: the run ends there |
 
 Every amount is derived from the run's position (`GoldService`), like card rewards, so a
 resumed save pays exactly what the interrupted run would have.

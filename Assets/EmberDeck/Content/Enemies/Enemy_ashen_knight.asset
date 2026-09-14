@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f010fd5b1388f4fdd8472225f49570d0, type: 3}
+  m_Name: Enemy_ashen_knight
+  m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.EnemyData
+  Id: ashen_knight
+  DisplayName: Ashen Knight
+  MinHp: 40
+  MaxHp: 44
+  Pattern: 0
+  Moves:
+  - {fileID: 11400000, guid: d7133df592f9c496992f07a25ba7756a, type: 2}
+  - {fileID: 11400000, guid: ff73ef8f4bed943fcbde757d7438cfa8, type: 2}
+  - {fileID: 11400000, guid: 593f5ce9083f04889986ddf7e0eb81f7, type: 2}
+  TintColor: {r: 0.55, g: 0.52, b: 0.6, a: 1}
+  Art: {fileID: 21300000, guid: 512d852ca57624875bf0e7269725fcbc, type: 3}

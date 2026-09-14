@@ -14,5 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.EncounterData
   Id: forge_tyrant
   Tier: 3
+  Act: 1
   Enemies:
   - {fileID: 11400000, guid: 95034449f8515417f8745a1e0d551758, type: 2}

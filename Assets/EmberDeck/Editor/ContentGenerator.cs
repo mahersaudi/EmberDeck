@@ -378,6 +378,79 @@ namespace EmberDeck.EditorTools
             var salamander = MakeEnemy("salamander", "Salamander", 22, 25, MovePattern.WeightedRandom,
                                        new Color(0.90f, 0.50f, 0.20f), firebite, coil, tailWhip);
 
+            // ── Act 2: the Obsidian Deep ────────────────────────────────────────────
+            // The Act 1 questions again, asked of a deck that has had a whole act to grow:
+            //   Ember Wisps, in threes   area damage, while Burn stacks on the player
+            //   Magma Leech              a race: it heals itself as it bites
+            //   Obsidian Sentinel        Block big enough that only burst or Burn gets through
+            //   Ashen Knight             Vulnerable, then the hit that punishes it
+            //   Cinder Shaman            Weak and Vulnerable, and stronger every cycle it is left alone
+            // Scaling restarts with the act (RunState.ActStartFight), so these are authored at full strength
+            // rather than arriving multiplied by every fight of Act 1.
+            var flicker   = Move("Move_Flicker", "Flicker", IntentKind.Attack, 1,
+                                 Damage("EnemyFx_Flicker", 4), Status("EnemyFx_Flicker_Burn", StatusType.Burn, 1));
+            var wispFlare = Move("Move_WispFlare", "Flare", IntentKind.Attack, 1, Damage("EnemyFx_WispFlare", 7));
+            var emberWisp = MakeEnemy("ember_wisp", "Ember Wisp", 10, 12, MovePattern.Sequence,
+                                      new Color(0.62f, 0.55f, 0.95f), flicker, wispFlare);
+
+            var siphon = Move("Move_Siphon", "Siphon", IntentKind.Attack, 1,
+                              Damage("EnemyFx_Siphon", 7), Asset<HealEffect>("EnemyFx_Siphon_Heal", e => e.Amount = 3));
+            var latch  = Move("Move_Latch", "Latch", IntentKind.Attack, 1,
+                              Damage("EnemyFx_Latch", 5), Status("EnemyFx_Latch_Weak", StatusType.Weak, 1));
+            var magmaLeech = MakeEnemy("magma_leech", "Magma Leech", 24, 27, MovePattern.Sequence,
+                                       new Color(0.78f, 0.36f, 0.20f), siphon, latch);
+
+            var fortify = Move("Move_Fortify", "Fortify", IntentKind.Block, 1, Block("EnemyFx_Fortify", 14));
+            var halberd = Move("Move_Halberd", "Halberd", IntentKind.Attack, 1, Damage("EnemyFx_Halberd", 11));
+            var sentinel = MakeEnemy("obsidian_sentinel", "Obsidian Sentinel", 44, 48, MovePattern.Sequence,
+                                     new Color(0.30f, 0.26f, 0.40f), fortify, halberd, halberd);
+
+            var sunder = Move("Move_Sunder", "Sunder", IntentKind.Debuff, 1,
+                              Damage("EnemyFx_Sunder", 7), Status("EnemyFx_Sunder_Vulnerable", StatusType.Vulnerable, 1));
+            var cleave = Move("Move_Cleave", "Cleave", IntentKind.Attack, 1, Damage("EnemyFx_Cleave", 11));
+            var steel  = Move("Move_Steel", "Steel", IntentKind.Buff, 1,
+                              Block("EnemyFx_Steel", 10), Status("EnemyFx_Steel_Strength", StatusType.Strength, 1, toSelf: true));
+            var ashenKnight = MakeEnemy("ashen_knight", "Ashen Knight", 40, 44, MovePattern.Sequence,
+                                        new Color(0.55f, 0.52f, 0.60f), sunder, cleave, steel);
+
+            var hex      = Move("Move_Hex", "Hex", IntentKind.Debuff, 1,
+                                Status("EnemyFx_Hex_Weak", StatusType.Weak, 1), Status("EnemyFx_Hex_Vulnerable", StatusType.Vulnerable, 1));
+            var firebolt = Move("Move_Firebolt", "Firebolt", IntentKind.Attack, 1,
+                                Damage("EnemyFx_Firebolt", 7), Status("EnemyFx_Firebolt_Burn", StatusType.Burn, 2));
+            var ritual   = Move("Move_Ritual", "Ritual", IntentKind.Buff, 1,
+                                Status("EnemyFx_Ritual_Strength", StatusType.Strength, 1, toSelf: true));
+            var shaman = MakeEnemy("cinder_shaman", "Cinder Shaman", 24, 27, MovePattern.Sequence,
+                                   new Color(0.70f, 0.40f, 0.62f), hex, firebolt, ritual);
+
+            // The Act 2 elite that is not a pairing: the Sentinel's question at elite scale.
+            var shatter     = Move("Move_Shatter", "Shatter", IntentKind.Attack, 1, Damage("EnemyFx_Shatter", 4, hits: 3));
+            var quake       = Move("Move_Quake", "Quake", IntentKind.Attack, 1, Damage("EnemyFx_Quake", 14));
+            var crystalWard = Move("Move_CrystalWard", "Ward", IntentKind.Buff, 1,
+                                   Block("EnemyFx_CrystalWard", 16), Status("EnemyFx_CrystalWard_Strength", StatusType.Strength, 1, toSelf: true));
+            var colossus = MakeEnemy("obsidian_colossus", "Obsidian Colossus", 66, 70, MovePattern.Sequence,
+                                     new Color(0.36f, 0.28f, 0.50f), shatter, quake, crystalWard);
+
+            // The Act 2 boss. Like the Tyrant, its moves are bigger versions of ones already met: Burn on
+            // every hit (Magma Spray), Weak with Vulnerable (Wail, Hex), one huge blow, and a Block turn that
+            // also makes it stronger.
+            // Short move names: a debuff intent shows its name beside the status icons, and "Molten Roar"
+            // ran into them.
+            var roar   = Move("Move_MoltenRoar", "Roar", IntentKind.Debuff, 1,
+                              Status("EnemyFx_Roar_Weak", StatusType.Weak, 1), Status("EnemyFx_Roar_Vulnerable", StatusType.Vulnerable, 1));
+            var breath = Move("Move_InfernoBreath", "Inferno Breath", IntentKind.Attack, 1,
+                              Asset<DealDamageEffect>("EnemyFx_InfernoBreath", e =>
+                              {
+                                  e.Amount = 4;
+                                  e.Hits = 4;
+                                  e.PerHitStatus = StatusType.Burn;
+                                  e.PerHitStatusAmount = 1;
+                              }));
+            var sweep  = Move("Move_TailSweep", "Tail Sweep", IntentKind.Attack, 1, Damage("EnemyFx_TailSweep", 18));
+            var coilUp = Move("Move_WyrmCoil", "Coil", IntentKind.Buff, 1,
+                              Block("EnemyFx_WyrmCoil", 20), Status("EnemyFx_WyrmCoil_Strength", StatusType.Strength, 1, toSelf: true));
+            var wyrm = MakeEnemy("cinder_wyrm", "Cinder Wyrm", 140, 150, MovePattern.Sequence,
+                                 new Color(0.52f, 0.24f, 0.30f), roar, breath, sweep, coilUp, breath, sweep);
+
             var encounters = new List<EncounterData>
             {
                 Encounter("embers_and_rat", EncounterTier.Early, emberling, cinderRat),
@@ -395,6 +468,23 @@ namespace EmberDeck.EditorTools
                 Encounter("salamanders", EncounterTier.Elite, salamander, salamander),
 
                 Encounter("forge_tyrant", EncounterTier.Boss, tyrant),
+
+                // Act 2
+                EncounterIn(2, "wisp_trio", EncounterTier.Early, emberWisp, emberWisp, emberWisp),
+                EncounterIn(2, "leech_pair", EncounterTier.Early, magmaLeech, magmaLeech),
+                EncounterIn(2, "obsidian_sentinel", EncounterTier.Early, sentinel),
+                EncounterIn(2, "shaman_and_wisp", EncounterTier.Early, shaman, emberWisp),
+
+                EncounterIn(2, "knight_and_wisp", EncounterTier.Late, ashenKnight, emberWisp),
+                EncounterIn(2, "shaman_and_leech", EncounterTier.Late, shaman, magmaLeech),
+                EncounterIn(2, "sentinel_and_shaman", EncounterTier.Late, sentinel, shaman),
+                EncounterIn(2, "wisps_and_leech", EncounterTier.Late, emberWisp, emberWisp, magmaLeech),
+
+                EncounterIn(2, "obsidian_colossus", EncounterTier.Elite, colossus),
+                EncounterIn(2, "knight_and_wisps", EncounterTier.Elite, ashenKnight, emberWisp, emberWisp),
+                EncounterIn(2, "shaman_leech_wisp", EncounterTier.Elite, shaman, magmaLeech, emberWisp),
+
+                EncounterIn(2, "cinder_wyrm", EncounterTier.Boss, wyrm),
             };
 
             var emberCore = Asset<EmberCoreRelic>("Relics/Relic_EmberCore", relic =>
@@ -478,6 +568,10 @@ namespace EmberDeck.EditorTools
                 // 8%, not 18%: the scaling compounds per fight, and 18% put row-eight enemies
                 // at 2.4x their base health.
                 cfg.EnemyScalingPerFight = 0.08f;
+                // Act 2 grows more slowly. At 8% its first rows killed almost nobody while its last rows
+                // killed a fifth of runs: the difficulty sat in the multiplier, not in the enemies. 5%
+                // keeps the climb and leaves the enemies themselves to carry the act.
+                cfg.ActScalingPerFight = new List<float> { 0.08f, 0.05f };
                 cfg.Relics = new List<RelicData> { emberCore };
                 cfg.RelicPool = relicPool;
                 cfg.PotionPool = potions;
@@ -500,6 +594,8 @@ namespace EmberDeck.EditorTools
                 cfg.EliteEncounter = new List<EnemyData> { emberling, ashHound };
                 cfg.BossEncounter = new List<EnemyData> { tyrant };
                 cfg.Encounters = encounters;
+                cfg.Acts = 2;
+                cfg.ActNames = new List<string> { "The Forge", "The Obsidian Deep" };
                 cfg.EarlyRows = 3;
                 cfg.RestHealFraction = 0.3f;
                 // Enough for one removal or one common at the first shop, not both.
@@ -817,10 +913,14 @@ namespace EmberDeck.EditorTools
             });
 
         static EncounterData Encounter(string id, EncounterTier tier, params EnemyData[] enemies) =>
+            EncounterIn(1, id, tier, enemies);
+
+        static EncounterData EncounterIn(int act, string id, EncounterTier tier, params EnemyData[] enemies) =>
             CreateAsset<EncounterData>($"{ContentRoot}/Enemies/Encounter_{id}.asset", encounter =>
             {
                 encounter.Id = id;
                 encounter.Tier = tier;
+                encounter.Act = act;
                 encounter.Enemies = new List<EnemyData>(enemies);
             });
 

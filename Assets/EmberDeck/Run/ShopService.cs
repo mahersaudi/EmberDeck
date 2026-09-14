@@ -54,7 +54,8 @@ namespace EmberDeck.Run
         public static ShopStock Roll(RunState run, RunConfig config)
         {
             var node = run.ActiveNode;
-            var rng = new DeterministicRng(run.Seed ^ unchecked((node?.Row ?? 0) * 0x1B873593 + (node?.Column ?? 0) * 0x68E31DA4) ^ 0x3C6EF372);
+            var rng = new DeterministicRng(run.Seed ^ unchecked((node?.Row ?? 0) * 0x1B873593 + (node?.Column ?? 0) * 0x68E31DA4) ^ 0x3C6EF372
+                                           ^ unchecked((run.Act - 1) * 0x61C88647));   // Act 2's shops are not Act 1's again
 
             var stock = new ShopStock();
             var cards = RewardService.Roll(config.RewardPool, rng, CardCount);

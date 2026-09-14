@@ -15,7 +15,8 @@ command -v ffmpeg >/dev/null || { echo "ffmpeg not found" >&2; exit 1; }
 mkdir -p "$DEST"
 
 count=0
-for name in bg_hallway bg_elite bg_boss bg_map; do
+NAMES=(bg_hallway bg_elite bg_boss bg_map bg_hallway_2 bg_elite_2 bg_boss_2 bg_map_2)
+for name in "${NAMES[@]}"; do
   if [ ! -f "$SRC/$name.png" ]; then
     echo "[bg] $name.png not rendered yet" >&2
     continue
@@ -26,4 +27,4 @@ for name in bg_hallway bg_elite bg_boss bg_map; do
   count=$((count + 1))
 done
 
-echo "[bg] installed $count of 4 backgrounds -> $DEST"
+echo "[bg] installed $count of ${#NAMES[@]} backgrounds -> $DEST"

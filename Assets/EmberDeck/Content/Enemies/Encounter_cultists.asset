@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.EncounterData
   Id: cultists
   Tier: 1
+  Act: 1
   Enemies:
   - {fileID: 11400000, guid: e3d1709ad2a854fb087bd5679fe7459f, type: 2}
   - {fileID: 11400000, guid: e3d1709ad2a854fb087bd5679fe7459f, type: 2}

@@ -34,6 +34,8 @@ for file in "$SRC"/*.png; do
   [ -e "$file" ] || continue
   id="$(basename "$file" .png)"
   [[ "$id" == test_* ]] && continue
+  # Backgrounds and app icons share this folder but have their own installers.
+  [[ "$id" == bg_* || "$id" == app_icon_* ]] && continue
   if [[ "$ENEMY_IDS" == *" $id "* ]]; then
     ffmpeg -y -loglevel error -i "$file" -vf "$ENEMY_CROP" "$ENEMIES/$id.png"
     enemies=$((enemies + 1))
@@ -45,4 +47,6 @@ done
 
 echo "[painted] installed $cards card paintings, $enemies enemy portraits"
 echo "[painted] cards still on SVG symbols: $(( 60 - cards ))"
-[ "$cards" -gt 60 ] && echo "[painted] WARNING: more card images than cards — an enemy is filed as a card" >&2
+if [ "$cards" -gt 60 ]; then
+  echo "[painted] WARNING: more card images than cards — an enemy is filed as a card" >&2
+fi

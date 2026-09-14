@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f010fd5b1388f4fdd8472225f49570d0, type: 3}
+  m_Name: Enemy_cinder_wyrm
+  m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.EnemyData
+  Id: cinder_wyrm
+  DisplayName: Cinder Wyrm
+  MinHp: 140
+  MaxHp: 150
+  Pattern: 0
+  Moves:
+  - {fileID: 11400000, guid: 2b06ba25e5746457d8ea7cb46cfab5fb, type: 2}
+  - {fileID: 11400000, guid: d9b95eb51bccb48a6b0447ce1ffd6639, type: 2}
+  - {fileID: 11400000, guid: bdba26b94eb9844c38a3ee1f36f1397c, type: 2}
+  - {fileID: 11400000, guid: b74298d3df30c42c89eef47b4f4d9220, type: 2}
+  - {fileID: 11400000, guid: d9b95eb51bccb48a6b0447ce1ffd6639, type: 2}
+  - {fileID: 11400000, guid: bdba26b94eb9844c38a3ee1f36f1397c, type: 2}
+  TintColor: {r: 0.52, g: 0.24, b: 0.3, a: 1}
+  Art: {fileID: 21300000, guid: 27709b3153e0244b0bbe87120d1fdaed, type: 3}

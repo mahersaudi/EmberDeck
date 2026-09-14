@@ -27,12 +27,14 @@ namespace EmberDeck.Run
 
             var pool = new List<EncounterData>();
             foreach (var encounter in config.Encounters)
-                if (encounter != null && encounter.Tier == tier && encounter.Enemies.Count > 0)
+                if (encounter != null && encounter.Tier == tier && encounter.Act == run.Act && encounter.Enemies.Count > 0)
                     pool.Add(encounter);
             if (pool.Count == 0) return null;
 
-            // Fisher-Yates from a seed private to this run and tier.
-            var rng = new DeterministicRng(run.Seed ^ unchecked((int)tier.Value * 0x632BE5AB) ^ 0x2545F491);
+            // Fisher-Yates from a seed private to this run, tier and act. The act term is zero in Act 1,
+            // so Act 1 meets the same sequence it always did.
+            var rng = new DeterministicRng(run.Seed ^ unchecked((int)tier.Value * 0x632BE5AB) ^ 0x2545F491
+                                           ^ unchecked((run.Act - 1) * 0x7ED55D16));
             for (int i = pool.Count - 1; i > 0; i--)
             {
                 int j = rng.Range(0, i + 1);

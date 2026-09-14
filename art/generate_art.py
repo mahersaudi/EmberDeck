@@ -68,6 +68,11 @@ PALETTES = {
     "ashfall":   ("ash grey and violet palette, cold pale light, muted purple smoke, "
                   "bone white", "orange, saturated fire, yellow"),
     "neutral":   ("warm neutral palette, bone, iron and dull gold", "neon, magenta"),
+    # Act 2, the Obsidian Deep: black glass and violet crystal light, with molten orange kept as an
+    # accent, so its creatures read as belonging somewhere deeper than the forge without leaving
+    # the fire behind.
+    "deep":      ("black obsidian and deep violet crystal glow palette, cold purple light, "
+                  "molten orange accents", "snow, ice, winter, green, daylight, woman, girl, human face, hair"),
 }
 
 
@@ -178,6 +183,30 @@ ENEMIES = {
     "salamander": "a sleek fire salamander lizard with glossy black and orange scales, "
                   "flames running along its spine and tail, coiled to strike, fierce eyes",
 }
+
+# Act 2, the Obsidian Deep. Kept as their own table so they take the "deep" palette, and merged into
+# ENEMIES below so install_painted.sh files them as enemy portraits.
+ACT2_ENEMIES = {
+    # "A faint ghostly face" painted a woman with flaming hair. A wisp is a light, not a person.
+    # The second try painted a candle inside a glass ball: an object, not a creature. It is now a living
+    # flame with eyes, and glass, orbs and candles are named as what it is not.
+    "ember_wisp": "a floating will-o'-the-wisp fire spirit creature, a small living flame with two glowing eyes "
+                  "and wispy flame tendrils like arms, hovering in a dark cavern, violet and blue-white fire, "
+                  "not a glass orb, no candle",
+    "magma_leech": "a bloated segmented leech of cooling magma and black crust, round mouth ringed with "
+                   "glowing teeth, dripping molten drops, clinging to black rock",
+    "obsidian_sentinel": "a towering guardian statue of polished black obsidian with glowing violet cracks, "
+                         "stone halberd held across its body, cold glowing eyes, immovable",
+    "ashen_knight": "a hollow knight in cracked ash-grey plate armour, embers glowing inside its visor, "
+                    "heavy greatsword, cold violet light, menacing",
+    "cinder_shaman": "a hunched goblin shaman in bone and ash robes, staff crowned with a burning skull, "
+                     "swirling runes of violet fire around its hands",
+    "obsidian_colossus": "a massive colossus of stacked obsidian boulders, violet crystal core blazing in its "
+                         "chest, huge stone fists, elite monster, imposing",
+    "cinder_wyrm": "a colossal serpentine wyrm dragon of black obsidian scales with magma glowing between them, "
+                   "coiled in a volcanic cavern, jaws open breathing fire, boss monster, imposing scale",
+}
+ENEMIES.update(ACT2_ENEMIES)
 
 
 # One prompt per card. Each describes what the card DOES, not what it is called: a player
@@ -301,7 +330,8 @@ def main():
             print(f"[art] {name}: already present, skipping")
             continue
         start = time.time()
-        palette = PALETTES.get(archetype_of(name)) if name in CARDS else None
+        palette = (PALETTES.get(archetype_of(name)) if name in CARDS
+                   else PALETTES["deep"] if name in ACT2_ENEMIES else None)
         ok = render(prompt, args.seed + i * 1000, destination, palette=palette)
         print(f"[art] [{i + 1}/{total}] {name}: {'ok' if ok else 'FAILED'} "
               f"({time.time() - start:.0f}s)")

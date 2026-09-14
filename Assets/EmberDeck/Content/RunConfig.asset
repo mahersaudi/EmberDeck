@@ -48,6 +48,22 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 61be24f007345417cb5a19dbfac39b78, type: 2}
   - {fileID: 11400000, guid: cbae14dfc25704ea9a65f3762fcfb2ae, type: 2}
   - {fileID: 11400000, guid: 30a11f4ae338341dfbdf728b483c3112, type: 2}
+  - {fileID: 11400000, guid: 4757eff5a4dc84d4e8db49a9036f3ecd, type: 2}
+  - {fileID: 11400000, guid: 470fc1b517ec44accadbf1bd6a5df35e, type: 2}
+  - {fileID: 11400000, guid: fb4f9af8eca35415abae0c2e305bad40, type: 2}
+  - {fileID: 11400000, guid: 5fe412d2894fb41ddb85c464682afade, type: 2}
+  - {fileID: 11400000, guid: fdf3b37e540274593a63f7dd38076f6c, type: 2}
+  - {fileID: 11400000, guid: 00d2fc5d031bd4a6fae9165d126ffed9, type: 2}
+  - {fileID: 11400000, guid: bcb62a57c28a741ed82de2d261e01642, type: 2}
+  - {fileID: 11400000, guid: c1a7714117bbf4d20ba1000442a5a5be, type: 2}
+  - {fileID: 11400000, guid: 43c80f72b8cf54feab4ed7f1b88103ff, type: 2}
+  - {fileID: 11400000, guid: f6f6bd67db78c4970a247f5dfe01050e, type: 2}
+  - {fileID: 11400000, guid: e06e2b15a551c4334a9d5d5ad53bbf92, type: 2}
+  - {fileID: 11400000, guid: ecba08ab5ae3a438091106b137ab173b, type: 2}
+  Acts: 2
+  ActNames:
+  - The Forge
+  - The Obsidian Deep
   EarlyRows: 3
   RestHealFraction: 0.3
   RewardPool:
@@ -246,4 +262,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 4e14c0db4f2c1451a8b5ffa2b784557f, type: 2}
   - {fileID: 11400000, guid: dde09c85e932d45f9997418dcf0b9f69, type: 2}
   EnemyScalingPerFight: 0.08
+  ActScalingPerFight:
+  - 0.08
+  - 0.05
   StartingGold: 75

@@ -54,6 +54,11 @@ namespace EmberDeck.EditorTools
             public bool BeatBoss;
             public NodeType DiedAt;
             public int DiedOnRow = -1;
+            public int DiedInAct = 1;
+
+            /// <summary>Bosses beaten before the last one: 1 means the run reached Act 2.</summary>
+            public int ActsCleared;
+            public int HpAtAct1Boss = -1;
             public int HpAtBoss = -1;
             public int DeckAtBoss = -1;
             public int ElitesFought;
@@ -103,8 +108,10 @@ namespace EmberDeck.EditorTools
                 int picks = EliteRewardPicks;
                 report.AppendLine();
                 report.AppendLine(drinking ? "[potions on]" : "[potions off: same drops, never drunk]");
-                report.AppendLine("policy     boss win%  reach boss%  elites/run  HP@boss  deck@boss  win|reached  boss HP left at death");
-                report.AppendLine("----------------------------------------------------------------------------------------------------");
+                // "boss" columns are the final boss. act1% is how many runs beat the first boss, the old
+                // single-act win rate, kept so a change to Act 2 can be told apart from a change to Act 1.
+                report.AppendLine("policy      run win%  act1 boss%  reach boss%  elites/run  HP@boss  deck@boss  win|reached  boss HP left at death");
+                report.AppendLine("-------------------------------------------------------------------------------------------------------------------");
 
                 foreach (Policy policy in System.Enum.GetValues(typeof(Policy)))
                 {
@@ -120,7 +127,8 @@ namespace EmberDeck.EditorTools
                                             .Select(r => r.BossHpPctLeftOnDeath);
 
                     report.AppendLine(
-                        $"{policy,-10} {100f * wins / Runs,8:F1}  {100f * reached.Count / Runs,10:F1}  " +
+                        $"{policy,-10} {100f * wins / Runs,9:F1}  {100f * results.Count(r => r.ActsCleared >= 1 || r.BeatBoss) / Runs,10:F1}  " +
+                        $"{100f * reached.Count / Runs,10:F1}  " +
                         $"{results.Average(r => r.ElitesFought),9:F2}  {Median(reached.Select(r => r.HpAtBoss)),7}  " +
                         $"{Median(reached.Select(r => r.DeckAtBoss)),9}  {winGivenReach,10:F1}  {Median(bossDeaths),14}%");
 
@@ -136,28 +144,32 @@ namespace EmberDeck.EditorTools
                         $"events {results.Average(r => r.Events):F2}, potions bought {results.Average(r => r.PotionsBought):F2}, " +
                         $"potions drunk {results.Average(r => r.Stats.PotionsUsed):F2}");
                     details.AppendLine($"-- {policy}: where runs ended --");
+                    details.AppendLine($"   HP entering the Act 1 boss (median) {Median(results.Where(r => r.HpAtAct1Boss >= 0).Select(r => r.HpAtAct1Boss))}");
                     foreach (var group in results.Where(r => !r.BeatBoss)
-                                                 .GroupBy(r => (r.DiedAt, r.DiedOnRow))
-                                                 .OrderBy(g => g.Key.DiedOnRow))
-                        details.AppendLine($"   row {group.Key.DiedOnRow,2}  {group.Key.DiedAt,-8} {group.Count(),4}");
+                                                 .GroupBy(r => (r.DiedInAct, r.DiedOnRow, r.DiedAt))
+                                                 .OrderBy(g => g.Key.DiedInAct).ThenBy(g => g.Key.DiedOnRow))
+                        details.AppendLine($"   act {group.Key.DiedInAct} row {group.Key.DiedOnRow,2}  {group.Key.DiedAt,-8} {group.Count(),4}");
                 }
             }
 
             // Which fights are doing the damage. Pooled across policies: an encounter's cost barely
             // depends on the route that led to it, and pooling gives each row enough fights to read.
             report.AppendLine();
-            report.AppendLine("encounter              tier    fights  deaths  death%  median HP cost of a win");
-            report.AppendLine("------------------------------------------------------------------------------");
-            var tiers = config.Encounters.Where(e => e != null).ToDictionary(e => e.Id, e => e.Tier);
+            report.AppendLine("encounter              act  tier    fights  deaths  death%  median HP cost of a win");
+            report.AppendLine("-----------------------------------------------------------------------------------");
+            var byId = config.Encounters.Where(e => e != null).ToDictionary(e => e.Id);
             foreach (var group in allResults.SelectMany(r => r.Fights)
                                             .GroupBy(f => f.Encounter)
-                                            .OrderBy(g => tiers.TryGetValue(g.Key, out var t) ? (int)t : 9)
+                                            .OrderBy(g => byId.TryGetValue(g.Key, out var e) ? e.Act : 9)
+                                            .ThenBy(g => byId.TryGetValue(g.Key, out var e) ? (int)e.Tier : 9)
                                             .ThenBy(g => g.Key))
             {
                 int fights = group.Count();
                 int deaths = group.Count(f => f.Cost < 0);
-                string tier = tiers.TryGetValue(group.Key, out var tierValue) ? tierValue.ToString() : "?";
-                report.AppendLine($"{group.Key,-22} {tier,-7} {fights,6}  {deaths,6}  {100f * deaths / fights,5:F1}  " +
+                byId.TryGetValue(group.Key, out var known);
+                string tier = known != null ? known.Tier.ToString() : "?";
+                string act = known != null ? known.Act.ToString() : "?";
+                report.AppendLine($"{group.Key,-22} {act,-4} {tier,-7} {fights,6}  {deaths,6}  {100f * deaths / fights,5:F1}  " +
                                   $"{Median(group.Where(f => f.Cost >= 0).Select(f => f.Cost)),10}");
             }
 
@@ -226,11 +238,12 @@ namespace EmberDeck.EditorTools
                     continue;
                 }
 
-                if (node.Type == NodeType.Boss)
+                if (node.Type == NodeType.Boss && run.IsFinalBoss(config))
                 {
                     result.HpAtBoss = run.Hp;
                     result.DeckAtBoss = run.Deck.Count;
                 }
+                else if (node.Type == NodeType.Boss) result.HpAtAct1Boss = run.Hp;
                 if (node.Type == NodeType.Elite) result.ElitesFought++;
                 if (node.Type == NodeType.Fight) result.Hallways++;
 
@@ -241,15 +254,17 @@ namespace EmberDeck.EditorTools
                 {
                     result.DiedAt = node.Type;
                     result.DiedOnRow = node.Row;
-                    if (node.Type == NodeType.Boss) result.BossHpPctLeftOnDeath = enemyPctLeft;
+                    result.DiedInAct = run.Act;
+                    if (node.Type == NodeType.Boss && run.IsFinalBoss(config)) result.BossHpPctLeftOnDeath = enemyPctLeft;
                     return result;
                 }
 
-                if (node.Type == NodeType.Boss)
+                if (node.Type == NodeType.Boss && run.IsFinalBoss(config))
                 {
                     result.BeatBoss = true;
                     return result;
                 }
+                if (node.Type == NodeType.Boss) result.ActsCleared++;
 
                 // Health a WON fight cost. Losses are excluded on purpose: they cost everything
                 // by definition and would swamp the number this exists to show.
@@ -258,7 +273,7 @@ namespace EmberDeck.EditorTools
 
                 // Mirrors CombatView: an elite win grants a relic, rolled before the card reward
                 // and before the fight counter advances, so both roll from the same position.
-                if (node.Type == NodeType.Elite)
+                if (node.Type == NodeType.Elite || node.Type == NodeType.Boss)
                 {
                     var relic = RelicService.Roll(run, config);
                     if (relic != null)
@@ -271,11 +286,13 @@ namespace EmberDeck.EditorTools
                 // Mirrors CombatView: gold is paid before the card reward, from the same position.
                 GoldService.Earn(run, GoldService.ForVictory(run));
                 PotionService.TryAdd(run, PotionService.RollDrop(run, config));
-                Tally(result, TakeReward(run, config, eliteOdds: node.Type == NodeType.Elite));
+                Tally(result, TakeReward(run, config, eliteOdds: node.Type == NodeType.Elite || node.Type == NodeType.Boss));
                 if (node.Type == NodeType.Elite)
                     for (int extra = 1; extra < EliteRewardPicks; extra++)
                         Tally(result, TakeReward(run, config, eliteOdds: true, extraPick: extra));
                 run.FightNumber++;
+                // Mirrors CombatView.TakeReward: an earlier act's boss opens the next act.
+                if (node.Type == NodeType.Boss) run.BeginNextAct();
             }
 
             return result;

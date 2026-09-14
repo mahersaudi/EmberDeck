@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.EncounterData
   Id: embers_and_rat
   Tier: 0
+  Act: 1
   Enemies:
   - {fileID: 11400000, guid: 47adfd6a5e2e04b9e9f1f89cf6ef4d27, type: 2}
   - {fileID: 11400000, guid: 28f25caaf702e46a588c3252bdaf7199, type: 2}

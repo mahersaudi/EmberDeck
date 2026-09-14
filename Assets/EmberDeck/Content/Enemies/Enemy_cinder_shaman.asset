@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f010fd5b1388f4fdd8472225f49570d0, type: 3}
+  m_Name: Enemy_cinder_shaman
+  m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.EnemyData
+  Id: cinder_shaman
+  DisplayName: Cinder Shaman
+  MinHp: 24
+  MaxHp: 27
+  Pattern: 0
+  Moves:
+  - {fileID: 11400000, guid: 05251b5a3d5b94145ae7581a002e8397, type: 2}
+  - {fileID: 11400000, guid: edacc5e00286a4203b9599b892911f1a, type: 2}
+  - {fileID: 11400000, guid: 631a30a9ff2c5487ead188aad71c4944, type: 2}
+  TintColor: {r: 0.7, g: 0.4, b: 0.62, a: 1}
+  Art: {fileID: 21300000, guid: 3e0126d6793a048c69d415e41629007c, type: 3}

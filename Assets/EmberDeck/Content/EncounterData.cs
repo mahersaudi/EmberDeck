@@ -26,6 +26,9 @@ namespace EmberDeck.Content
     {
         public string Id;
         public EncounterTier Tier;
+
+        [Tooltip("The act whose pools this encounter belongs to.")]
+        public int Act = 1;
         public List<EnemyData> Enemies = new();
     }
 }

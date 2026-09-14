@@ -29,7 +29,7 @@ namespace EmberDeck.Run
         [Serializable]
         sealed class Data
         {
-            public int version = 6;
+            public int version = 7;
             public int seed;
             public int hp;
             public int maxHp;
@@ -44,6 +44,8 @@ namespace EmberDeck.Run
             public int cardsRemoved;         // version 4
             public List<string> seenEvents = new();   // version 5
             public List<string> potions = new();      // version 6
+            public int act = 1;                       // version 7
+            public int actStartFight = 1;             // version 7
         }
 
         public static bool Exists() => File.Exists(Path);
@@ -67,6 +69,8 @@ namespace EmberDeck.Run
                 gold = run.Gold,
                 cardsRemoved = run.CardsRemoved,
                 seenEvents = new List<string>(run.SeenEvents),
+                act = run.Act,
+                actStartFight = run.ActStartFight,
             };
 
             foreach (var card in run.Deck)
@@ -110,16 +114,19 @@ namespace EmberDeck.Run
                 return null;
             }
 
-            if (data == null || (data.version < 1 || data.version > 6))
+            if (data == null || (data.version < 1 || data.version > 7))
             {
                 Debug.LogWarning("[EmberDeck] Save is from a different version, starting fresh.");
                 Delete();
                 return null;
             }
 
-            // The map comes back from the seed, not from the file.
+            // The map comes back from the seed and the act, not from the file. Saves before version 7
+            // carry no act and were all in Act 1.
             var run = new RunState(data.seed, data.maxHp);
-            run.Map = RunMap.Generate(run.Rng.Map);
+            run.Act = Mathf.Clamp(data.act, 1, Mathf.Max(1, config.Acts));
+            run.ActStartFight = Mathf.Max(1, data.actStartFight);
+            run.GenerateMap();
             run.Hp = Mathf.Clamp(data.hp, 0, data.maxHp);
             run.FightNumber = Mathf.Max(1, data.fightNumber);
             // Saves before version 3 carry no stats; the run continues with a fresh count.

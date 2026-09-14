@@ -52,9 +52,10 @@ namespace EmberDeck.Combat
             // The boss is exempt. Its numbers are authored as the end of the run; multiplying
             // them by the run's fight count as well put a 150 HP boss at about 250 by the time
             // anyone reached it, and 74 of 74 simulated runs that arrived there died.
+            // Scaling counts fights within the act: Act 2's enemies are authored stronger instead.
             float scale = Run != null && Run.IsBoss
                 ? 1f
-                : 1f + Config.EnemyScalingPerFight * ((Run?.FightNumber ?? 1) - 1);
+                : 1f + Config.ScalingPerFight(Run?.Act ?? 1) * (Run?.FightsIntoAct ?? 0);
 
             // A run draws from the encounter pools. A one-off fight (the balance simulator) has no
             // run and no map position, so it keeps the fixed lists.

@@ -14,5 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.EncounterData
   Id: kiln_imp
   Tier: 0
+  Act: 1
   Enemies:
   - {fileID: 11400000, guid: 3dfc8130ff0fb4fb6b331ff2d8fd308f, type: 2}

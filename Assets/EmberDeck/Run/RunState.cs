@@ -37,8 +37,20 @@ namespace EmberDeck.Run
         /// <summary>Potions carried, at most PotionService.Slots.</summary>
         public readonly List<PotionData> Potions = new();
 
-        /// <summary>1 for the first fight. Enemy scaling reads this.</summary>
+        /// <summary>1 for the first fight. Counts on across acts; rewards and gold derive from it.</summary>
         public int FightNumber = 1;
+
+        /// <summary>1 or 2. Each act is its own map, enemies and boss.</summary>
+        public int Act = 1;
+
+        /// <summary>
+        /// FightNumber when the current act began. Enemy scaling counts fights within the act, so Act 2's
+        /// enemies are authored at their own strength instead of arriving pre-multiplied by every fight
+        /// of Act 1. For Act 1 this is 1, which leaves Act 1 exactly as it was balanced.
+        /// </summary>
+        public int ActStartFight = 1;
+
+        public int FightsIntoAct => FightNumber - ActStartFight;
 
         public RunMap Map;
 
@@ -50,6 +62,31 @@ namespace EmberDeck.Run
 
         public bool IsElite => ActiveNode?.Type == NodeType.Elite;
         public bool IsBoss  => ActiveNode?.Type == NodeType.Boss;
+
+        /// <summary>The boss that ends the run, as opposed to one that opens the next act.</summary>
+        public bool IsFinalBoss(RunConfig config) => IsBoss && Act >= config.Acts;
+
+        /// <summary>
+        /// The map for the current act. Act 1 uses the run's map stream exactly as before; later acts
+        /// derive their own seed, so a save needs only the act number to rebuild the map it was on.
+        /// </summary>
+        public void GenerateMap()
+        {
+            Map = RunMap.Generate(Act == 1 ? new RunRng(Seed).Map : new DeterministicRng(Seed ^ unchecked(Act * 0x7F4A7C15)));
+        }
+
+        /// <summary>
+        /// Past the boss into the next act: a new map, full health, and enemy scaling counted afresh.
+        /// Call after the boss reward has advanced FightNumber, so the act's first fight is unscaled.
+        /// </summary>
+        public void BeginNextAct()
+        {
+            Act++;
+            ActStartFight = FightNumber;
+            Hp = MaxHp;
+            ActiveNode = null;
+            GenerateMap();
+        }
 
         public void Heal(int amount) => Hp = System.Math.Min(MaxHp, Hp + amount);
 
@@ -95,7 +132,7 @@ namespace EmberDeck.Run
         public static RunState Start(RunConfig config, int seed)
         {
             var run = new RunState(seed, config.MaxHp);
-            run.Map = RunMap.Generate(run.Rng.Map);
+            run.GenerateMap();
             run.Gold = config.StartingGold;
             foreach (var relic in config.Relics)
                 if (relic != null) run.Relics.Add(relic);

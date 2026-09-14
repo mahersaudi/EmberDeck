@@ -23,6 +23,9 @@ namespace EmberDeck.View
         RectTransform _board;
         Text _title;
         RunMap _map;
+        Image _backdrop;
+        string _bossName;
+        bool _finalAct = true;
 
         readonly List<GameObject> _drawn = new();
 
@@ -48,11 +51,8 @@ namespace EmberDeck.View
             // thing on screen. Without the painting, the flat background shows through as before.
             var backdrop = UiFactory.Panel(root, "MapBackdrop", new Color(0.45f, 0.45f, 0.5f, 1f));
             UiFactory.Stretch(backdrop);
-            var backdropImage = backdrop.GetComponent<Image>();
-            backdropImage.raycastTarget = false;
-            var mapArt = Resources.Load<Sprite>("Backgrounds/bg_map");
-            if (mapArt != null) backdropImage.sprite = mapArt;
-            else backdropImage.color = new Color(0f, 0f, 0f, 0f);
+            _backdrop = backdrop.GetComponent<Image>();
+            _backdrop.raycastTarget = false;
 
             _title = UiFactory.Label(root, "MapTitle", "CHOOSE YOUR PATH", 34, Palette.Ink);
             UiFactory.Place(_title.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
@@ -71,9 +71,21 @@ namespace EmberDeck.View
             gameObject.SetActive(false);
         }
 
-        public void Show(RunMap map)
+        /// <param name="bossName">Named on the boss node's tooltip; null keeps the generic title.</param>
+        /// <param name="finalAct">Whether the boss at the top ends the run or opens the next act.</param>
+        public void Show(RunMap map, int act = 1, string actName = null, string bossName = null, bool finalAct = true)
         {
             _map = map;
+            _bossName = bossName;
+            _finalAct = finalAct;
+            _title.text = string.IsNullOrEmpty(actName) ? "CHOOSE YOUR PATH" : $"ACT {act}  ·  {actName.ToUpperInvariant()}";
+
+            // Each act has its own painted ground; a later act without one borrows Act 1's.
+            var mapArt = (act > 1 ? Resources.Load<Sprite>($"Backgrounds/bg_map_{act}") : null)
+                         ?? Resources.Load<Sprite>("Backgrounds/bg_map");
+            _backdrop.sprite = mapArt;
+            _backdrop.color = mapArt != null ? new Color(0.45f, 0.45f, 0.5f, 1f) : new Color(0f, 0f, 0f, 0f);
+
             Redraw();
             gameObject.SetActive(true);
         }
@@ -155,7 +167,9 @@ namespace EmberDeck.View
             }
 
             var type = node.Type;
-            TooltipTrigger.Attach(panel.gameObject, () => new[] { new Tooltip.Entry(NodeTitle(type), NodeDescription(type), IconId(type)) });
+            string title = type == NodeType.Boss && !string.IsNullOrEmpty(_bossName) ? _bossName : NodeTitle(type);
+            string description = type == NodeType.Boss && !_finalAct ? "The end of this act. Beat it to go deeper." : NodeDescription(type);
+            TooltipTrigger.Attach(panel.gameObject, () => new[] { new Tooltip.Entry(title, description, IconId(type)) });
 
             if (!available) return;
 

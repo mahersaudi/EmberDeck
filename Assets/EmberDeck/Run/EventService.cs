@@ -44,7 +44,8 @@ namespace EmberDeck.Run
         static DeterministicRng PositionRng(RunState run, int salt)
         {
             var node = run.ActiveNode;
-            return new DeterministicRng(run.Seed ^ unchecked((node?.Row ?? 0) * 0x27D4EB2F + (node?.Column ?? 0) * 0x165667B1) ^ salt);
+            return new DeterministicRng(run.Seed ^ unchecked((node?.Row ?? 0) * 0x27D4EB2F + (node?.Column ?? 0) * 0x165667B1) ^ salt
+                                       ^ unchecked((run.Act - 1) * 0x61C88647));
         }
 
         // ── Building blocks ──────────────────────────────────────────────────────────

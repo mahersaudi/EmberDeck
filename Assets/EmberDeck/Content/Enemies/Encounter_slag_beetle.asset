@@ -14,5 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.EncounterData
   Id: slag_beetle
   Tier: 0
+  Act: 1
   Enemies:
   - {fileID: 11400000, guid: 2714c9bfc4e184cad8faf0111ff0b1e0, type: 2}

@@ -176,7 +176,7 @@ namespace EmberDeck.View
             {
                 var saved = RunSave.Read(_config);
                 if (saved != null)
-                    detail = $"Fight {saved.FightNumber}    {saved.Hp}/{saved.MaxHp} HP    {saved.Deck.Count} cards";
+                    detail = $"Act {saved.Act}    Fight {saved.FightNumber}    {saved.Hp}/{saved.MaxHp} HP    {saved.Deck.Count} cards";
             }
 
             _mainMenu.Show(detail);
@@ -352,8 +352,10 @@ namespace EmberDeck.View
                             new Vector2(-40f, 30f), new Vector2(260f, 26f));
 
             _runLabel = UiFactory.Label(_root, "Run", "", 22, Palette.Ink, TextAnchor.UpperLeft);
+            // 640 wide: with the act added, 520 wrapped the map's "HP 63/63" onto a second line. The map
+            // title is centred and starts past 700, so this still clears it.
             UiFactory.Place(_runLabel.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f),
-                            new Vector2(40f, -56f), new Vector2(520f, 30f));
+                            new Vector2(40f, -56f), new Vector2(640f, 30f));
 
             _seedLabel = UiFactory.Label(_root, "Seed", "", 17, new Color(0.4f, 0.4f, 0.46f), TextAnchor.UpperLeft);
             UiFactory.Place(_seedLabel.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f),
@@ -497,7 +499,8 @@ namespace EmberDeck.View
                      : _run.IsBoss ? EncounterTier.Boss
                      : _run.IsElite ? EncounterTier.Elite
                      : EncounterTier.Early;
-            SetBattlefield(tier == EncounterTier.Boss ? "bg_boss" : tier == EncounterTier.Elite ? "bg_elite" : "bg_hallway");
+            SetBattlefield(tier == EncounterTier.Boss ? "bg_boss" : tier == EncounterTier.Elite ? "bg_elite" : "bg_hallway",
+                           forced != null ? forced.Act : _run.Act);
             AudioDirector.Play(Sfx.TurnStart, 0.8f);
             _seedLabel.text = $"seed {_run.Seed}";
             _runLabel.text = $"Fight {_run.FightNumber}    Deck {_run.Deck.Count}    Relics {_run.Relics.Count}    Gold {_run.Gold}";
@@ -543,8 +546,10 @@ namespace EmberDeck.View
             _pause.Hide();
             _rewardPanel.gameObject.SetActive(false);
 
-            int floor = (_run.ActiveNode?.Row ?? 0) + 1;
-            int floors = _run.Map?.Grid.Count ?? RunMap.Rows;
+            // Floors count through every act, the boss included: Act 2's first row is floor 11 of 20.
+            int perAct = (_run.Map?.Grid.Count ?? RunMap.Rows) + 1;
+            int floor = (_run.Act - 1) * perAct + (_run.ActiveNode?.Row ?? 0) + 1;
+            int floors = perAct * Mathf.Max(1, _config.Acts);
             _endOfRun.Show(_run, won, floor, floors);
             AudioDirector.PlayMusic(won ? MusicTrack.Map : MusicTrack.None);
         }
@@ -705,9 +710,11 @@ namespace EmberDeck.View
         /// The painted battlefield for this fight, darkened so cards and numbers stay the brightest thing
         /// on screen. Falls back to the flat background colour when the painting is missing.
         /// </summary>
-        void SetBattlefield(string name)
+        void SetBattlefield(string name, int act = 1)
         {
-            var art = Resources.Load<Sprite>($"Backgrounds/{name}");
+            // A later act's painting when it exists ("bg_boss_2"), otherwise Act 1's.
+            var art = (act > 1 ? Resources.Load<Sprite>($"Backgrounds/{name}_{act}") : null)
+                      ?? Resources.Load<Sprite>($"Backgrounds/{name}");
             _background.sprite = art;
             _background.color = art != null ? new Color(0.42f, 0.42f, 0.46f, 1f) : Palette.Background;
         }
@@ -761,8 +768,14 @@ namespace EmberDeck.View
             _cardViews.Clear();
             _endOfRun?.Hide();
             _rewardPanel.gameObject.SetActive(false);
-            _runLabel.text = $"Fight {_run.FightNumber}    Deck {_run.Deck.Count}    Relics {_run.Relics.Count}    Gold {_run.Gold}    HP {_run.Hp}/{_run.MaxHp}";
-            _mapView.Show(_run.Map);
+            _runLabel.text = $"Act {_run.Act}    Fight {_run.FightNumber}    Deck {_run.Deck.Count}    Relics {_run.Relics.Count}    Gold {_run.Gold}    HP {_run.Hp}/{_run.MaxHp}";
+            _mapView.Show(_run.Map, _run.Act, _config.ActName(_run.Act), _config.BossOf(_run.Act)?.DisplayName,
+                          finalAct: _run.Act >= _config.Acts);
+            if (_run.Act > 1)
+                Coach.Show("act2", "A deeper act",
+                           "Beating the boss healed you to full. The enemies down here are stronger, and they grow "
+                           + "again as you climb. Another boss waits at the top.",
+                           null, Coach.Side.Below);
             Coach.Show("map", "The map",
                        "Climb from the bottom to the boss at the top. The glowing nodes are where you can go next; "
                        + "hover over any node to see what it holds. Fights give cards and gold, rest sites heal, "
@@ -866,8 +879,9 @@ namespace EmberDeck.View
             _run.Stats.FightsWon++;
             if (_run.IsElite) _run.Stats.ElitesWon++;
 
-            // Beating the boss ends the run: there is no next fight for a card reward to matter in.
-            if (_run.IsBoss)
+            // Beating the last act's boss ends the run: there is no next fight for a card reward to matter in.
+            // An earlier act's boss pays out like an elite and more, and the run goes on.
+            if (_run.IsFinalBoss(_config))
             {
                 RunSave.Delete();
                 var won = _run;
@@ -878,7 +892,7 @@ namespace EmberDeck.View
             // Elites grant a relic on top of the card. Rolled before the card reward and before
             // the fight counter advances, in the same order RunSimulator uses.
             Content.Relics.RelicData relic = null;
-            if (_run.IsElite)
+            if (_run.IsElite || _run.IsBoss)
             {
                 relic = RelicService.Roll(_run, _config);
                 if (relic != null) _run.Relics.Add(relic);
@@ -890,7 +904,7 @@ namespace EmberDeck.View
             var potion = PotionService.RollDrop(_run, _config);
             bool potionKept = PotionService.TryAdd(_run, potion);
 
-            ShowRewards(_run.IsBoss ? "RUN COMPLETE" : _run.IsElite ? "ELITE DEFEATED" : "VICTORY", relic, gold, potion, potionKept);
+            ShowRewards(_run.IsBoss ? $"ACT {_run.Act} COMPLETE" : _run.IsElite ? "ELITE DEFEATED" : "VICTORY", relic, gold, potion, potionKept);
         }
 
         void ShowRewards(string title, Content.Relics.RelicData relic = null, int gold = 0,
@@ -901,7 +915,7 @@ namespace EmberDeck.View
             _rewardViews.Clear();
 
             var offers = RewardService.Roll(_config.RewardPool, _run.RewardRng(),
-                                            eliteOdds: _run.IsElite || _run.ActiveNode?.Type == NodeType.Treasure);
+                                            eliteOdds: _run.IsElite || _run.IsBoss || _run.ActiveNode?.Type == NodeType.Treasure);
             _rewardTitle.text = title;
             var gains = new List<string>();
             if (gold > 0) gains.Add($"+{gold} gold");
@@ -947,7 +961,7 @@ namespace EmberDeck.View
             AudioDirector.Play(Sfx.Reward);
             _rewardPanel.gameObject.SetActive(false);
 
-            if (_run.IsBoss)
+            if (_run.IsFinalBoss(_config))
             {
                 RunSave.Delete();
                 ShowEndOfRun(won: true);
@@ -955,6 +969,8 @@ namespace EmberDeck.View
             }
 
             _run.FightNumber++;
+            // After FightNumber advances, so the next act's first fight counts as its first.
+            if (_run.IsBoss) _run.BeginNextAct();
             ShowMap();
         }
 
@@ -1040,6 +1056,15 @@ namespace EmberDeck.View
             _mapView.Hide();
             _restView?.Hide();
             StartFight(encounter);
+        }
+
+        /// <summary>Capture-harness only: moves on to the next act's map, as if its boss had just been beaten.</summary>
+        public void DebugStartNextAct()
+        {
+            if (_run == null || _run.Act >= _config.Acts) return;
+            _run.FightNumber++;
+            _run.BeginNextAct();
+            ShowMap();
         }
 
         /// <summary>Capture-harness only: no Energy left and Heat past the threshold, so the end-turn and Heat tips come up.</summary>

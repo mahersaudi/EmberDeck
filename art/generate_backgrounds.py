@@ -31,6 +31,16 @@ BACKGROUNDS = {
                "rivers of lava far below, red and orange glow, overwhelming scale, " + EMPTY,
     "bg_map": "top-down view of a dark volcanic wasteland at night, faint glowing trails of cooling lava, "
               "ash plains and black rock, like an old map seen from above, muted and dark, " + EMPTY,
+
+    # Act 2, the Obsidian Deep: below the forge, black glass and violet crystal light.
+    "bg_hallway_2": "deep underground cavern of black volcanic glass, violet crystal clusters glowing faintly "
+                    "in the walls, thin rivers of magma far below, drifting cinders, " + EMPTY,
+    "bg_elite_2": "vast cathedral-like cave of towering obsidian spires, cold violet crystal light, "
+                  "dark smoke, cracked black glass floor, ominous, " + EMPTY,
+    "bg_boss_2": "enormous volcanic lair deep underground, a lake of molten lava ringed by black obsidian cliffs, "
+                 "violet crystals high above, red glow and heat haze, overwhelming scale, " + EMPTY,
+    "bg_map_2": "top-down view of deep dark caverns of black glass, faint violet crystal veins and thin glowing "
+                "magma channels, like an old map seen from above, muted and dark, " + EMPTY,
 }
 
 # (colours wanted, things to avoid), in the generator's palette format.
@@ -39,6 +49,10 @@ PALETTES = {
     "bg_elite": ("ash grey and violet palette, cold purple firelight, dark", AVOID + ", snow, ice, winter, frost, bare trees"),
     "bg_boss": ("molten red and orange glow, black iron", AVOID),
     "bg_map": ("muted dark earth tones, faint orange glow", AVOID + ", snow, ice"),
+    "bg_hallway_2": ("black obsidian and deep violet palette, faint orange magma glow", AVOID + ", snow, ice"),
+    "bg_elite_2": ("black and cold violet palette, dim crystal light", AVOID + ", snow, ice, winter"),
+    "bg_boss_2": ("molten red lava and black obsidian, violet highlights", AVOID),
+    "bg_map_2": ("very dark violet and black tones, faint orange glow", AVOID + ", snow, ice"),
 }
 
 WIDTH, HEIGHT = 1344, 768

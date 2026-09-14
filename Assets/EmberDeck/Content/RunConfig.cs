@@ -42,6 +42,24 @@ namespace EmberDeck.Content
         [Tooltip("Encounter pools for a run. The fixed lists above remain for one-off fights.")]
         public List<EncounterData> Encounters = new();
 
+        [Tooltip("Acts in a run. Each has its own map, encounter pools and boss; beating the last boss wins.")]
+        public int Acts = 2;
+
+        [Tooltip("Shown on the map, one per act.")]
+        public List<string> ActNames = new();
+
+        public string ActName(int act) =>
+            act >= 1 && act <= ActNames.Count && !string.IsNullOrEmpty(ActNames[act - 1]) ? ActNames[act - 1] : $"Act {act}";
+
+        /// <summary>The boss waiting at the top of an act's map, for its name and portrait.</summary>
+        public EnemyData BossOf(int act)
+        {
+            foreach (var encounter in Encounters)
+                if (encounter != null && encounter.Tier == EncounterTier.Boss && encounter.Act == act && encounter.Enemies.Count > 0)
+                    return encounter.Enemies[0];
+            return null;
+        }
+
         [Tooltip("Hallway fights on rows below this draw from the Early pool; the rest from Late.")]
         public int EarlyRows = 3;
 
@@ -85,6 +103,12 @@ namespace EmberDeck.Content
 
         [Tooltip("Enemy HP gained per fight beyond the first, as a fraction.")]
         public float EnemyScalingPerFight = 0.18f;
+
+        [Tooltip("Per-act overrides of EnemyScalingPerFight, first entry for Act 1. Missing entries use it.")]
+        public List<float> ActScalingPerFight = new();
+
+        public float ScalingPerFight(int act) =>
+            act >= 1 && act <= ActScalingPerFight.Count ? ActScalingPerFight[act - 1] : EnemyScalingPerFight;
 
         [Tooltip("Gold a run starts with: enough for one card or one removal at the first shop.")]
         public int StartingGold = 99;

@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.EncounterData
   Id: salamanders
   Tier: 2
+  Act: 1
   Enemies:
   - {fileID: 11400000, guid: 8234295258a3a4674bc6a37046af57bf, type: 2}
   - {fileID: 11400000, guid: 8234295258a3a4674bc6a37046af57bf, type: 2}

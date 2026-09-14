@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.EncounterData
   Id: imp_and_emberling
   Tier: 1
+  Act: 1
   Enemies:
   - {fileID: 11400000, guid: 3dfc8130ff0fb4fb6b331ff2d8fd308f, type: 2}
   - {fileID: 11400000, guid: 47adfd6a5e2e04b9e9f1f89cf6ef4d27, type: 2}

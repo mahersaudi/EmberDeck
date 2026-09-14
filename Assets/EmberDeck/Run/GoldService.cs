@@ -11,14 +11,13 @@ namespace EmberDeck.Run
     /// </summary>
     public static class GoldService
     {
-        /// <summary>Gold for winning the current fight. Nothing for the boss: the run ends there.</summary>
+        /// <summary>Gold for winning the current fight. A boss pays like two elites, for the act that follows it.</summary>
         public static int ForVictory(RunState run)
         {
-            if (run.IsBoss) return 0;
             var rng = new DeterministicRng(run.Seed ^ unchecked(run.FightNumber * 0x5851F42D) ^ ((run.ActiveNode?.Row ?? 0) * 0x2F1E3D));
             // An elite pays about two and a half hallways, on top of its relic: it costs about that
             // much more health.
-            return run.IsElite ? rng.Range(25, 36) : rng.Range(10, 17);
+            return run.IsBoss ? rng.Range(55, 71) : run.IsElite ? rng.Range(25, 36) : rng.Range(10, 17);
         }
 
         /// <summary>Gold found at a treasure node, alongside its card.</summary>

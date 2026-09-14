@@ -337,6 +337,19 @@ namespace EmberDeck.View
                         yield return Capture($"enc-{id}.png");
                     }
 
+                // Act 2: past the first boss onto the second map, with its tip, then without.
+                var actHost = FindFirstObjectByType<CombatView>();
+                if (actHost != null)
+                {
+                    actHost.DebugStartNextAct();
+                    yield return new WaitForSeconds(0.8f);
+                    Debug.Log($"[AutoCapture] tip on the act 2 map: {Coach.CurrentId ?? "none"}; {actHost.DebugRunSummary()}");
+                    yield return Capture("11-act2-map.png");
+                    Click(FindButton("CoachGotIt"));
+                    yield return new WaitForSeconds(0.3f);
+                    yield return Capture("11b-act2-map-clean.png");
+                }
+
                 // The end-of-run screen both ways, over the run the harness has been playing.
                 var endHost = FindFirstObjectByType<CombatView>();
                 if (endHost != null)
