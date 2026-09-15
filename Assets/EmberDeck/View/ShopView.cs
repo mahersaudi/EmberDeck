@@ -146,6 +146,7 @@ namespace EmberDeck.View
 
             // ── The removal picker, over everything else in the shop ──
             _picker = UiFactory.Panel(root, "RemovePicker", new Color(0.03f, 0.03f, 0.05f, 1f));
+            NavHint.On(_picker).Modal = true;
             UiFactory.Stretch(_picker);
             var pickTitle = UiFactory.Label(_picker, "PickTitle", "Choose a card to remove", 34, Palette.Ink);
             UiFactory.Place(pickTitle.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -70f), new Vector2(1000f, 46f));
@@ -156,6 +157,7 @@ namespace EmberDeck.View
             var cancel = UiFactory.TextButton(_picker, "ShopRemoveCancel", "Cancel", Palette.PanelRaised, Palette.InkMuted, 24);
             UiFactory.Place((RectTransform)cancel.transform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 40f), new Vector2(220f, 64f));
             cancel.onClick.AddListener(ClosePicker);
+            NavHint.On(cancel).Cancel = true;
             _picker.gameObject.SetActive(false);
 
             gameObject.SetActive(false);

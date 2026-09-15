@@ -116,6 +116,7 @@ namespace EmberDeck.View
             UiFactory.Place((RectTransform)back.transform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
                             new Vector2(150f, 80f), new Vector2(260f, 68f));
             back.onClick.AddListener(Close);
+            NavHint.On(back).Cancel = true;
 
             gameObject.SetActive(false);
         }

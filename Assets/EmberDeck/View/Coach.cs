@@ -64,6 +64,12 @@ namespace EmberDeck.View
             }
         }
 
+        /// <summary>The tip bubble while one is on screen and not hidden behind a menu, for PadNavigator.</summary>
+        public static Transform NavScope =>
+            _instance != null && _instance._current != null && _instance._bubble.gameObject.activeInHierarchy && _instance._group.alpha > 0.5f
+                ? _instance._bubble
+                : null;
+
         /// <summary>The tip on screen, or null — for the capture harness.</summary>
         public static string CurrentId => _instance != null ? _instance._current?.Id : null;
 
@@ -254,6 +260,9 @@ namespace EmberDeck.View
             var gotIt = UiFactory.TextButton(row.transform, "CoachGotIt", "Got it", Palette.PanelRaised, Palette.Ink, 21);
             Size(gotIt, 130f, 42f);
             gotIt.onClick.AddListener(Dismiss);
+            var gotItHint = NavHint.On(gotIt);
+            gotItHint.Priority = 10;
+            gotItHint.Cancel = true;
 
             _bubble.gameObject.SetActive(false);
         }

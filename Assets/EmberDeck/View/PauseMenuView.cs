@@ -46,20 +46,21 @@ namespace EmberDeck.View
             UiFactory.Place(note.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
                             new Vector2(0f, -110f), new Vector2(460f, 60f));
 
-            Button(card, "Resume", "Resume", -200f, () => Resumed?.Invoke());
-            Button(card, "PauseSettings", "Settings", -290f, () => SettingsChosen?.Invoke());
-            Button(card, "MainMenu", "Main Menu", -380f, () => MainMenuChosen?.Invoke());
-            Button(card, "PauseQuit", "Quit", -470f, () => QuitChosen?.Invoke());
+            NavHint.On(MenuButton(card, "Resume", "Resume", -200f, () => Resumed?.Invoke())).Cancel = true;
+            MenuButton(card, "PauseSettings", "Settings", -290f, () => SettingsChosen?.Invoke());
+            MenuButton(card, "MainMenu", "Main Menu", -380f, () => MainMenuChosen?.Invoke());
+            MenuButton(card, "PauseQuit", "Quit", -470f, () => QuitChosen?.Invoke());
 
             gameObject.SetActive(false);
         }
 
-        static void Button(Transform parent, string name, string text, float y, Action onClick)
+        static Button MenuButton(Transform parent, string name, string text, float y, Action onClick)
         {
             var button = UiFactory.TextButton(parent, name, text, Palette.PanelRaised, Palette.Ink, 28);
             UiFactory.Place((RectTransform)button.transform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
                             new Vector2(0f, y), new Vector2(380f, 70f));
             button.onClick.AddListener(() => onClick());
+            return button;
         }
 
         public void Show()

@@ -95,6 +95,7 @@ namespace EmberDeck.View
             UiFactory.Place((RectTransform)newRun.transform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
                             new Vector2(-150f, 60f), new Vector2(260f, 72f));
             newRun.onClick.AddListener(() => NewRunChosen?.Invoke());
+            NavHint.On(newRun).Priority = 10;
 
             var menu = UiFactory.TextButton(root, "EndMainMenu", "Main Menu", Palette.PanelRaised, Palette.Ink, 28);
             UiFactory.Place((RectTransform)menu.transform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
@@ -230,6 +231,7 @@ namespace EmberDeck.View
             {
                 var (card, count) = counts[i];
                 var view = CardView.Create(_deckGrid, new CardInstance(card));
+                NavHint.On(view).Skip = true;
                 UiFactory.Place((RectTransform)view.transform, new Vector2(0f, 1f), new Vector2(0f, 1f), Vector2.zero,
                                 new Vector2(CardView.Width, CardView.Height));
                 // Anchored and pivoted at the top-left corner, so the position is the corner itself.

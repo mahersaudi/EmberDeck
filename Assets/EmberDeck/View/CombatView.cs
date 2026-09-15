@@ -102,20 +102,17 @@ namespace EmberDeck.View
             EnsureEventSystem();
             BuildStaticUi();
             BuildMenus();
+            BuildNavigation();
             ShowMainMenu();
         }
 
-        /// <summary>Escape backs out one layer at a time: settings first, then the pause menu.</summary>
         void Update()
         {
             // Time spent in a run, not in its menus.
             if (_run != null && !_mainMenu.IsOpen && !_pause.IsOpen && !_endOfRun.IsOpen && !_settings.IsOpen)
                 _run.Stats.Seconds += Time.unscaledDeltaTime;
 
-            if (!Input.GetKeyDown(KeyCode.Escape)) return;
-            if (_settings.IsOpen) { _settings.Close(); return; }
-            if (_mainMenu.IsOpen || _endOfRun.IsOpen) return;
-            TogglePause();
+            // Escape, and B on a pad, arrive through PadNavigator: see OnNavCancel.
         }
 
         void BuildMenus()
@@ -183,6 +180,78 @@ namespace EmberDeck.View
             _mainMenu.SetProgress(_config);
             _mainMenu.Show(detail);
             AudioDirector.PlayMusic(MusicTrack.Map);
+        }
+
+        // ── Keyboard and gamepad ─────────────────────────────────────────────────────
+
+        void BuildNavigation()
+        {
+            var nav = PadNavigator.Create();
+            nav.Scope = NavScope;
+            nav.InCombat = () => _session != null && !State.IsOver && NavScope() == _root;
+            nav.Cancelled += OnNavCancel;
+            nav.PauseRequested += () =>
+            {
+                if (_settings.IsOpen) _settings.Close();
+                else TogglePause();
+            };
+            nav.EndTurnRequested += () =>
+            {
+                AudioDirector.Play(Sfx.Click);
+                OnEndTurnClicked();
+            };
+        }
+
+        /// <summary>The screen in front: the one keyboard and pad focus may move within.</summary>
+        Transform NavScope()
+        {
+            if (_settings.IsOpen) return _settings.transform;
+            if (_pause.IsOpen) return _pause.transform;
+            if (_mainMenu.IsOpen) return _mainMenu.transform;
+            if (_endOfRun.IsOpen) return _endOfRun.transform;
+            if (_rewardPanel.gameObject.activeSelf) return _rewardPanel;
+            if (_eventView.IsOpen) return _eventView.transform;
+            if (_shopView.gameObject.activeSelf) return _shopView.transform;
+            if (_restView.gameObject.activeSelf) return _restView.transform;
+            if (_mapView.gameObject.activeSelf) return _mapView.transform;
+            return _root;
+        }
+
+        /// <summary>
+        /// Back where the screen has no Back button of its own. Mid-aim, it puts the card or potion down and
+        /// returns focus to it; otherwise it opens or closes the pause menu, as Escape always has.
+        /// </summary>
+        void OnNavCancel()
+        {
+            if (_session != null && NavScope() == _root && (_selectedCard != null || _selectedPotion >= 0))
+            {
+                var card = _selectedCard;
+                int potion = _selectedPotion;
+                _selectedCard = null;
+                _selectedPotion = -1;
+                AudioDirector.Play(Sfx.Click, 0.6f);
+                Redraw();
+                if (card != null) PadNavigator.Focus(card.gameObject);
+                else if (potion >= 0 && potion < _potionSlots.Count) PadNavigator.Focus(_potionSlots[potion].frame.gameObject);
+                return;
+            }
+            if (_mainMenu.IsOpen || _endOfRun.IsOpen) return;
+            TogglePause();
+        }
+
+        GameObject FirstLivingEnemy()
+        {
+            foreach (var view in _enemyViews)
+                if (view != null && view.Enemy.IsAlive) return view.gameObject;
+            return null;
+        }
+
+        /// <summary>After a play, focus the card that now sits where the played one was, or End Turn when the hand is empty.</summary>
+        void FocusHand(int index)
+        {
+            if (!PadNavigator.Active) return;
+            var hand = _cardViews.FindAll(v => v != null && !v.IsLeaving);
+            PadNavigator.Focus(hand.Count > 0 ? hand[Mathf.Clamp(index, 0, hand.Count - 1)].gameObject : _endTurnButton.gameObject);
         }
 
         /// <summary>Opens or closes the pause menu during a run. Public so the capture harness can photograph it.</summary>
@@ -648,6 +717,7 @@ namespace EmberDeck.View
                 _selectedCard = null;
                 AudioDirector.Play(Sfx.Click, 0.7f);
                 Redraw();
+                PadNavigator.Focus(_selectedPotion >= 0 ? FirstLivingEnemy() : _potionSlots[slot].frame.gameObject);
                 return;
             }
 
@@ -999,12 +1069,16 @@ namespace EmberDeck.View
                 _selectedCard = _selectedCard == view ? null : view;
                 AudioDirector.Play(Sfx.Click, 0.7f);
                 Redraw();
+                // Aiming moves focus to the enemies, so the next press of A plays the card.
+                PadNavigator.Focus(_selectedCard != null ? FirstLivingEnemy() : view.gameObject);
                 return;
             }
 
+            int index = _cardViews.IndexOf(view);
             Engine.TryPlayCard(view.Card, State.Player);
             _selectedCard = null;
             Redraw();
+            FocusHand(index);
         }
 
         void OnEnemyClicked(EnemyView view)
@@ -1014,15 +1088,19 @@ namespace EmberDeck.View
             if (_selectedPotion >= 0)
             {
                 PotionService.Use(_run, _selectedPotion, Engine, view.Enemy);
+                Coach.Complete("potion");
                 _selectedPotion = -1;
                 Redraw();
+                FocusHand(0);
                 return;
             }
             if (_selectedCard == null) return;
 
+            int index = _cardViews.IndexOf(_selectedCard);
             Engine.TryPlayCard(_selectedCard.Card, view.Enemy);
             _selectedCard = null;
             Redraw();
+            FocusHand(index);
         }
 
 #if DEVELOPMENT_BUILD || UNITY_EDITOR
@@ -1230,6 +1308,7 @@ namespace EmberDeck.View
                 {
                     view = CardView.Create(_handRow, card);
                     view.Clicked += OnCardClicked;
+                    NavHint.On(view).Priority = 10;   // a fight opens with focus in the hand
                     view.SpawnAt(DrawPilePoint, 0.3f);
                 }
                 next.Add(view);

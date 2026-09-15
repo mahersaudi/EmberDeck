@@ -77,6 +77,7 @@ namespace EmberDeck.View
 
             // ── The upgrade picker ──────────────────────────────────────────────────────
             _picker = UiFactory.Panel(root, "Picker", new Color(0f, 0f, 0f, 0f));
+            NavHint.On(_picker).Modal = true;
             UiFactory.Stretch(_picker);
 
             // Cards are drawn at full size inside a scaled grid. CardView resets its own scale
@@ -89,6 +90,7 @@ namespace EmberDeck.View
             UiFactory.Place((RectTransform)back.transform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
                             new Vector2(0f, 40f), new Vector2(200f, 60f));
             back.onClick.AddListener(ShowChoices);
+            NavHint.On(back).Cancel = true;
 
             gameObject.SetActive(false);
         }

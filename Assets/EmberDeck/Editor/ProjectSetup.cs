@@ -28,9 +28,70 @@ namespace EmberDeck.EditorTools
             // control with everything else.
             PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Standalone, Identifier);
             ApplyIcon();
+            ApplyInput();
 
             AssetDatabase.SaveAssets();
             Debug.Log($"[EmberDeck] Applied: {Company} / {Product} / {Identifier}");
+        }
+
+        // Joystick axes for PadNavigator: both sticks' first axes, and the D-pad, which Windows and Steam
+        // Input report as the 6th and 7th axes. Y is inverted on the stick so that up is positive, as it is
+        // on the D-pad. A button needs no axis: it is read as KeyCode.JoystickButtonN.
+        static readonly (string Name, int Axis, bool Invert)[] PadAxes =
+        {
+            ("Pad Stick X", 0, false),
+            ("Pad Stick Y", 1, true),
+            ("Pad DPad X", 5, false),
+            ("Pad DPad Y", 6, false),
+        };
+
+        /// <summary>
+        /// Adds the gamepad axes to the input manager, through SerializedObject for the same reason the rest
+        /// of this class uses APIs: the settings file is the Editor's to write. Idempotent; an axis that
+        /// already exists is updated in place.
+        /// </summary>
+        public static bool ApplyInput()
+        {
+            var assets = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/InputManager.asset");
+            if (assets == null || assets.Length == 0)
+            {
+                Debug.LogWarning("[EmberDeck] Input manager settings not found; gamepad axes not added.");
+                return false;
+            }
+
+            var settings = new SerializedObject(assets[0]);
+            var axes = settings.FindProperty("m_Axes");
+            foreach (var (name, axis, invert) in PadAxes)
+            {
+                SerializedProperty entry = null;
+                for (int i = 0; i < axes.arraySize && entry == null; i++)
+                    if (axes.GetArrayElementAtIndex(i).FindPropertyRelative("m_Name").stringValue == name)
+                        entry = axes.GetArrayElementAtIndex(i);
+                if (entry == null)
+                {
+                    axes.arraySize++;
+                    entry = axes.GetArrayElementAtIndex(axes.arraySize - 1);
+                }
+
+                entry.FindPropertyRelative("m_Name").stringValue = name;
+                entry.FindPropertyRelative("descriptiveName").stringValue = "";
+                entry.FindPropertyRelative("descriptiveNegativeName").stringValue = "";
+                entry.FindPropertyRelative("negativeButton").stringValue = "";
+                entry.FindPropertyRelative("positiveButton").stringValue = "";
+                entry.FindPropertyRelative("altNegativeButton").stringValue = "";
+                entry.FindPropertyRelative("altPositiveButton").stringValue = "";
+                entry.FindPropertyRelative("gravity").floatValue = 0f;
+                entry.FindPropertyRelative("dead").floatValue = 0.2f;
+                entry.FindPropertyRelative("sensitivity").floatValue = 1f;
+                entry.FindPropertyRelative("snap").boolValue = false;
+                entry.FindPropertyRelative("invert").boolValue = invert;
+                entry.FindPropertyRelative("type").intValue = 2;   // joystick axis
+                entry.FindPropertyRelative("axis").intValue = axis;
+                entry.FindPropertyRelative("joyNum").intValue = 0; // any controller
+            }
+
+            if (settings.ApplyModifiedPropertiesWithoutUndo()) AssetDatabase.SaveAssets();
+            return true;
         }
 
         /// <summary>

@@ -37,6 +37,8 @@ namespace EmberDeck.View
             // first draw. Set in the runner, the menu had already shown the real profile's numbers.
             // Every first-run tip unseen, and the player's own record of seen tips left untouched.
             Coach.UseMemoryOnly();
+            // The harness drives focus itself; a mouse moved on the desk must not switch it off mid-shot.
+            PadNavigator.IgnoreHardware = true;
             // A profile in memory, part-way along the track and with difficulty open, so the menu shows the
             // progress panel and its difficulty control, and the end-of-run screen crosses an unlock.
             EmberDeck.Run.Profile.UseMemoryOnly(embers: 30, maxDifficulty: 2);
@@ -88,6 +90,19 @@ namespace EmberDeck.View
                     Tooltip.Hide();
                 }
                 Click(FindButton("DifficultyPrevious"));   // back to normal, so the run below is the base game
+
+                // Controller on the menu: the first press shows focus on Continue, the second moves to New Run.
+                var padMenu = PadNavigator.Instance;
+                if (padMenu != null)
+                {
+                    padMenu.SimulateMove(Vector2.down);
+                    yield return new WaitForSeconds(0.3f);
+                    padMenu.SimulateMove(Vector2.down);
+                    yield return new WaitForSeconds(0.4f);
+                    Debug.Log($"[AutoCapture] pad on the menu: {PadNavigator.FocusedName}");
+                    yield return Capture("12-pad-menu.png");
+                    padMenu.SetMouseMode();
+                }
 
                 // Settings and back, then a new run — all through the menu's own buttons.
                 var settingsButton = FindButton("Settings");
@@ -181,6 +196,42 @@ namespace EmberDeck.View
                     Debug.Log($"[AutoCapture] tip with potions: {Coach.CurrentId ?? "none"}");
                     Click(FindButton("CoachGotIt"));
                     yield return new WaitForSeconds(0.2f);
+                }
+
+                // Controller in a fight: focus lands in the hand, moves along it, aims a card, and plays it.
+                var pad = PadNavigator.Instance;
+                if (pad != null)
+                {
+                    pad.SimulateMove(Vector2.right);   // the first press only shows where focus is
+                    yield return new WaitForSeconds(0.6f);
+                    Debug.Log($"[AutoCapture] pad in the hand: {PadNavigator.FocusedName}");
+                    yield return Capture("12a-pad-hand.png");
+                    pad.SimulateMove(Vector2.right);
+                    yield return new WaitForSeconds(0.6f);
+                    yield return Capture("12b-pad-next-card.png");
+
+                    CardView aimed = null;
+                    foreach (var candidate in FindObjectsByType<CardView>(FindObjectsSortMode.None))
+                        if (!candidate.IsLeaving && candidate.Card.Data.Target == Content.TargetMode.SingleEnemy && candidate.Card.Data.Cost <= 1)
+                        {
+                            aimed = candidate;
+                            break;
+                        }
+                    if (aimed != null)
+                    {
+                        PadNavigator.Focus(aimed.gameObject);
+                        yield return null;
+                        pad.SimulateSubmit();
+                        yield return new WaitForSeconds(0.6f);
+                        Debug.Log($"[AutoCapture] pad after aiming: {PadNavigator.FocusedName}");
+                        yield return Capture("12c-pad-target.png");
+                        pad.SimulateSubmit();
+                        yield return new WaitForSeconds(0.9f);
+                        Debug.Log($"[AutoCapture] pad after playing: {PadNavigator.FocusedName}");
+                        yield return Capture("12d-pad-played.png");
+                    }
+                    else Debug.LogError("[AutoCapture] no aimed card in hand for the pad test");
+                    pad.SetMouseMode();
                 }
 
                 // Drive one full turn cycle through the real button, so the shot exercises
@@ -281,6 +332,20 @@ namespace EmberDeck.View
                 Debug.Log($"[AutoCapture] ended on {(FindButton("Skip") != null ? "rewards" : "something else")}");
                 yield return Capture("04-rewards.png");
 
+                // Controller on the reward screen, once its tip is read.
+                Click(FindButton("CoachGotIt"));
+                var padRewards = PadNavigator.Instance;
+                if (padRewards != null)
+                {
+                    padRewards.SimulateMove(Vector2.right);
+                    yield return new WaitForSeconds(0.3f);
+                    padRewards.SimulateMove(Vector2.right);
+                    yield return new WaitForSeconds(0.6f);
+                    Debug.Log($"[AutoCapture] pad on rewards: {PadNavigator.FocusedName}");
+                    yield return Capture("12e-pad-rewards.png");
+                    padRewards.SetMouseMode();
+                }
+
                 // Take a reward and prove the loop closes: deck grows, fight number advances,
                 // health carries over. A screenshot of the reward screen alone does not show
                 // that any of that actually happens.
@@ -290,6 +355,16 @@ namespace EmberDeck.View
                     Click(offers[0].GetComponent<Button>());
                     yield return new WaitForSeconds(1.0f);
                     yield return Capture("05-map-after.png");
+
+                    var padMap = PadNavigator.Instance;
+                    if (padMap != null)
+                    {
+                        padMap.SimulateMove(Vector2.up);
+                        yield return new WaitForSeconds(0.6f);
+                        Debug.Log($"[AutoCapture] pad on the map: {PadNavigator.FocusedName}");
+                        yield return Capture("12f-pad-map.png");
+                        padMap.SetMouseMode();
+                    }
                 }
 
                 // The rest site sits several rows up the map, beyond anything the harness plays

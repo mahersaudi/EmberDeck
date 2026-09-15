@@ -15,7 +15,7 @@ namespace EmberDeck.View
     /// square, which is smaller than the detail in the art — a painting at that size is mud,
     /// and the whole point of having art is lost.
     /// </summary>
-    public sealed class CardView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+    public sealed class CardView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, ISelectHandler, IDeselectHandler
     {
         public const float Width = 202f;
         public const float Height = 296f;
@@ -45,6 +45,9 @@ namespace EmberDeck.View
         int _siblingBeforeHover = -1;
 
         public event Action<CardView> Clicked;
+
+        /// <summary>Flying to a pile after being played: no longer part of the hand, and never focused.</summary>
+        public bool IsLeaving => _leaving;
 
         public static CardView Create(Transform parent, CardInstance card)
         {
@@ -195,6 +198,19 @@ namespace EmberDeck.View
             if (_siblingBeforeHover < 0 || transform.parent == null) return;
             transform.SetSiblingIndex(Mathf.Min(_siblingBeforeHover, transform.parent.childCount - 1));
             _siblingBeforeHover = -1;
+        }
+
+        // Keyboard and pad focus lifts a card as the pointer does. A mouse click also selects the button it
+        // presses, and that selection must not leave the card lifted after the pointer has gone.
+        public void OnSelect(BaseEventData eventData)
+        {
+            if (eventData is PointerEventData) return;
+            OnPointerEnter(null);
+        }
+
+        public void OnDeselect(BaseEventData eventData)
+        {
+            if (_hovered) OnPointerExit(null);
         }
 
         void Update()

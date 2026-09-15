@@ -18,8 +18,10 @@ boss portrait sits beside the buttons: the run's destination, seen before it sta
 
 ## Pausing, and what is saved
 
-**Escape** opens the pause menu during a run (map, fight, reward or rest site) and backs out one
-layer at a time: settings first, then the pause menu.
+**Escape** (or B on a gamepad) backs out one layer at a time. It presses the screen's own Back button
+when there is one (settings, the pause menu, the shop and rest-site pickers), puts down a card being
+aimed, and otherwise opens the pause menu during a run. Start on a gamepad also opens it. See
+`docs/controller.md`.
 
 The run is written to disk each time the map is shown, and nowhere else. Leaving from a fight, a
 reward or a rest site therefore returns the player to their last visit to the map. The pause menu

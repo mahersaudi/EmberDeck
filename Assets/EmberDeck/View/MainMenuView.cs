@@ -77,6 +77,7 @@ namespace EmberDeck.View
                             new Vector2(156f, 190f), new Vector2(1000f, 40f));
 
             _continue = MenuButton(root, "Continue", "Continue", 60f, () => ContinueChosen?.Invoke());
+            NavHint.On(_continue).Priority = 10;
             _continueDetail = UiFactory.Label(root, "ContinueDetail", "", 22, Palette.InkMuted, TextAnchor.MiddleLeft);
             UiFactory.Place(_continueDetail.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f),
                             new Vector2(490f, 60f), new Vector2(700f, 40f));

@@ -67,6 +67,7 @@ namespace EmberDeck.EditorTools
             PlayerSettings.bundleVersion = Version;
             // Applied on every build, so no build can ship with Unity's default icon.
             ProjectSetup.ApplyIcon();
+            ProjectSetup.ApplyInput();
             PlayerSettings.macOS.buildNumber = Version;
 
             string folder = platform == Platform.Windows ? "Windows" : "macOS";
