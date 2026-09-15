@@ -36,6 +36,8 @@ namespace EmberDeck.View
             // Here rather than in the runner: this runs before any Start, so the main menu reads these on its
             // first draw. Set in the runner, the menu had already shown the real profile's numbers.
             // Every first-run tip unseen, and the player's own record of seen tips left untouched.
+            // -emberdeck-lang ar photographs the Arabic interface; the choice is never saved.
+            if (ReadArg("-emberdeck-lang") == "ar") Loc.UseMemoryOnly(Language.Arabic);
             Coach.UseMemoryOnly();
             // The harness drives focus itself; a mouse moved on the desk must not switch it off mid-shot.
             PadNavigator.IgnoreHardware = true;
@@ -454,6 +456,14 @@ namespace EmberDeck.View
                     endHost.DebugShowEndOfRun(won: true);
                     yield return new WaitForSeconds(1.3f);
                     yield return Capture("10-end-victory.png");
+                }
+
+                if (Loc.IsRtl)
+                {
+                    var sweepHost = FindFirstObjectByType<CombatView>();
+                    if (sweepHost != null) sweepHost.DebugSweepTranslations();
+                    Debug.Log($"[AutoCapture] untranslated: {Loc.Missing.Count}");
+                    foreach (var missing in Loc.Missing) Debug.Log("[Untranslated] " + missing.Replace("\n", "\\n"));
                 }
 
                 // Report the state the save should restore to, so a second launch can be

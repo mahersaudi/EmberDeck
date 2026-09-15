@@ -175,8 +175,8 @@ namespace EmberDeck.View
                 {
                     if (unlock == null) continue;
                     lines.Add(data.embers >= unlock.Threshold
-                        ? $"+  {unlock.DisplayName}"
-                        : $"<color=#{muted}>{unlock.Threshold,3}  {unlock.DisplayName}</color>");
+                        ? $"+  {Loc.T(unlock.DisplayName)}"
+                        : $"<color=#{muted}>{unlock.Threshold,3}  {Loc.T(unlock.DisplayName)}</color>");
                 }
             _unlockList.text = string.Join("\n", lines);
 

@@ -103,7 +103,7 @@ namespace EmberDeck.View
                 UiFactory.Place(label.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(24f, 16f), new Vector2(860f, 36f));
 
                 string effect = Keywords.Highlight(choice.Effect);
-                if (blocked != null) effect += $"   <color=#{blockedColor}>({blocked})</color>";
+                if (blocked != null) effect += $"   <color=#{blockedColor}>({Loc.T(blocked)})</color>";
                 var effectLabel = UiFactory.Label(panel, "Effect", effect, 20, Palette.InkMuted, TextAnchor.MiddleLeft);
                 UiFactory.Place(effectLabel.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(24f, -18f), new Vector2(860f, 30f));
 

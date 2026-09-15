@@ -105,11 +105,46 @@ namespace EmberDeck.View
             return result;
         }
 
-        /// <summary>Colours every keyword in a sentence, so the words that have a definition look like it.</summary>
-        public static string Highlight(string text) =>
-            string.IsNullOrEmpty(text)
-                ? text
-                : Words.Replace(text, match =>
-                    $"<color=#{ColorUtility.ToHtmlStringRGB(ByWord[match.Value].Color)}>{match.Value}</color>");
+        static Regex _arabicWords;
+        static Dictionary<string, Keyword> _byArabicWord;
+
+        /// <summary>
+        /// Translates a sentence, then colours every keyword in it, so the words that have a definition look
+        /// like it. Translating first matters: a coloured word splits the sentence into pieces no translation
+        /// key matches whole.
+        /// </summary>
+        public static string Highlight(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return text;
+            text = Loc.Translate(text);
+            if (!Loc.IsRtl)
+                return Words.Replace(text, match => Colour(ByWord[match.Value], match.Value));
+
+            EnsureArabicWords();
+            return _arabicWords == null ? text : _arabicWords.Replace(text, match => Colour(_byArabicWord[match.Value], match.Value));
+        }
+
+        static string Colour(Keyword keyword, string word) => $"<color=#{ColorUtility.ToHtmlStringRGB(keyword.Color)}>{word}</color>";
+
+        /// <summary>
+        /// The keywords' Arabic words, longest first. A letter on either side means the word is part of a longer
+        /// one — "\b" would do, but Arabic attaches prefixes, and a keyword inside a longer word is not the keyword.
+        /// </summary>
+        static void EnsureArabicWords()
+        {
+            if (_byArabicWord != null) return;
+            _byArabicWord = new Dictionary<string, Keyword>();
+            var words = new List<string>();
+            foreach (var keyword in All)
+            {
+                string word = Loc.T(keyword.Word);
+                if (word == keyword.Word || _byArabicWord.ContainsKey(word)) continue;
+                _byArabicWord[word] = keyword;
+                words.Add(word);
+            }
+            if (words.Count == 0) return;
+            words.Sort((a, b) => b.Length.CompareTo(a.Length));
+            _arabicWords = new Regex(@"(?<!\p{L})(" + string.Join("|", words.ConvertAll(Regex.Escape)) + @")(?!\p{L})");
+        }
     }
 }

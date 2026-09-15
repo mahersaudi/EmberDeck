@@ -142,7 +142,8 @@ namespace EmberDeck.View
 
             var horizontal = row.AddComponent<HorizontalLayoutGroup>();
             horizontal.spacing = 10f;
-            horizontal.childAlignment = TextAnchor.UpperLeft;
+            horizontal.childAlignment = Loc.IsRtl ? TextAnchor.UpperRight : TextAnchor.UpperLeft;
+            horizontal.reverseArrangement = Loc.IsRtl;   // the icon on the reading side
             horizontal.childControlWidth = true;
             horizontal.childControlHeight = true;
             horizontal.childForceExpandWidth = false;
@@ -186,11 +187,15 @@ namespace EmberDeck.View
             float gap = Gap * scale;
             const float margin = 8f;
 
-            float x = corners[2].x + gap;
-            if (x + size.x > Screen.width - margin) x = corners[1].x - gap - size.x;
+            // Min and max rather than fixed corners: under a mirrored layout the "top-right" corner is on the left.
+            float left = Mathf.Min(corners[0].x, corners[2].x), right = Mathf.Max(corners[0].x, corners[2].x);
+            float top = Mathf.Max(corners[0].y, corners[2].y);
+
+            float x = right + gap;
+            if (x + size.x > Screen.width - margin) x = left - gap - size.x;
             x = Mathf.Clamp(x, margin, Mathf.Max(margin, Screen.width - size.x - margin));
 
-            float y = Mathf.Min(corners[1].y, Screen.height - margin);
+            float y = Mathf.Min(top, Screen.height - margin);
             y = Mathf.Max(y, size.y + margin);
 
             _panel.position = new Vector3(x, y, 0f);

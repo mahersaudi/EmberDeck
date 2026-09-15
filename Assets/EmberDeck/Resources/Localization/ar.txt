@@ -1,0 +1,1112 @@
+# EmberDeck — Arabic.
+#
+# An English line, then its Arabic on the next line after "= ". A blank line or a # comment ends an entry.
+# {0}, {1}… are templates: they match any text there, and words they capture are translated in turn.
+# Written without harakat: legacy Text cannot place a mark over its letter (docs/localization.md).
+# Keywords are written as standalone words ("اكسب 5 درع"), so Keywords.Highlight can find and colour them.
+
+# ── Keywords and statuses ────────────────────────────────────────────────────────
+Block
+= درع
+Energy
+= طاقة
+Heat
+= حرارة
+Overheat
+= فرط الحرارة
+Burn
+= حرق
+Strength
+= قوة
+Dexterity
+= براعة
+Vulnerable
+= هشاشة
+Weak
+= ضعف
+Exhaust
+= استنفاد
+Power
+= قدرة
+Absorbs damage before HP is lost. Removed at the start of its owner's next turn.
+= يمتص الضرر قبل أن تنقص الصحة. يزول في بداية الدور التالي لصاحبه.
+Spent to play cards. Refills at the start of each turn.
+= تصرف للعب البطاقات. تمتلئ في بداية كل دور.
+Built up by cards and kept between turns. Some cards spend it. Too much causes Overheat.
+= تتراكم من البطاقات وتبقى بين الأدوار. بعض البطاقات تستهلكها. زيادتها تسبب فرط الحرارة.
+At the end of your turn, lose 1 HP for each point of Heat above your Overheat threshold (10, unless a card raises it).
+= في نهاية دورك تخسر 1 صحة عن كل نقطة حرارة فوق حد فرط الحرارة (10، ما لم ترفعه بطاقة).
+At the end of its turn, loses HP equal to its Burn, ignoring Block. Then Burn goes down by 1.
+= في نهاية دوره يخسر صحة بقدر ما عليه من حرق، متجاهلا درع. ثم ينقص حرق بمقدار 1.
+Each attack deals that much more damage.
+= كل هجوم يسبب ضررا إضافيا بقدرها.
+Whenever Block is gained, gain that much more.
+= كلما اكتسبت درع، تكسب فوقه بقدرها.
+Takes 50% more damage from attacks. Lasts that many turns.
+= يتلقى ضررا أكثر بنسبة 50% من الهجمات. تستمر عددا من الأدوار بقدرها.
+Deals 25% less damage with attacks. Lasts that many turns.
+= يسبب ضررا أقل بنسبة 25% بهجماته. يستمر عددا من الأدوار بقدره.
+Removed from your deck until the end of this combat.
+= تزال من مجموعتك حتى نهاية هذه المعركة.
+Played once. Its effect lasts for the rest of the combat.
+= تلعب مرة واحدة، ويبقى أثرها حتى نهاية المعركة.
+
+Block {0}
+= درع {0}
+Heat {0}
+= حرارة {0}
+Energy {0}/{1}
+= طاقة {0}/{1}
+Burn {0}
+= حرق {0}
+Strength {0}
+= قوة {0}
+Dexterity {0}
+= براعة {0}
+Vulnerable {0}
+= هشاشة {0}
+Weak {0}
+= ضعف {0}
+Overheat threshold {0}
+= حد فرط الحرارة {0}
+Overheating: -{0} HP at end of turn
+= فرط حرارة: −{0} صحة في نهاية الدور
+
+# ── Card text, built from effects ────────────────────────────────────────────────
+Deal {0} damage.
+= سبب {0} ضرر.
+Deal {0} damage {1} times.
+= سبب {0} ضرر {1} مرات.
+Each hit applies {0} {1}.
+= كل ضربة تطبق {0} {1}.
+Apply {0} {1} to yourself.
+= طبق {0} {1} على نفسك.
+Apply {0} {1} to the target.
+= طبق {0} {1} على الهدف.
+Deal damage equal to your Block.
+= سبب ضررا يساوي درعك.
+Deal damage equal to {0}x your Block.
+= سبب ضررا يساوي {0}× درعك.
+Lose all Block.
+= اخسر كل درعك.
+Deal damage equal to the target's {0}.
+= سبب ضررا يساوي {0} على الهدف.
+Deal damage equal to {0}x the target's {1}.
+= سبب ضررا يساوي {0}× {1} على الهدف.
+Draw a card.
+= اسحب بطاقة.
+Draw {0} cards.
+= اسحب {0} بطاقات.
+Exhaust the top card of your draw pile.
+= استنفد البطاقة العليا من كومة السحب.
+Exhaust a random card from your hand.
+= استنفد بطاقة عشوائية من يدك.
+Gain {0} Block.
+= اكسب {0} درع.
+Gain {0} Energy.
+= اكسب {0} طاقة.
+Gain {0} Heat.
+= اكسب {0} حرارة.
+Heal {0} HP.
+= استعد {0} صحة.
+Double your Block.
+= ضاعف درعك.
+Multiply your Block by {0}.
+= اضرب درعك في {0}.
+Double the {0} on ALL enemies.
+= ضاعف {0} على كل الأعداء.
+Double the {0} on a target.
+= ضاعف {0} على الهدف.
+Multiply the {0} on ALL enemies by {1}.
+= اضرب {0} على كل الأعداء في {1}.
+Multiply the {0} on a target by {1}.
+= اضرب {0} على الهدف في {1}.
+Gain {0} Block per card you played this turn.
+= اكسب {0} درع لكل بطاقة لعبتها هذا الدور.
+Deal {0} damage per card you played this turn.
+= سبب {0} ضرر لكل بطاقة لعبتها هذا الدور.
+Gain {0} Block per card exhausted this combat.
+= اكسب {0} درع لكل بطاقة استنفدت في هذه المعركة.
+Deal {0} damage per card exhausted this combat.
+= سبب {0} ضرر لكل بطاقة استنفدت في هذه المعركة.
+Gain {0} + Heat Block.
+= اكسب درع يساوي {0} + حرارة.
+Gain Block equal to your Heat.
+= اكسب درع يساوي حرارة.
+Deal {0} + Heat damage.
+= سبب ضررا يساوي {0} + حرارة.
+Deal damage equal to your Heat.
+= سبب ضررا يساوي حرارة.
+Lose {0} Heat.
+= اخسر {0} حرارة.
+Lose all Heat.
+= اخسر كل الحرارة.
+Gain that much Block.
+= اكسب بقدرها درع.
+Gain {0}x that much Block.
+= اكسب {0}× بقدرها درع.
+Apply that much Burn.
+= طبق بقدرها حرق.
+Apply {0}x that much Burn.
+= طبق {0}× بقدرها حرق.
+Apply that much Burn to ALL enemies.
+= طبق بقدرها حرق على كل الأعداء.
+Apply {0}x that much Burn to ALL enemies.
+= طبق {0}× بقدرها حرق على كل الأعداء.
+Deal that much damage.
+= سبب بقدرها ضررا.
+Deal {0}x that much damage.
+= سبب {0}× بقدرها ضررا.
+Deal that much damage to ALL enemies.
+= سبب بقدرها ضررا لكل الأعداء.
+Deal {0}x that much damage to ALL enemies.
+= سبب {0}× بقدرها ضررا لكل الأعداء.
+Exhaust.
+= استنفاد.
+Hits ALL enemies.
+= يصيب كل الأعداء.
+{0}+
+= {0}+
+
+# Power and rule text, written per card
+At the start of each turn, gain {0} Block.
+= في بداية كل دور، اكسب {0} درع.
+Whenever you gain Block, gain {0} Heat.
+= كلما اكتسبت درع، اكسب {0} حرارة.
+Whenever you play an Attack, gain {0} Heat.
+= كلما لعبت بطاقة هجوم، اكسب {0} حرارة.
+Whenever you play an Attack, gain {0} Block.
+= كلما لعبت بطاقة هجوم، اكسب {0} درع.
+Burn no longer decreases at the end of turn.
+= لم يعد حرق يتناقص في نهاية الدور.
+Your Overheat threshold increases by {0}.
+= يرتفع حد فرط الحرارة لديك بمقدار {0}.
+Whenever you Exhaust a card, gain {0} Heat.
+= كلما استنفدت بطاقة، اكسب {0} حرارة.
+Whenever you Exhaust a card, gain {0} Block.
+= كلما استنفدت بطاقة، اكسب {0} درع.
+Whenever you Exhaust a card, heal {0} HP.
+= كلما استنفدت بطاقة، استعد {0} صحة.
+Your Block is no longer removed at the start of your turn.
+= لم يعد درعك يزول في بداية دورك.
+At the end of your turn, deal damage equal to half your Block to an enemy.
+= في نهاية دورك، سبب لعدو ضررا يساوي نصف درعك.
+Whenever you play a card, deal {0} damage to ALL enemies.
+= كلما لعبت بطاقة، سبب {0} ضرر لكل الأعداء.
+Whenever you apply Burn, gain {0} Strength.
+= كلما طبقت حرق، اكسب {0} قوة.
+Whenever you apply Burn, gain {0} Block.
+= كلما طبقت حرق، اكسب {0} درع.
+At the end of your turn, apply {0} Burn to ALL enemies.
+= في نهاية دورك، طبق {0} حرق على كل الأعداء.
+At the start of your turn, gain {0} Heat.
+= في بداية دورك، اكسب {0} حرارة.
+At the start of your turn, gain {0} Block.
+= في بداية دورك، اكسب {0} درع.
+Whenever you gain Heat, gain {0} Block.
+= كلما اكتسبت حرارة، اكسب {0} درع.
+At the start of your turn, exhaust the top card of your draw pile and gain 1 Energy.
+= في بداية دورك، استنفد البطاقة العليا من كومة السحب واكسب 1 طاقة.
+Gain {0} Energy at the start of each turn.
+= اكسب {0} طاقة في بداية كل دور.
+At the end of your turn, gain {0} Block.
+= في نهاية دورك، اكسب {0} درع.
+
+# ── Cards ────────────────────────────────────────────────────────────────────────
+Strike
+= ضربة
+Guard
+= حماية
+Ember Lash
+= سوط الجمر
+Stoke
+= تأجيج
+Bulwark
+= حصن
+Anvil Strike
+= ضربة السندان
+Brace
+= تمترس
+Temper
+= تقسية
+Twin Fangs
+= نابان
+Whetstone
+= حجر الشحذ
+Flurry
+= وابل
+Quick Jab
+= طعنة سريعة
+Kindle
+= إشعال
+Scorch
+= لفح
+Fan the Flames
+= إذكاء اللهب
+Smoulder
+= اتقاد
+Bellows
+= منفاخ
+Vent
+= تنفيس
+Flare
+= وهج
+Heat Sink
+= مشتت الحرارة
+Cremate
+= ترميد
+Ash Cloud
+= سحابة رماد
+Salvage
+= انتشال
+Focus
+= تركيز
+Second Wind
+= نفس جديد
+Mend
+= ترميم
+Reinforce
+= تعزيز
+Counterweight
+= ثقل موازن
+Ironhide
+= جلد حديدي
+Forge Rite
+= طقس الكير
+Cinder Storm
+= عاصفة الجمر
+Rising Heat
+= حرارة متصاعدة
+Rain of Sparks
+= مطر الشرر
+Frenzy
+= هيجان
+Wildfire
+= حريق هائل
+Bellows Blast
+= نفخة المنفاخ
+Slow Roast
+= شواء بطيء
+Immolate
+= إحراق
+Backdraft
+= ارتداد اللهب
+Detonate
+= تفجير
+Heat Shield
+= درع حراري
+Overclock
+= تسريع قسري
+Coolant
+= سائل التبريد
+Thermal Mass
+= كتلة حرارية
+Pyre Rite
+= طقس المحرقة
+Burnt Offering
+= قربان محروق
+Ash Armor
+= درع الرماد
+Molten Armor
+= درع منصهر
+Living Anvil
+= سندان حي
+Thousand Cuts
+= ألف جرح
+Searing Blade
+= نصل لاهب
+Conflagration
+= اضطرام
+Eternal Flame
+= شعلة أبدية
+Meltdown
+= انصهار
+Perpetual Flame
+= لهب دائم
+Ember Engine
+= محرك الجمر
+Phoenix Ash
+= رماد العنقاء
+Cinder Trance
+= غيبوبة الجمر
+Second Forge
+= كير ثان
+Last Ember
+= الجمرة الأخيرة
+Crucible
+= بوتقة
+Brand
+= وسم
+Kiln Guard
+= حارس الفرن
+Ember Scatter
+= نثر الجمر
+Blade Dance
+= رقصة النصل
+Momentum
+= زخم
+Magma Heart
+= قلب الصهارة
+Supernova
+= مستعر أعظم
+Phoenix Plume
+= ريشة العنقاء
+
+# ── Enemies and their moves ─────────────────────────────────────────────────────
+Cinder Rat
+= جرذ الجمر
+Ash Hound
+= كلب الرماد
+Emberling
+= جميرة
+Forge Tyrant
+= طاغية الكير
+The Forge Tyrant
+= طاغية الكير
+Ash Mite
+= عثة الرماد
+Slag Beetle
+= خنفساء الخبث
+Kiln Imp
+= عفريت الفرن
+Ash Wraith
+= شبح الرماد
+Cinder Cultist
+= كاهن الجمر
+Molten Golem
+= غولم منصهر
+Salamander
+= سمندل
+Ember Wisp
+= طيف الجمر
+Magma Leech
+= علقة الصهارة
+Obsidian Sentinel
+= حارس الأوبسيديان
+Ashen Knight
+= فارس الرماد
+Cinder Shaman
+= شامان الجمر
+Obsidian Colossus
+= عملاق الأوبسيديان
+Cinder Wyrm
+= تنين الجمر
+Bite
+= عضة
+Skitter
+= هروب
+Maul
+= نهش
+Howl
+= عواء
+Spark
+= شرارة
+Ignite
+= إضرام
+Crush
+= سحق
+Forge
+= صهر
+Scourge
+= جلد
+Nibble
+= قضم
+Burrow
+= حفر
+Harden
+= تصلب
+Ram
+= نطح
+Scald
+= لسع
+Flick
+= نقرة
+Cower
+= انكماش
+Wail
+= عويل
+Chill Touch
+= لمسة باردة
+Chant
+= ترتيل
+Stab
+= طعن
+Slam
+= صدمة
+Magma Spray
+= رذاذ الصهارة
+Cool
+= تبريد
+Firebite
+= عضة نارية
+Coil
+= التفاف
+Tail Whip
+= ضربة الذيل
+Flicker
+= ومضة
+Siphon
+= امتصاص
+Latch
+= تشبث
+Fortify
+= تحصين
+Halberd
+= مطرد
+Sunder
+= شق
+Cleave
+= شطر
+Steel
+= تصليب
+Hex
+= لعنة
+Firebolt
+= سهم ناري
+Ritual
+= طقس
+Shatter
+= تحطيم
+Quake
+= زلزلة
+Ward
+= وقاية
+Crystal Ward
+= وقاية بلورية
+Roar
+= زئير
+Inferno Breath
+= نفس الجحيم
+Tail Sweep
+= كنسة الذيل
+
+Intent: {0}
+= النية: {0}
+Deals {0} damage.
+= يسبب {0} ضرر.
+Deals {0} damage {1} times.
+= يسبب {0} ضرر {1} مرات.
+Gains {0} Block.
+= يكسب {0} درع.
+Gains {0} {1}.
+= يكسب {0} {1}.
+Applies {0} {1} to you.
+= يطبق عليك {0} {1}.
+{0} x{1}
+= {0} ×{1}
+
+# ── Relics and potions ──────────────────────────────────────────────────────────
+Ember Core
+= نواة الجمر
+Whetstone Charm
+= تميمة حجر الشحذ
+Tempered Buckler
+= ترس مقسى
+Bellows Heart
+= قلب المنفاخ
+Iron Ward
+= وقاية حديدية
+Thermal Core
+= نواة حرارية
+Cinder Ring
+= خاتم الجمر
+Kindling Pouch
+= جراب الحطب
+Obsidian Shard
+= شظية الأوبسيديان
+Forge Apron
+= مئزر الحداد
+Anvil Crown
+= تاج السندان
+The first attack you play each turn deals 3 additional damage.
+= أول هجوم تلعبه في كل دور يسبب 3 ضرر إضافي.
+Start each combat with {0} Strength.
+= ابدأ كل معركة بـ {0} قوة.
+Start each combat with {0} Dexterity.
+= ابدأ كل معركة بـ {0} براعة.
+Your Overheat threshold is {0} higher.
+= حد فرط الحرارة لديك أعلى بمقدار {0}.
+At the start of each combat, apply {0} Burn to ALL enemies.
+= في بداية كل معركة، طبق {0} حرق على كل الأعداء.
+At the start of each combat, apply {0} Weak to ALL enemies.
+= في بداية كل معركة، طبق {0} ضعف على كل الأعداء.
+
+Healing Draught
+= جرعة شفاء
+Iron Tonic
+= منشط الحديد
+Fire Flask
+= قارورة النار
+Burning Oil
+= زيت حارق
+Strength Brew
+= شراب البأس
+Energy Draught
+= جرعة النشاط
+Swift Elixir
+= إكسير السرعة
+Weakening Ash
+= رماد الإنهاك
+
+# ── Combat screen ───────────────────────────────────────────────────────────────
+EMBER
+= إمبر
+Ember  {0}/{1} HP
+= إمبر  {0}/{1} صحة
+Health carries over from fight to fight. Rest sites restore it.
+= الصحة تنتقل من معركة إلى أخرى. مواقع الاستراحة تعيدها.
+HEAT
+= حرارة
+End Turn
+= إنهاء الدور
+Turn {0}
+= الدور {0}
+Draw {0}
+= السحب {0}
+Discard {0}
+= المهملات {0}
+Discard {0}    Exhaust {1}
+= المهملات {0}    المستنفدة {1}
+{0} / {1}   OVERHEAT  −{2} HP
+= {0} / {1}   فرط حرارة  −{2} صحة
+seed {0}
+= البذرة {0}
+Fight {0}    Deck {1}    Relics {2}    Gold {3}
+= المعركة {0}    المجموعة {1}    الآثار {2}    الذهب {3}
+Act {0}    Fight {1}    Deck {2}    Relics {3}    Gold {4}    HP {5}/{6}
+= الفصل {0}    المعركة {1}    المجموعة {2}    الآثار {3}    الذهب {4}    الصحة {5}/{6}
+Empty potion slot
+= خانة جرعة فارغة
+Potions drop from fights and are sold in shops. Drinking one costs no energy.
+= تسقط الجرعات من المعارك وتباع في المتاجر. شربها لا يكلف طاقة.
+Click it, then click an enemy.
+= اضغطها ثم اضغط عدوا.
+Click to drink.
+= اضغط للشرب.
+Costs no energy.
+= لا تكلف طاقة.
+Blocked
+= تم الصد
++{0} Block
+= +{0} درع
++{0} {1}
+= +{0} {1}
+
+VICTORY
+= نصر
+DEFEAT
+= هزيمة
+ELITE DEFEATED
+= هزمت النخبة
+ACT {0} COMPLETE
+= اكتمل الفصل {0}
+TREASURE
+= كنز
+Choose one card to add to your deck
+= اختر بطاقة واحدة لتضيفها إلى مجموعتك
+Skip
+= تخط
++{0} gold
+= +{0} ذهب
+Potion: {0}
+= جرعة: {0}
+Found {0}, but the belt is full
+= وجدت {0}، لكن الحزام ممتلئ
+Relic gained: {0}  —  {1}
+= أثر جديد: {0}  —  {1}
+
+# ── Map ─────────────────────────────────────────────────────────────────────────
+CHOOSE YOUR PATH
+= اختر طريقك
+ACT {0}  ·  {1}
+= الفصل {0}  ·  {1}
+THE FORGE
+= الكير
+THE OBSIDIAN DEEP
+= أعماق الأوبسيديان
+The Forge
+= الكير
+The Obsidian Deep
+= أعماق الأوبسيديان
+Fight      Elite — harder, better reward      Rest — heal or upgrade      Treasure — card and gold      Shop — spend gold      ? — event
+= معركة      نخبة — أصعب ومكافأتها أفضل      استراحة — شفاء أو تطوير      كنز — بطاقة وذهب      متجر — أنفق الذهب      ؟ — حدث
+Fight
+= معركة
+Elite
+= نخبة
+Rest site
+= موقع استراحة
+Treasure
+= كنز
+Shop
+= متجر
+Event
+= حدث
+A hallway fight. Win a card and gold, and sometimes a potion.
+= معركة عادية. تكسب بطاقة وذهبا، وأحيانا جرعة.
+A harder fight. Win a relic, a better card, more gold, and often a potion.
+= معركة أصعب. تكسب أثرا وبطاقة أفضل وذهبا أكثر، وغالبا جرعة.
+Heal, or upgrade a card at the forge.
+= استعد صحتك، أو طور بطاقة في الكير.
+A free card and some gold, with no fight.
+= بطاقة مجانية وبعض الذهب، بلا قتال.
+Spend gold on cards, a relic, potions, or removing a card.
+= أنفق الذهب على البطاقات أو أثر أو جرعات أو إزالة بطاقة.
+Something unexpected, and a choice with a price.
+= شيء غير متوقع، واختيار له ثمن.
+The end of the run.
+= نهاية الجولة.
+The end of this act. Beat it to go deeper.
+= نهاية هذا الفصل. اهزمه لتنزل أعمق.
+
+# ── First-run tips ──────────────────────────────────────────────────────────────
+Got it
+= فهمت
+Skip tutorial
+= تخطي الشرح
+Play your cards
+= العب بطاقاتك
+Each card costs the Energy in its corner, and you get {0} Energy every turn (the orb, bottom left).
+= كل بطاقة تكلف طاقة بالرقم الذي في زاويتها، وتحصل على {0} طاقة كل دور (الدائرة أسفل اليمين).
+To attack, click a card and then click an enemy.
+= للهجوم، اضغط بطاقة ثم اضغط عدوا.
+Cards with no target, like Guard, play on one click.
+= البطاقات التي بلا هدف، مثل حماية، تلعب بضغطة واحدة.
+Read the enemy
+= اقرأ عدوك
+The icon above an enemy is its next move.
+= الأيقونة فوق العدو هي حركته التالية.
+A red number is damage coming at you; a shield means it will gain Block.
+= الرقم الأحمر ضرر قادم إليك، والدرع يعني أنه سيكسب درع.
+Hover over an enemy to see exactly what it will do.
+= مرر المؤشر فوق العدو لترى ما سيفعله بالضبط.
+Fire cards build Heat, and it stays between turns.
+= بطاقات النار تراكم حرارة، وتبقى بين الأدوار.
+At the end of your turn you lose 1 HP for each point of Heat above {0}.
+= في نهاية دورك تخسر 1 صحة عن كل نقطة حرارة فوق {0}.
+Some cards spend Heat for a big effect.
+= بعض البطاقات تستهلك حرارة لأثر كبير.
+Potions
+= الجرعات
+Potions cost no Energy.
+= الجرعات لا تكلف طاقة.
+Click one to drink it; a potion that hits an enemy is aimed like an attack, by clicking the enemy next.
+= اضغط جرعة لتشربها؛ والجرعة التي تصيب عدوا توجه مثل الهجوم، بضغط العدو بعدها.
+You can carry {0}.
+= يمكنك حمل {0}.
+End your turn
+= أنه دورك
+Nothing left to play?
+= لم يبق ما تلعبه؟
+End the turn.
+= أنه الدور.
+Enemies act, then you draw a new hand with full Energy.
+= يتحرك الأعداء، ثم تسحب يدا جديدة بطاقة كاملة.
+Block you gained this turn protects you while they attack.
+= درع الذي كسبته هذا الدور يحميك أثناء هجومهم.
+The map
+= الخريطة
+Climb from the bottom to the boss at the top. The glowing nodes are where you can go next; hover over any node to see what it holds. Fights give cards and gold, rest sites heal, and ? is an event.
+= اصعد من الأسفل إلى الزعيم في الأعلى. النقاط المضيئة هي وجهاتك التالية؛ مرر المؤشر فوق أي نقطة لترى ما فيها. المعارك تعطي بطاقات وذهبا، والاستراحة تشفي، و؟ حدث.
+Choose a reward
+= اختر مكافأة
+Take one card, or Skip.
+= خذ بطاقة واحدة، أو تخط.
+A smaller deck draws its best cards more often, so only take cards that make it stronger.
+= المجموعة الأصغر تسحب أفضل بطاقاتها أكثر، فلا تأخذ إلا ما يقويها.
+A deeper act
+= فصل أعمق
+Beating the boss healed you to full.
+= هزيمة الزعيم أعادت صحتك كاملة.
+The enemies down here are stronger, and they grow again as you climb.
+= الأعداء هنا أقوى، ويشتدون كلما صعدت.
+Another boss waits at the top.
+= وزعيم آخر ينتظر في الأعلى.
+
+# ── Controls bar ────────────────────────────────────────────────────────────────
+Select
+= اختيار
+Back
+= رجوع
+Menu
+= القائمة
+Move
+= تحريك
+A
+= A
+B
+= B
+Y
+= Y
+E
+= E
+Start
+= Start
+Enter
+= Enter
+Esc
+= Esc
+Arrows
+= الأسهم
+
+# ── Main menu ───────────────────────────────────────────────────────────────────
+EMBERDECK
+= إمبرديك
+A roguelike deckbuilder of fire and forge
+= لعبة بناء مجموعات روغلايك من النار والكير
+Continue
+= متابعة
+New Run
+= جولة جديدة
+Settings
+= الإعدادات
+Quit
+= خروج
+Abandon run?
+= التخلي عن الجولة؟
+M  mute        Esc  pause menu
+= M  كتم الصوت        Esc  قائمة الإيقاف
+Act {0}    Fight {1}    {2}/{3} HP    {4} cards
+= الفصل {0}    المعركة {1}    {2}/{3} صحة    {4} بطاقة
+EMBERS
+= الجمرات
+Everything is unlocked
+= كل شيء مفتوح
+Next: {0} at {1}
+= التالي: {0} عند {1}
++  {0}
+= +  {0}
+Win a run to unlock Difficulty 1
+= افز بجولة لتفتح الصعوبة 1
+Difficulty
+= الصعوبة
+Normal
+= عادية
+{0}  ({1} Embers)
+= {0}  ({1} جمرة)
+Earning Embers
+= كسب الجمرات
+{0} per floor reached, {1} per elite, {2} per boss, and {3} more for winning.
+= {0} لكل طابق تصله، و{1} لكل نخبة، و{2} لكل زعيم، و{3} إضافية عند الفوز.
+Unlocked cards and relics join the reward pools of new runs.
+= البطاقات والآثار المفتوحة تنضم إلى مكافآت الجولات الجديدة.
+Difficulty {0}
+= الصعوبة {0}
+The game as designed.
+= اللعبة كما صممت.
+Win at difficulty {0} to unlock difficulty {1}.
+= افز على الصعوبة {0} لتفتح الصعوبة {1}.
+Elites have 10% more HP.
+= صحة النخبة أعلى بنسبة 10%.
+Start with 5 less max HP.
+= تبدأ بصحة قصوى أقل بـ 5.
+Rest sites heal 20% of max HP instead of 30%.
+= الاستراحة تشفي 20% من الصحة القصوى بدل 30%.
+Hallway enemies have 10% more HP.
+= صحة أعداء المعارك العادية أعلى بنسبة 10%.
+Bosses have 10% more HP.
+= صحة الزعماء أعلى بنسبة 10%.
+Kiln cards
+= بطاقات الفرن
+Tempest cards
+= بطاقات العاصفة
+Inferno cards
+= بطاقات الجحيم
+Crucible, Brand, Kiln Guard
+= بوتقة، وسم، حارس الفرن
+Ember Scatter, Blade Dance, Momentum
+= نثر الجمر، رقصة النصل، زخم
+Magma Heart, Supernova, Phoenix Plume
+= قلب الصهارة، مستعر أعظم، ريشة العنقاء
+
+# ── Settings and pause ──────────────────────────────────────────────────────────
+SETTINGS
+= الإعدادات
+AUDIO
+= الصوت
+Master volume
+= الصوت العام
+Music
+= الموسيقى
+Sound effects
+= المؤثرات
+DISPLAY
+= العرض
+Window
+= النافذة
+Resolution
+= الدقة
+V-Sync
+= المزامنة العمودية
+On
+= تشغيل
+Off
+= إيقاف
+on
+= تشغيل
+off
+= إيقاف
+Fullscreen (exclusive)
+= ملء الشاشة (حصري)
+Windowed
+= نافذة
+Fullscreen (borderless)
+= ملء الشاشة (بلا حواف)
+Display changes take effect when applied.
+= تغييرات العرض تطبق عند الضغط على تطبيق العرض.
+Applied: {0}, {1}, V-Sync {2}.
+= طبق: {0}، {1}، المزامنة العمودية {2}.
+GAMEPLAY
+= اللعب
+Tutorial tips
+= نصائح الشرح
+Language
+= اللغة
+English
+= English
+Applies when you leave this screen.
+= تطبق عند مغادرة هذه الشاشة.
+Change the language from the main menu.
+= غير اللغة من القائمة الرئيسية.
+Apply display
+= تطبيق العرض
+PAUSED
+= إيقاف مؤقت
+The run is saved each time you reach the map. Leaving now returns you to your last visit there.
+= تحفظ الجولة كلما وصلت إلى الخريطة. المغادرة الآن تعيدك إلى آخر زيارة لها.
+Resume
+= استئناف
+Main Menu
+= القائمة الرئيسية
+
+# ── End of run ──────────────────────────────────────────────────────────────────
+the forge
+= الكير
+The {0} lies in the ashes.
+= سقط {0} في الرماد.
+The forge is yours.
+= الكير لك.
+Fell to {0} on floor {1} of {2}.
+= سقطت أمام {0} في الطابق {1} من {2}.
+THE RUN
+= الجولة
+Floor reached
+= الطابق الذي وصلته
+Fights won
+= معارك فزت بها
+{0}   ({1} elite)
+= {0}   ({1} نخبة)
+Enemies defeated
+= أعداء هزمتهم
+Damage dealt
+= الضرر الذي سببته
+Damage taken
+= الضرر الذي تلقيته
+Biggest hit
+= أقوى ضربة
+Cards played
+= بطاقات لعبتها
+Turns
+= الأدوار
+Cards added
+= بطاقات أضفتها
+Cards upgraded
+= بطاقات طورتها
+Cards removed
+= بطاقات أزلتها
+Gold earned
+= الذهب المكتسب
+Potions used
+= جرعات استخدمتها
+Relics
+= الآثار
+Time
+= الوقت
+Seed
+= البذرة
+FINAL DECK   ·   {0} cards
+= المجموعة النهائية   ·   {0} بطاقة
+FINAL DECK   ·   {0} cards   (+{1} more)
+= المجموعة النهائية   ·   {0} بطاقة   (+{1} أخرى)
+Relics:   {0}
+= الآثار:   {0}
+No relics
+= لا آثار
+x{0}
+= ×{0}
++{0} Embers  ({1} total)
+= +{0} جمرة  ({1} إجمالا)
+Unlocked: {0}
+= فتحت: {0}
+Difficulty {0} unlocked
+= فتحت الصعوبة {0}
+
+# ── Shop and rest site ──────────────────────────────────────────────────────────
+SHOP
+= المتجر
+Gold  {0}
+= الذهب  {0}
+Cards, a relic, potions, or removing a card.
+= بطاقات، أثر، جرعات، أو إزالة بطاقة.
+Gold you keep carries on to the next shop.
+= الذهب الذي تحتفظ به ينتقل إلى المتجر التالي.
+RELIC
+= أثر
+POTIONS
+= جرعات
+CARD REMOVAL
+= إزالة بطاقة
+Remove one card from your deck.
+= أزل بطاقة واحدة من مجموعتك.
+Fewer weak cards means better draws.
+= قلة البطاقات الضعيفة تعني سحبا أفضل.
+The price rises each time.
+= يرتفع السعر في كل مرة.
+Remove
+= إزالة
+Buy
+= شراء
+{0} gold
+= {0} ذهب
+SOLD
+= مباع
+USED
+= مستخدم
+Belt full
+= الحزام ممتلئ
+Sold out
+= نفدت
+You already own every relic.
+= تملك كل الآثار بالفعل.
+Leave
+= غادر
+Choose a card to remove
+= اختر بطاقة لإزالتها
+Cancel
+= إلغاء
+SALE  ·  HALF PRICE
+= تخفيض  ·  نصف السعر
+REST SITE
+= موقع الاستراحة
+Smith
+= الحدادة
+Upgrade a card
+= طور بطاقة
+Rest
+= استراحة
+Heal {0} HP   ({1} → {2})
+= استعد {0} صحة   ({1} → {2})
+Rest to recover, or work the forge to upgrade a card.
+= استرح لتستعيد صحتك، أو اعمل على الكير لتطوير بطاقة.
+Choose a card to upgrade.
+= اختر بطاقة لتطويرها.
+Each is shown as it will be after upgrading.
+= تظهر كل بطاقة كما ستكون بعد التطوير.
+
+# ── Events ──────────────────────────────────────────────────────────────────────
+Nothing happens.
+= لا يحدث شيء.
+You move on.
+= تواصل طريقك.
+not enough HP
+= صحة غير كافية
+not enough gold
+= ذهب غير كاف
+no card can be upgraded
+= لا توجد بطاقة قابلة للتطوير
+The Cinder Shrine
+= مزار الجمر
+A shrine of cooled slag still breathes heat. Blood is scorched into its steps, and the cards laid on its altar come back sharper.
+= مزار من خبث بارد ما زال ينفث الحرارة. الدم محترق على درجاته، والبطاقات الموضوعة على مذبحه تعود أمضى.
+Offer blood
+= قدم دما
+Lose 10 HP. Upgrade 2 random cards.
+= اخسر 10 صحة. طور بطاقتين عشوائيتين.
+The shrine drinks. {0} and {1} come back upgraded.
+= يشرب المزار. تعود {0} و{1} مطورتين.
+The shrine drinks. {0} come back upgraded.
+= يشرب المزار. تعود {0} مطورة.
+The Ember Merchant
+= تاجر الجمر
+A hooded trader warms his hands over a brazier of other people's cards. He will take something plain and give you something he swears is better.
+= تاجر مقنع يدفئ يديه فوق موقد من بطاقات الآخرين. سيأخذ منك شيئا عاديا ويعطيك شيئا يقسم أنه أفضل.
+Trade
+= قايض
+Lose a random starter card. Gain a random uncommon card.
+= اخسر بطاقة بداية عشوائية. اكسب بطاقة غير شائعة عشوائية.
+nothing plain enough to trade
+= لا شيء عادي للمقايضة
+He takes your {0} and hands you {1}.
+= يأخذ {0} ويعطيك {1}.
+nothing at all
+= لا شيء على الإطلاق
+nothing
+= لا شيء
+The Abandoned Forge
+= الكير المهجور
+The fire here went out long ago, but the anvil is still warm and a hammer lies across it. Something glitters in the ash.
+= انطفأت النار هنا منذ زمن، لكن السندان ما زال دافئا وعليه مطرقة. شيء ما يلمع في الرماد.
+Lift the hammer
+= ارفع المطرقة
+Gain a random rare card. Lose 5 max HP.
+= اكسب بطاقة نادرة عشوائية. اخسر 5 من الصحة القصوى.
+too weak to lift it
+= أوهن من أن ترفعها
+The hammer is heavier than it looks. You carry away {0}, and something of yourself stays behind.
+= المطرقة أثقل مما تبدو. تحمل معك {0}، ويبقى شيء منك خلفك.
+Sift the ash
+= غربل الرماد
+Gain 35 gold.
+= اكسب 35 ذهب.
+Coins, blackened but sound. +35 gold.
+= عملات مسودة لكنها سليمة. +35 ذهب.
+The Hot Spring
+= النبع الحار
+Water boils up between black stones. It smells of iron and scalds for a moment, then soothes.
+= ماء يغلي بين حجارة سوداء. رائحته رائحة الحديد، يلسع لحظة ثم يريح.
+Bathe
+= استحم
+The heat draws the ache out. +{0} HP.
+= الدفء يسحب الألم. +{0} صحة.
+Drink
+= اشرب
+Gain 3 max HP.
+= اكسب 3 صحة قصوى.
+It burns going down and settles into your bones. +3 max HP.
+= يلسع وهو ينزل ويستقر في عظامك. +3 صحة قصوى.
+The Gambler's Coals
+= جمرات المقامر
+Three cups over three coals. A grinning imp offers double or nothing, and swears only one cup is cursed.
+= ثلاثة أكواب فوق ثلاث جمرات. عفريت مبتسم يعرض عليك المضاعفة أو لا شيء، ويقسم أن كوبا واحدا فقط ملعون.
+Bet 50 gold
+= راهن بـ 50 ذهب
+Half the time, win 110 gold. Otherwise, lose the bet.
+= في نصف المرات تربح 110 ذهب. وإلا تخسر الرهان.
+The cup lifts on a pile of coins. +110 gold.
+= يرتفع الكوب عن كومة من العملات. +110 ذهب.
+The cup is empty. The imp pockets your 50 gold and laughs.
+= الكوب فارغ. يأخذ العفريت 50 ذهب منك ويضحك.
+The Ash Tithe
+= ضريبة الرماد
+A robed keeper sweeps ash from the road and asks for a toll: not gold, but a card, and a little blood to seal it.
+= حارس بعباءة يكنس الرماد عن الطريق ويطلب رسما: لا ذهبا، بل بطاقة، وقليلا من الدم لختمه.
+Pay the tithe
+= ادفع الضريبة
+Lose 5 HP. Remove a Strike from your deck.
+= اخسر 5 صحة. أزل ضربة من مجموعتك.
+no Strike to give
+= لا توجد ضربة لتعطيها
+The keeper burns your Strike on the road. Your deck is lighter for it.
+= يحرق الحارس ضربتك على الطريق. مجموعتك أخف بعدها.
+The Wandering Smith
+= الحداد الجوال
+A smith with no forge sets an anvil on a rock and offers to rework one of your cards, for a price.
+= حداد بلا كير يضع سندانا على صخرة ويعرض أن يعيد صنع إحدى بطاقاتك، مقابل ثمن.
+Pay 40 gold
+= ادفع 40 ذهب
+Upgrade a random card.
+= طور بطاقة عشوائية.
+A few sure strokes, and {0} is upgraded.
+= بضع ضربات واثقة، وتصبح {0} مطورة.
+The smith shrugs; there was nothing to improve.
+= يهز الحداد كتفيه؛ لم يكن هناك ما يحسن.

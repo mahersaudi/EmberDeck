@@ -29,6 +29,10 @@ namespace EmberDeck.View
         UiControls.Stepper _vsyncStepper;
         Text _displayNote;
         UiControls.Stepper _tipsStepper;
+        UiControls.Stepper _languageStepper;
+        Text _languageNote;
+        Language _language;
+        bool _languageAllowed;
 
         List<Vector2Int> _resolutions = new();
         int _resolutionIndex;
@@ -73,7 +77,7 @@ namespace EmberDeck.View
                 Settings.ApplyAudio();
                 AudioDirector.Play(Sfx.Click);
             }, out _effectsReadout);
-            y -= 96f;
+            y -= 80f;
 
             Section(root, "DISPLAY", y);
             y -= 48f;
@@ -106,6 +110,18 @@ namespace EmberDeck.View
             var tips = UiControls.Row(root, "Tips", "Tutorial tips", y);
             _tipsStepper = UiControls.AddStepper(tips, "Tips", () => Coach.Enabled ? "On" : "Off",
                                                  _ => Coach.SetEnabled(!Coach.Enabled));
+            y -= 64f;
+
+            // Chosen here, applied when this screen closes: the whole interface is rebuilt in the new language,
+            // which is why it can only be changed from the main menu, where nothing unsaved is lost.
+            var language = UiControls.Row(root, "Language", "Language", y);
+            _languageStepper = UiControls.AddStepper(language, "Language", () => Loc.DisplayName(_language), _ =>
+            {
+                if (!_languageAllowed) return;
+                _language = _language == Language.English ? Language.Arabic : Language.English;
+            });
+            _languageNote = UiFactory.Label(language, "LanguageNote", "", 16, Palette.InkMuted, TextAnchor.MiddleLeft);
+            UiFactory.Place(_languageNote.rectTransform, new Vector2(1f, 0.5f), new Vector2(0f, 0.5f), new Vector2(12f, 0f), new Vector2(300f, 56f));
 
             var apply = UiFactory.TextButton(root, "ApplyDisplay", "Apply display", Palette.PanelRaised, Palette.Ink, 26);
             UiFactory.Place((RectTransform)apply.transform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
@@ -135,8 +151,16 @@ namespace EmberDeck.View
             return $"{size.x} × {size.y}";
         }
 
-        public void Show()
+        /// <param name="allowLanguage">False during a run: changing language rebuilds the interface and would lose the fight.</param>
+        public void Show(bool allowLanguage = true)
         {
+            _language = Loc.Language;
+            _languageAllowed = allowLanguage;
+            _languageStepper.Previous.interactable = allowLanguage;
+            _languageStepper.Next.interactable = allowLanguage;
+            _languageStepper.Refresh();
+            _languageNote.text = allowLanguage ? "Applies when you leave this screen." : "Change the language from the main menu.";
+
             _master.SetValueWithoutNotify(Settings.MasterVolume);
             _music.SetValueWithoutNotify(Settings.MusicVolume);
             _effects.SetValueWithoutNotify(Settings.SfxVolume);
@@ -165,6 +189,7 @@ namespace EmberDeck.View
         {
             if (!IsOpen) return;
             Settings.SaveAudio();
+            if (_languageAllowed && _language != Loc.Language) Loc.SetLanguage(_language);
             gameObject.SetActive(false);
             Closed?.Invoke();
         }

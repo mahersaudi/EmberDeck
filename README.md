@@ -110,6 +110,7 @@ The slice ends at a single fight. In order:
 7. ~~**Act 2**~~ — done: a second map, seven enemies and the Cinder Wyrm. See `docs/act-two.md`.
 8. ~~**Meta unlocks**~~ — done: Embers, an unlock track of cards and relics, and five difficulty levels. See `docs/meta-progression.md`.
 9. ~~**Controller support**~~ — done: keyboard and gamepad focus on every screen, with button hints. See `docs/controller.md`.
+10. ~~**Arabic**~~ — done: the whole game in Arabic, right to left, chosen in Settings. See `docs/localization.md`.
 
 Content and balance are the work after that; the architecture above is meant not to change.
 

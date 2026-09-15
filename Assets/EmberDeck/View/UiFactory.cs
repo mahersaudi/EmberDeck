@@ -15,6 +15,8 @@ namespace EmberDeck.View
     public static class UiFactory
     {
         static Font _font;
+        static Font _arabic;
+        static bool _arabicLoaded;
 
         /// <summary>
         /// The built-in legacy font. Chosen over TextMeshPro on purpose: TMP needs its
@@ -22,7 +24,23 @@ namespace EmberDeck.View
         /// breaks headless and first-clone runs. Swap to TMP once the project is set up.
         /// </summary>
         public static Font Font =>
-            _font ??= Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            Loc.IsRtl && ArabicFont != null ? ArabicFont : _font ??= Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+
+        /// <summary>
+        /// Noto Naskh Arabic UI, with DejaVu Sans as its fallback for Latin letters and symbols (ProjectSetup.ApplyFonts).
+        /// Chosen because it maps every Arabic presentation form, which ArabicText draws with; Cairo and Tajawal,
+        /// both on this machine, shape through OpenType and have no code point for most isolated and final forms.
+        /// </summary>
+        public static Font ArabicFont
+        {
+            get
+            {
+                if (_arabicLoaded) return _arabic;
+                _arabic = Resources.Load<Font>("Fonts/NotoNaskhArabicUI-Regular");
+                _arabicLoaded = true;
+                return _arabic;
+            }
+        }
 
         public static RectTransform Panel(Transform parent, string name, Color color)
         {
@@ -35,18 +53,19 @@ namespace EmberDeck.View
         public static Text Label(Transform parent, string name, string text, int size, Color color,
                                  TextAnchor anchor = TextAnchor.MiddleCenter)
         {
-            var go = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
+            var go = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(UiText));
             go.transform.SetParent(parent, false);
 
-            var label = go.GetComponent<Text>();
+            // Text last: UiText lays Arabic out for this font, size and wrapping as it is assigned.
+            var label = go.GetComponent<UiText>();
             label.font = Font;
-            label.text = text;
             label.fontSize = size;
             label.color = color;
-            label.alignment = anchor;
+            label.alignment = Loc.IsRtl ? Mirror(anchor) : anchor;
             label.horizontalOverflow = HorizontalWrapMode.Wrap;
             label.verticalOverflow = VerticalWrapMode.Overflow;
             label.raycastTarget = false;
+            label.text = text;
             return label;
         }
 
@@ -78,6 +97,18 @@ namespace EmberDeck.View
             Stretch(label.rectTransform);
             return button;
         }
+
+        /// <summary>Right-to-left text flushes to the other side of its box.</summary>
+        public static TextAnchor Mirror(TextAnchor anchor) => anchor switch
+        {
+            TextAnchor.UpperLeft  => TextAnchor.UpperRight,
+            TextAnchor.UpperRight => TextAnchor.UpperLeft,
+            TextAnchor.MiddleLeft => TextAnchor.MiddleRight,
+            TextAnchor.MiddleRight => TextAnchor.MiddleLeft,
+            TextAnchor.LowerLeft  => TextAnchor.LowerRight,
+            TextAnchor.LowerRight => TextAnchor.LowerLeft,
+            _                     => anchor,
+        };
 
         /// <summary>Makes a child fill its parent.</summary>
         public static void Stretch(RectTransform rect, float padding = 0f)

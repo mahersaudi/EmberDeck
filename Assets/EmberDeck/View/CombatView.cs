@@ -4,6 +4,7 @@ using EmberDeck.Content;
 using EmberDeck.Run;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace EmberDeck.View
@@ -82,6 +83,7 @@ namespace EmberDeck.View
         RectTransform _heatPanel;
         int _cardsPlayedThisFight;
         RunResult _lastResult;
+        Language _builtLanguage;
 
 #if UNITY_EDITOR
         /// <summary>
@@ -99,6 +101,10 @@ namespace EmberDeck.View
 
         void Start()
         {
+            // The interface is built in one language. Changing it reloads the scene (see BuildMenus), and the tip
+            // canvas, which survives scene loads, is rebuilt with it.
+            _builtLanguage = Loc.Language;
+            Coach.Rebuild();
             EnsureEventSystem();
             BuildStaticUi();
             BuildMenus();
@@ -138,7 +144,15 @@ namespace EmberDeck.View
             _endOfRun.MainMenuChosen += ShowMainMenu;
 
             _settings = SettingsView.Create(_root);
-            _settings.Closed += () => { if (_settingsFromPause) _pause.Show(); };
+            _settings.Closed += () =>
+            {
+                if (Loc.Language != _builtLanguage)
+                {
+                    SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+                    return;
+                }
+                if (_settingsFromPause) _pause.Show();
+            };
 
             Coach.Suspended = () => _mainMenu.IsOpen || _pause.IsOpen || _settings.IsOpen || _endOfRun.IsOpen;
         }
@@ -271,7 +285,7 @@ namespace EmberDeck.View
         {
             _settingsFromPause = fromPause;
             _pause.Hide();
-            _settings.Show();
+            _settings.Show(allowLanguage: !fromPause);
         }
 
         // ── Setup ────────────────────────────────────────────────────────────────────
@@ -302,7 +316,15 @@ namespace EmberDeck.View
             scaler.referenceResolution = new Vector2(1920f, 1080f);
             scaler.matchWidthOrHeight = 0.5f;
 
-            _root = (RectTransform)canvasGo.transform;
+            // Everything hangs off a stage rather than the canvas itself, so a right-to-left language can mirror the
+            // whole layout with one scale: the run line moves to the top right, the hand deals from the right, bars
+            // fill leftwards. The canvas's own scale belongs to its CanvasScaler. Text is mirrored back where it is
+            // drawn (UiText), so it still reads forwards.
+            var stage = (RectTransform)new GameObject("Stage", typeof(RectTransform)).transform;
+            stage.SetParent(canvasGo.transform, false);
+            UiFactory.Stretch(stage);
+            if (Loc.IsRtl) stage.localScale = new Vector3(-1f, 1f, 1f);
+            _root = stage;
 
             var background = UiFactory.Panel(_root, "Background", Palette.Background);
             UiFactory.Stretch(background);
@@ -423,10 +445,10 @@ namespace EmberDeck.View
                             new Vector2(-40f, 30f), new Vector2(260f, 26f));
 
             _runLabel = UiFactory.Label(_root, "Run", "", 22, Palette.Ink, TextAnchor.UpperLeft);
-            // 640 wide: with the act added, 520 wrapped the map's "HP 63/63" onto a second line. The map
-            // title is centred and starts past 700, so this still clears it.
+            // 700 wide: with the act added, 520 wrapped the map's "HP 63/63" onto a second line, and the Arabic
+            // font's wider letters wrapped it again at 640. The map title is centred and starts past 740.
             UiFactory.Place(_runLabel.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f),
-                            new Vector2(40f, -56f), new Vector2(640f, 30f));
+                            new Vector2(40f, -56f), new Vector2(700f, 30f));
 
             _seedLabel = UiFactory.Label(_root, "Seed", "", 17, new Color(0.4f, 0.4f, 0.46f), TextAnchor.UpperLeft);
             UiFactory.Place(_seedLabel.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f),
@@ -1002,7 +1024,7 @@ namespace EmberDeck.View
             if (gold > 0) gains.Add($"+{gold} gold");
             if (potion != null) gains.Add(potionKept ? $"Potion: {potion.DisplayName}" : $"Found {potion.DisplayName}, but the belt is full");
             if (relic != null) gains.Add($"Relic gained: {relic.DisplayName}  —  {relic.Description}");
-            _relicLabel.text = string.Join("      ", gains);
+            _relicLabel.text = string.Join("      ", gains.ConvertAll(Loc.T));
             if (relic != null) Motion.After(0.5f, () => AudioDirector.Play(Sfx.Relic));
 
             float spacing = CardView.Width + 60f;
@@ -1145,6 +1167,74 @@ namespace EmberDeck.View
             _mapView.Hide();
             _restView?.Hide();
             StartFight(encounter);
+        }
+
+        /// <summary>
+        /// Capture-harness only: passes every piece of content text through translation, so Loc.Missing lists what
+        /// the capture did not happen to show — every card, relic, potion, enemy, move, event and keyword.
+        /// </summary>
+        public void DebugSweepTranslations()
+        {
+            foreach (var card in _config.AllCards)
+            {
+                if (card == null) continue;
+                Loc.T(card.DisplayName);
+                Keywords.Highlight(card.BuildDescription());
+            }
+
+            var relics = new List<Content.Relics.RelicData>(_config.RelicPoolFor(_config.AllUnlockIds()));
+            relics.AddRange(_config.Relics);
+            foreach (var relic in relics)
+            {
+                if (relic == null) continue;
+                Loc.T(relic.DisplayName);
+                Keywords.Highlight(relic.Description);
+            }
+
+            foreach (var potion in _config.PotionPool)
+            {
+                if (potion == null) continue;
+                Loc.T(potion.DisplayName);
+                Keywords.Highlight(potion.BuildDescription());
+            }
+
+            foreach (var encounter in _config.Encounters)
+                if (encounter != null)
+                    foreach (var enemy in encounter.Enemies)
+                    {
+                        if (enemy == null) continue;
+                        Loc.T(enemy.DisplayName);
+                        foreach (var move in enemy.Moves)
+                            if (move != null) Loc.T(move.Label);
+                    }
+
+            foreach (var evt in EventService.All)
+            {
+                Loc.T(evt.Title);
+                Keywords.Highlight(evt.Body);
+                foreach (var choice in evt.Choices)
+                {
+                    Loc.T(choice.Label);
+                    Keywords.Highlight(choice.Effect);
+                }
+            }
+
+            foreach (var keyword in Keywords.All)
+            {
+                Loc.T(keyword.Word);
+                Keywords.Highlight(keyword.Body);
+            }
+
+            foreach (var unlock in _config.Unlocks)
+            {
+                if (unlock == null) continue;
+                Loc.T(unlock.DisplayName);
+                Loc.T(unlock.Describe());
+            }
+
+            for (int act = 1; act <= _config.Acts; act++) Loc.T(_config.ActName(act).ToUpperInvariant());
+            for (int level = 1; level <= DifficultyRules.Max; level++) Loc.T(DifficultyRules.Name(level));
+            foreach (var rule in DifficultyRules.RulesAt(DifficultyRules.Max)) Loc.T(rule);
         }
 
         /// <summary>Capture-harness only: moves on to the next act's map, as if its boss had just been beaten.</summary>

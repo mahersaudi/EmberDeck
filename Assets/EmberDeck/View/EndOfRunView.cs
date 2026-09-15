@@ -116,7 +116,7 @@ namespace EmberDeck.View
             _spawned.Clear();
 
             var stats = run.Stats;
-            string foe = string.IsNullOrEmpty(stats.FinalEncounter) ? "the forge" : stats.FinalEncounter;
+            string foe = string.IsNullOrEmpty(stats.FinalEncounter) ? "the forge" : Loc.Names(stats.FinalEncounter);
             _title.text = won ? "VICTORY" : "DEFEAT";
             _title.color = won ? Palette.Victory : Palette.Defeat;
             _subtitle.text = won
@@ -133,7 +133,7 @@ namespace EmberDeck.View
             var relicNames = new List<string>();
             foreach (var relic in run.Relics)
                 if (relic != null) relicNames.Add(relic.DisplayName);
-            _relics.text = relicNames.Count > 0 ? "Relics:   " + string.Join(",   ", relicNames) : "No relics";
+            _relics.text = relicNames.Count > 0 ? "Relics:   " + string.Join(Loc.IsRtl ? "،   " : ",   ", relicNames.ConvertAll(Loc.T)) : "No relics";
 
             gameObject.SetActive(true);
             transform.SetAsLastSibling();
@@ -153,11 +153,11 @@ namespace EmberDeck.View
             if (result.Unlocked.Count > 0)
             {
                 var names = new List<string>();
-                foreach (var unlock in result.Unlocked) names.Add(unlock.DisplayName);
+                foreach (var unlock in result.Unlocked) names.Add(Loc.T(unlock.DisplayName));
                 parts.Add("Unlocked: " + string.Join(", ", names));
             }
             if (result.DifficultyUnlocked > 0) parts.Add($"Difficulty {result.DifficultyUnlocked} unlocked");
-            return string.Join("    ·    ", parts);
+            return string.Join("    ·    ", parts.ConvertAll(Loc.T));
         }
 
         void BuildStats(RunState run, int floor, int floors)

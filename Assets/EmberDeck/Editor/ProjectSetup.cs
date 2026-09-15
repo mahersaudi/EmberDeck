@@ -29,6 +29,7 @@ namespace EmberDeck.EditorTools
             PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Standalone, Identifier);
             ApplyIcon();
             ApplyInput();
+            ApplyFonts();
 
             AssetDatabase.SaveAssets();
             Debug.Log($"[EmberDeck] Applied: {Company} / {Product} / {Identifier}");
@@ -92,6 +93,44 @@ namespace EmberDeck.EditorTools
 
             if (settings.ApplyModifiedPropertiesWithoutUndo()) AssetDatabase.SaveAssets();
             return true;
+        }
+
+        const string ArabicFontPath = "Assets/EmberDeck/Resources/Fonts/NotoNaskhArabicUI-Regular.ttf";
+        const string FallbackFontPath = "Assets/EmberDeck/Resources/Fonts/DejaVuSans.ttf";
+
+        /// <summary>
+        /// Gives the Arabic font DejaVu Sans as its fallback. Noto Naskh Arabic UI has almost no Latin, and Arabic
+        /// screens still show some: key names in the controls bar, "×", a seed. Idempotent.
+        /// </summary>
+        public static bool ApplyFonts()
+        {
+            var importer = AssetImporter.GetAtPath(ArabicFontPath) as TrueTypeFontImporter;
+            var fallback = AssetDatabase.LoadAssetAtPath<Font>(FallbackFontPath);
+            if (importer == null || fallback == null)
+            {
+                Debug.LogWarning("[EmberDeck] Arabic font or its fallback not found; Latin text in Arabic mode may be missing.");
+                return false;
+            }
+            if (importer.fontReferences != null && importer.fontReferences.Length == 1 && importer.fontReferences[0] == fallback)
+                return true;
+
+            // The property alone did not reach the .meta in a batch build (fallbackFontReferences stayed empty), so the
+            // serialized field is written too and the importer marked dirty before reimporting.
+            importer.fontReferences = new[] { fallback };
+            var serialized = new SerializedObject(importer);
+            var references = serialized.FindProperty("fallbackFontReferences");
+            if (references != null)
+            {
+                references.arraySize = 1;
+                references.GetArrayElementAtIndex(0).objectReferenceValue = fallback;
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+            }
+            EditorUtility.SetDirty(importer);
+            importer.SaveAndReimport();
+
+            bool applied = importer.fontReferences != null && importer.fontReferences.Length == 1 && importer.fontReferences[0] == fallback;
+            Debug.Log($"[EmberDeck] Arabic font fallback {(applied ? "set to DejaVu Sans" : "NOT applied")}");
+            return applied;
         }
 
         /// <summary>

@@ -126,6 +126,7 @@ namespace EmberDeck.View
             _hintBar.GetComponent<Image>().raycastTarget = false;
             UiFactory.Place(_hintBar, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 4f), new Vector2(760f, 32f));
             _hints = UiFactory.Label(_hintBar, "Text", "", 18, Palette.Ink);
+            _hints.horizontalOverflow = HorizontalWrapMode.Overflow;   // one line; the bar is sized to it
             UiFactory.Stretch(_hints.rectTransform);
             _hintBar.gameObject.SetActive(false);
         }
@@ -166,7 +167,8 @@ namespace EmberDeck.View
             // Left and right on a slider change its value, as they would on any settings screen.
             if (current is Slider slider && direction.y == 0f)
             {
-                slider.value += direction.x * (slider.maxValue - slider.minValue) * 0.05f;
+                float facing = slider.transform.lossyScale.x < 0f ? -1f : 1f;   // a mirrored layout fills right to left
+                slider.value += direction.x * facing * (slider.maxValue - slider.minValue) * 0.05f;
                 return;
             }
 

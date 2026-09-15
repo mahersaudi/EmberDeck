@@ -70,6 +70,14 @@ namespace EmberDeck.View
                 ? _instance._bubble
                 : null;
 
+        /// <summary>Drops the tip canvas so the next tip builds it with the current language. Seen tips are kept.</summary>
+        public static void Rebuild()
+        {
+            if (_instance == null) return;
+            Destroy(_instance.gameObject);
+            _instance = null;
+        }
+
         /// <summary>The tip on screen, or null — for the capture harness.</summary>
         public static string CurrentId => _instance != null ? _instance._current?.Id : null;
 
@@ -246,7 +254,8 @@ namespace EmberDeck.View
             row.transform.SetParent(_bubble, false);
             var horizontal = row.AddComponent<HorizontalLayoutGroup>();
             horizontal.spacing = 10f;
-            horizontal.childAlignment = TextAnchor.MiddleRight;
+            horizontal.childAlignment = Loc.IsRtl ? TextAnchor.MiddleLeft : TextAnchor.MiddleRight;
+            horizontal.reverseArrangement = Loc.IsRtl;
             horizontal.childControlWidth = true;
             horizontal.childControlHeight = true;
             horizontal.childForceExpandWidth = false;
