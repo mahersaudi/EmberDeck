@@ -41,6 +41,7 @@ namespace EmberDeck.View
             Coach.UseMemoryOnly();
             // The harness drives focus itself; a mouse moved on the desk must not switch it off mid-shot.
             PadNavigator.IgnoreHardware = true;
+            EmberDeck.Run.PlaytestLog.DirectoryOverride = directory;
             // A profile in memory, part-way along the track and with difficulty open, so the menu shows the
             // progress panel and its difficulty control, and the end-of-run screen crosses an unlock.
             EmberDeck.Run.Profile.UseMemoryOnly(embers: 30, maxDifficulty: 2);

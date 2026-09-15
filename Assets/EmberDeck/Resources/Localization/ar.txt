@@ -764,6 +764,10 @@ Quit
 = خروج
 Abandon run?
 = التخلي عن الجولة؟
+v{0}  ·  Playtest
+= v{0}  ·  نسخة تجريبية
+Playtest log
+= سجل التجربة
 M  mute        Esc  pause menu
 = M  كتم الصوت        Esc  قائمة الإيقاف
 Act {0}    Fight {1}    {2}/{3} HP    {4} cards

@@ -94,6 +94,21 @@ namespace EmberDeck.View
 
             BuildProgress(root);
 
+            // A tester's feedback is only useful if it says which build it is about.
+            var version = UiFactory.Label(root, "Version", $"v{Application.version}  ·  Playtest", 18, Palette.InkMuted,
+                                          TextAnchor.LowerRight);
+            UiFactory.Place(version.rectTransform, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-40f, 30f), new Vector2(420f, 30f));
+
+            // The log sits beside the save, which on macOS is inside the hidden Library folder: a button is the
+            // only way most testers will find it.
+            var log = UiFactory.TextButton(root, "OpenPlaytestLog", "Playtest log", Palette.PanelRaised, Palette.InkMuted, 20);
+            UiFactory.Place((RectTransform)log.transform, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-40f, 70f), new Vector2(220f, 46f));
+            log.onClick.AddListener(() =>
+            {
+                System.IO.Directory.CreateDirectory(PlaytestLog.Folder);
+                Application.OpenURL(new Uri(PlaytestLog.Folder).AbsoluteUri);
+            });
+
             var footer = UiFactory.Label(root, "Footer", "M  mute        Esc  pause menu", 18, Palette.InkMuted,
                                          TextAnchor.LowerLeft);
             UiFactory.Place(footer.rectTransform, new Vector2(0f, 0f), new Vector2(0f, 0f),

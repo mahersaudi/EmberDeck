@@ -650,6 +650,7 @@ namespace EmberDeck.View
             if (!_run.ResultRecorded)
             {
                 _lastResult = Profile.RecordRun(_run, _config, won, floor);
+                PlaytestLog.RecordRun(_run, won, floor, floors, Loc.Language.ToString());
                 _run.ResultRecorded = true;
             }
             _endOfRun.Show(_run, won, floor, floors, _lastResult);
