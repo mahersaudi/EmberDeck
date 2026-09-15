@@ -46,6 +46,23 @@ all. Ten hands played by hand would not have shown that.
   another Unity process and stops a compiler server from a different .NET SDK — the cause of a build
   failing with CS1504 "Method not found ... EncodingExtensions" on a file nobody changed.
 
+**Windows Build Support on this Mac.** `unity install-modules -m windows-mono` fails for 6000.5.1f1 with
+`ERROR_CHECKSUM_MISMATCH`: the file downloads in full, but the release manifest's checksum is out of
+date. The module was installed by hand instead:
+1. Download the package from the module's `downloadUrl` in the editor's `modules.json`.
+2. Check the signature, which is stronger than the manifest checksum:
+   `pkgutil --check-signature` must show "Developer ID Installer: Unity Technologies SF" and Apple
+   notarization, and `spctl --assess --type install` must accept it.
+3. Expand it with `pkgutil --expand-full`.
+4. Copy `TargetSupport.pkg.tmp/Payload` to `PlaybackEngines/WindowsStandaloneSupport` in the editor
+   folder, which is user-owned, so no admin rights are needed. The package's own scripts only check the
+   editor version and hand ownership to root.
+
+**Playtest builds.** `Build/Playtest/` holds zipped release builds for testers, with a README in Arabic
+and English: how to get past Gatekeeper or SmartScreen, what to play, the questions to answer, and how
+to send back `playtest-log.txt`. Windows zips leave out `*_BurstDebugInformation_DoNotShip`, as the
+Steam depot does.
+
 ## How to play
 
 Click a card to select it, then click an enemy to aim it. Cards that need no target play on the
