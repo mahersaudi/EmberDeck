@@ -581,7 +581,11 @@ Potions drop from fights and are sold in shops. Drinking one costs no energy.
 = تسقط الجرعات من المعارك وتباع في المتاجر. شربها لا يكلف طاقة.
 Click it, then click an enemy.
 = اضغطها ثم اضغط عدوا.
+Tap it, then tap an enemy.
+= اضغطها ثم اضغط عدوا.
 Click to drink.
+= اضغط للشرب.
+Tap to drink.
 = اضغط للشرب.
 Costs no energy.
 = لا تكلف طاقة.
@@ -672,6 +676,10 @@ To attack, click a card and then click an enemy.
 = للهجوم، اضغط بطاقة ثم اضغط عدوا.
 Cards with no target, like Guard, play on one click.
 = البطاقات التي بلا هدف، مثل حماية، تلعب بضغطة واحدة.
+Tap a card to read it, then tap an enemy to attack.
+= اضغط بطاقة لتقرأها، ثم اضغط عدوا للهجوم.
+A card with no target, like Guard, plays when you tap it again.
+= البطاقة التي بلا هدف، مثل حماية، تلعب بضغطة ثانية عليها.
 Read the enemy
 = اقرأ عدوك
 The icon above an enemy is its next move.
@@ -680,6 +688,8 @@ A red number is damage coming at you; a shield means it will gain Block.
 = الرقم الأحمر ضرر قادم إليك، والدرع يعني أنه سيكسب درع.
 Hover over an enemy to see exactly what it will do.
 = مرر المؤشر فوق العدو لترى ما سيفعله بالضبط.
+Tap an enemy to see exactly what it will do.
+= اضغط العدو لترى ما سيفعله بالضبط.
 Fire cards build Heat, and it stays between turns.
 = بطاقات النار تراكم حرارة، وتبقى بين الأدوار.
 At the end of your turn you lose 1 HP for each point of Heat above {0}.
@@ -691,6 +701,8 @@ Potions
 Potions cost no Energy.
 = الجرعات لا تكلف طاقة.
 Click one to drink it; a potion that hits an enemy is aimed like an attack, by clicking the enemy next.
+= اضغط جرعة لتشربها؛ والجرعة التي تصيب عدوا توجه مثل الهجوم، بضغط العدو بعدها.
+Tap one to drink it; a potion that hits an enemy is aimed like an attack, by tapping the enemy next.
 = اضغط جرعة لتشربها؛ والجرعة التي تصيب عدوا توجه مثل الهجوم، بضغط العدو بعدها.
 You can carry {0}.
 = يمكنك حمل {0}.
@@ -708,6 +720,8 @@ The map
 = الخريطة
 Climb from the bottom to the boss at the top. The glowing nodes are where you can go next; hover over any node to see what it holds. Fights give cards and gold, rest sites heal, and ? is an event.
 = اصعد من الأسفل إلى الزعيم في الأعلى. النقاط المضيئة هي وجهاتك التالية؛ مرر المؤشر فوق أي نقطة لترى ما فيها. المعارك تعطي بطاقات وذهبا، والاستراحة تشفي، و؟ حدث.
+Climb from the bottom to the boss at the top. The glowing nodes are where you can go next; tap one to see what it holds, and tap it again to enter. Fights give cards and gold, rest sites heal, and ? is an event.
+= اصعد من الأسفل إلى الزعيم في الأعلى. النقاط المضيئة هي وجهاتك التالية؛ اضغط نقطة لترى ما فيها، واضغطها ثانية لتدخلها. المعارك تعطي بطاقات وذهبا، والاستراحة تشفي، و؟ حدث.
 Choose a reward
 = اختر مكافأة
 Take one card, or Skip.
@@ -882,6 +896,8 @@ Resume
 = استئناف
 Main Menu
 = القائمة الرئيسية
+Menu
+= القائمة
 
 # ── End of run ──────────────────────────────────────────────────────────────────
 the forge

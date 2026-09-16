@@ -198,9 +198,7 @@ namespace EmberDeck.View
             canvas.sortingOrder = 400;
 
             var scaler = host.GetComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920f, 1080f);
-            scaler.matchWidthOrHeight = 0.5f;
+            UiFactory.ConfigureScaler(scaler);
 
             _instance = host.AddComponent<Coach>();
             _instance._canvas = canvas;

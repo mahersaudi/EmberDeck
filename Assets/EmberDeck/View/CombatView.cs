@@ -312,9 +312,7 @@ namespace EmberDeck.View
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
 
             var scaler = canvasGo.GetComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920f, 1080f);
-            scaler.matchWidthOrHeight = 0.5f;
+            UiFactory.ConfigureScaler(scaler);
 
             // Everything hangs off a stage rather than the canvas itself, so a right-to-left language can mirror the
             // whole layout with one scale: the run line moves to the top right, the hand deals from the right, bars
@@ -324,6 +322,7 @@ namespace EmberDeck.View
             stage.SetParent(canvasGo.transform, false);
             UiFactory.Stretch(stage);
             if (Loc.IsRtl) stage.localScale = new Vector3(-1f, 1f, 1f);
+            if (TouchMode.Active) stage.gameObject.AddComponent<SafeArea>();
             _root = stage;
 
             var background = UiFactory.Panel(_root, "Background", Palette.Background);
@@ -454,6 +453,14 @@ namespace EmberDeck.View
             UiFactory.Place(_seedLabel.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f),
                             new Vector2(40f, -30f), new Vector2(400f, 26f));
 
+            if (TouchMode.Active)
+            {
+                var menu = UiFactory.TextButton(_root, "TouchMenu", "Menu", Palette.PanelRaised, Palette.Ink, 26);
+                UiFactory.Place((RectTransform)menu.transform, new Vector2(1f, 1f), new Vector2(1f, 1f),
+                                new Vector2(-40f, -80f), new Vector2(170f, 76f));
+                menu.onClick.AddListener(TogglePause);
+            }
+
             BuildPotionBelt();
         }
 
@@ -559,12 +566,19 @@ namespace EmberDeck.View
             Coach.EndScreen();
             Coach.Show("hand", "Play your cards",
                        $"Each card costs the Energy in its corner, and you get {_config.EnergyPerTurn} Energy every turn "
-                       + "(the orb, bottom left). To attack, click a card and then click an enemy. "
-                       + "Cards with no target, like Guard, play on one click.",
+                       + "(the orb, bottom left). "
+                       + (TouchMode.Active
+                            ? "Tap a card to read it, then tap an enemy to attack. A card with no target, like Guard, "
+                              + "plays when you tap it again."
+                            : "To attack, click a card and then click an enemy. Cards with no target, like Guard, "
+                              + "play on one click."),
                        HandRects, Coach.Side.Above);
             Coach.Show("intent", "Read the enemy",
                        "The icon above an enemy is its next move. A red number is damage coming at you; a shield "
-                       + "means it will gain Block. Hover over an enemy to see exactly what it will do.",
+                       + "means it will gain Block. "
+                       + (TouchMode.Active
+                            ? "Tap an enemy to see exactly what it will do."
+                            : "Hover over an enemy to see exactly what it will do."),
                        IntentRects, Coach.Side.Right);
 
             // One stream per fight, derived from the run seed, so a run replays exactly.
@@ -701,13 +715,18 @@ namespace EmberDeck.View
         /// </summary>
         void BuildPotionBelt()
         {
+            // A phone's 1080 rows are about 70mm of glass, so a 56-unit slot is a 3.5mm target — under a
+            // fingertip. On touch the belt is drawn half again as large, which the empty corner has room for.
+            float size = TouchMode.Active ? 84f : 56f;
+            float step = TouchMode.Active ? 96f : 64f;
+
             for (int i = 0; i < PotionService.Slots; i++)
             {
                 var slot = UiFactory.Panel(_root, $"PotionSlot{i}", Palette.PanelDark);
-                UiFactory.Place(slot, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(40f + i * 64f, -94f), new Vector2(56f, 56f));
-                var icon = Icons.Create(slot, "Icon", null, 46f);
+                UiFactory.Place(slot, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(40f + i * step, -94f), new Vector2(size, size));
+                var icon = Icons.Create(slot, "Icon", null, size - 10f);
                 UiFactory.Place((RectTransform)icon.transform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero,
-                                new Vector2(46f, 46f));
+                                new Vector2(size - 10f, size - 10f));
                 var button = slot.gameObject.AddComponent<Button>();
                 button.targetGraphic = slot.GetComponent<Image>();
                 int index = i;
@@ -788,8 +807,13 @@ namespace EmberDeck.View
 
             if (_run != null && _run.Potions.Count > 0)
                 Coach.Show("potion", "Potions",
-                           "Potions cost no Energy. Click one to drink it; a potion that hits an enemy is aimed like an "
-                           + $"attack, by clicking the enemy next. You can carry {PotionService.Slots}.",
+                           "Potions cost no Energy. "
+                           + (TouchMode.Active
+                                ? "Tap one to drink it; a potion that hits an enemy is aimed like an attack, by tapping "
+                                  + "the enemy next. "
+                                : "Click one to drink it; a potion that hits an enemy is aimed like an attack, by clicking "
+                                  + "the enemy next. ")
+                           + $"You can carry {PotionService.Slots}.",
                            PotionRects, Coach.Side.Below);   // beside them it covered the run line
 
             // Only after a card has been played: before the opening hand is dealt nothing is playable either.
@@ -806,7 +830,9 @@ namespace EmberDeck.View
                 return new[] { new Tooltip.Entry("Empty potion slot", "Potions drop from fights and are sold in shops. Drinking one costs no energy.") };
 
             var potion = _run.Potions[slot];
-            string how = potion.Target == TargetMode.SingleEnemy ? "Click it, then click an enemy." : "Click to drink.";
+            string how = potion.Target == TargetMode.SingleEnemy
+                ? (TouchMode.Active ? "Tap it, then tap an enemy." : "Click it, then click an enemy.")
+                : (TouchMode.Active ? "Tap to drink." : "Click to drink.");
             return new[] { new Tooltip.Entry(potion.DisplayName, $"{potion.BuildDescription()} {how} Costs no energy.", potion.Icon) };
         }
 
@@ -882,8 +908,10 @@ namespace EmberDeck.View
                            null, Coach.Side.Below);
             Coach.Show("map", "The map",
                        "Climb from the bottom to the boss at the top. The glowing nodes are where you can go next; "
-                       + "hover over any node to see what it holds. Fights give cards and gold, rest sites heal, "
-                       + "and ? is an event.",
+                       + (TouchMode.Active
+                            ? "tap one to see what it holds, and tap it again to enter. "
+                            : "hover over any node to see what it holds. ")
+                       + "Fights give cards and gold, rest sites heal, and ? is an event.",
                        _mapView.AvailableNodes, Coach.Side.Left);
             AudioDirector.PlayMusic(MusicTrack.Map);
             // Saving here rather than on every state change means the file is only ever
@@ -1087,6 +1115,9 @@ namespace EmberDeck.View
 
             // Cards that need no target play on the first click; cards that do are selected
             // first and then aimed. One interaction model, no modes to explain.
+            //
+            // A touch screen takes one more tap for the untargeted ones: there is no hover, so the first
+            // tap is how a player reads a card, and playing on it would spend a card nobody had read.
             if (view.Card.Data.Target == TargetMode.SingleEnemy)
             {
                 _selectedCard = _selectedCard == view ? null : view;
@@ -1094,6 +1125,14 @@ namespace EmberDeck.View
                 Redraw();
                 // Aiming moves focus to the enemies, so the next press of A plays the card.
                 PadNavigator.Focus(_selectedCard != null ? FirstLivingEnemy() : view.gameObject);
+                return;
+            }
+
+            if (TouchMode.Active && _selectedCard != view)
+            {
+                _selectedCard = view;
+                AudioDirector.Play(Sfx.Click, 0.7f);
+                Redraw();
                 return;
             }
 

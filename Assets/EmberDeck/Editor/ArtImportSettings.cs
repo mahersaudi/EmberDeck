@@ -12,6 +12,9 @@ namespace EmberDeck.EditorTools
     /// </summary>
     public sealed class ArtImportSettings : AssetPostprocessor
     {
+        /// <summary>Bumped whenever the settings below change, which is what makes Unity reimport the art.</summary>
+        public override uint GetVersion() => 2;
+
         void OnPreprocessTexture()
         {
             // Resources/Icons too: the UI icons are loaded by name at runtime, and Resources.Load<Sprite>
@@ -33,6 +36,23 @@ namespace EmberDeck.EditorTools
             {
                 importer.textureCompression = TextureImporterCompression.CompressedHQ;
                 importer.maxTextureSize = 2048;
+            }
+
+            // Android is the one platform that cannot afford the paintings uncompressed: the same art that
+            // costs 425 MB in the Mac build made a 985 MB APK. ASTC at 1024 is about a ninth of that, for
+            // detail a phone draws into a 200-unit-wide card. The 128px UI icons are left alone — they are a
+            // third of a megabyte in total, and block compression is most visible on small flat shapes.
+            if (!assetPath.Contains("/Resources/Icons/"))
+            {
+                importer.SetPlatformTextureSettings(new TextureImporterPlatformSettings
+                {
+                    name = "Android",
+                    overridden = true,
+                    maxTextureSize = 1024,
+                    format = TextureImporterFormat.ASTC_6x6,
+                    textureCompression = TextureImporterCompression.Compressed,
+                    compressionQuality = 100,
+                });
             }
 
             // Frames are 9-sliced. The border has to be declared at import: without it Unity stretches the

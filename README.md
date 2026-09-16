@@ -34,9 +34,13 @@ all. Ten hands played by hand would not have shown that.
 |---|---|
 | `BuildMac` / `BuildWindows` | `Build/macOS/`, `Build/Windows/`: development builds, with the capture harness and debug hooks |
 | `BuildMacRelease` / `BuildWindowsRelease` | `Build/Release/macOS/`, `Build/Release/Windows/` |
-| `BuildAllRelease` | both release builds; the default |
+| `BuildAllRelease` | both desktop release builds; the default |
+| `BuildAndroid` / `BuildAndroidRelease` | `Build/Android/EmberDeck.apk`, `Build/Release/Android/EmberDeck.apk` |
 
 - The version is `BuildScript.Version`. Only the generated scene is built.
+- Android builds need Unity's `android` module (its SDK, NDK and OpenJDK), use IL2CPP and ARM64, and
+  are landscape-only. `ProjectSetup.ApplyAndroid` applies all of it. See
+  [`docs/touch-and-android.md`](docs/touch-and-android.md) for what the touch interface changes.
 - Windows builds need Unity's `windows-mono` module. Both platforms use Mono: IL2CPP for Windows can
   only be built on Windows.
 - Release builds exclude the capture harness entirely (`AutoCapture.cs` is compiled only into
@@ -128,6 +132,7 @@ The slice ends at a single fight. In order:
 8. ~~**Meta unlocks**~~ — done: Embers, an unlock track of cards and relics, and five difficulty levels. See `docs/meta-progression.md`.
 9. ~~**Controller support**~~ — done: keyboard and gamepad focus on every screen, with button hints. See `docs/controller.md`.
 10. ~~**Arabic**~~ — done: the whole game in Arabic, right to left, chosen in Settings. See `docs/localization.md`.
+11. ~~**Touch and Android**~~ — done: tap to read then tap to act, bigger targets, safe area, and an APK. See `docs/touch-and-android.md`.
 
 Content and balance are the work after that; the architecture above is meant not to change.
 

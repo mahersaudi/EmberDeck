@@ -3,7 +3,8 @@
 #
 #   ./tools/build.sh                     # both release builds (Build/Release/macOS, Build/Release/Windows)
 #   ./tools/build.sh BuildMac            # any BuildScript method: BuildMac, BuildMacRelease,
-#                                        # BuildWindows, BuildWindowsRelease, BuildAllRelease
+#                                        # BuildWindows, BuildWindowsRelease, BuildAllRelease,
+#                                        # BuildAndroid, BuildAndroidRelease
 #
 # Gates on BuildScript's own "Build Succeeded" lines, counted, rather than on the absence of
 # errors: a batch run that dies early prints no error and no success.

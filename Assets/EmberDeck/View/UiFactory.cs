@@ -98,6 +98,18 @@ namespace EmberDeck.View
             return button;
         }
 
+        /// <summary>
+        /// The scaling every canvas in the game uses. On a desktop window the design is split between width
+        /// and height; on a phone it matches height only, so the 1080-tall layout always fits and the extra
+        /// width of a long screen becomes margin rather than squeezing the board.
+        /// </summary>
+        public static void ConfigureScaler(CanvasScaler scaler)
+        {
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920f, 1080f);
+            scaler.matchWidthOrHeight = TouchMode.Active ? 1f : 0.5f;
+        }
+
         /// <summary>Right-to-left text flushes to the other side of its box.</summary>
         public static TextAnchor Mirror(TextAnchor anchor) => anchor switch
         {

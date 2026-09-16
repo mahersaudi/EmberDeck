@@ -43,6 +43,7 @@ namespace EmberDeck.View
         Canvas _canvas;
         RectTransform _panel;
         Object _owner;
+        int _touchToken;
         readonly List<GameObject> _rows = new();
 
         static Tooltip Instance
@@ -64,9 +65,7 @@ namespace EmberDeck.View
             canvas.sortingOrder = 500;
 
             var scaler = host.GetComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920f, 1080f);
-            scaler.matchWidthOrHeight = 0.5f;
+            UiFactory.ConfigureScaler(scaler);
 
             _instance = host.AddComponent<Tooltip>();
             _instance._canvas = canvas;
@@ -117,6 +116,16 @@ namespace EmberDeck.View
 
             foreach (var entry in entries)
                 tooltip._rows.Add(Row(tooltip._panel, entry));
+
+            // Nothing takes the pointer away from a tooltip opened by a tap, so it closes itself.
+            if (TouchMode.Active)
+            {
+                int token = ++tooltip._touchToken;
+                Motion.After(5f, () =>
+                {
+                    if (_instance != null && _instance._touchToken == token) Hide(_instance._owner);
+                }, tooltip);
+            }
 
             tooltip._panel.gameObject.SetActive(true);
             tooltip._panel.SetAsLastSibling();

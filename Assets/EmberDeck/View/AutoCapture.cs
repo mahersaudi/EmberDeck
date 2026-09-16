@@ -38,6 +38,7 @@ namespace EmberDeck.View
             // Every first-run tip unseen, and the player's own record of seen tips left untouched.
             // -emberdeck-lang ar photographs the Arabic interface; the choice is never saved.
             if (ReadArg("-emberdeck-lang") == "ar") Loc.UseMemoryOnly(Language.Arabic);
+            if (System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "-emberdeck-touch") >= 0) TouchMode.Force(true);
             Coach.UseMemoryOnly();
             // The harness drives focus itself; a mouse moved on the desk must not switch it off mid-shot.
             PadNavigator.IgnoreHardware = true;
@@ -143,7 +144,13 @@ namespace EmberDeck.View
                 if (map != null && map.gameObject.activeInHierarchy)
                 {
                     var node = FindFirstNodeButton();
-                    if (node != null) { Click(node); yield return new WaitForSeconds(1.2f); }
+                    // On touch the first tap on a node only reads it; the second enters. See MapView.
+                    if (node != null)
+                    {
+                        Click(node);
+                        if (TouchMode.Active) Click(node);
+                        yield return new WaitForSeconds(1.2f);
+                    }
                 }
                 yield return Capture("02-combat-start.png");
 
@@ -278,7 +285,8 @@ namespace EmberDeck.View
                     {
                         var cards = FindObjectsByType<CardView>(FindObjectsSortMode.None);
                         if (cards.Length == 0) break;
-                        Click(cards[0].GetComponent<Button>());
+                        var card = cards[0].GetComponent<Button>();
+                        Click(card);
                         yield return null;
 
                         var enemies = FindObjectsByType<EnemyView>(FindObjectsSortMode.None);
@@ -289,6 +297,15 @@ namespace EmberDeck.View
                             break;
                         }
                         yield return null;
+
+                        // On touch a card that needs no target waits for a second tap, and the enemy tap
+                        // above did nothing for it. A targeted card was played by that tap and is gone, so
+                        // tapping again here would only pick up the next card. See CombatView.OnCardClicked.
+                        if (TouchMode.Active && FindObjectsByType<CardView>(FindObjectsSortMode.None).Length == cards.Length)
+                        {
+                            Click(card);
+                            yield return null;
+                        }
 
                         // Nothing was consumed, so no card in hand is affordable.
                         if (FindObjectsByType<CardView>(FindObjectsSortMode.None).Length == cards.Length) break;

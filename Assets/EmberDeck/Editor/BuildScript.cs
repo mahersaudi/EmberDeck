@@ -25,7 +25,7 @@ namespace EmberDeck.EditorTools
 
         const string Scene = "Assets/EmberDeck/Scenes/Combat.unity";
 
-        enum Platform { MacOS, Windows }
+        enum Platform { MacOS, Windows, Android }
 
         // BuildMac keeps its name: the capture and test commands already call it.
         [MenuItem("EmberDeck/Build/macOS (Development)")]
@@ -40,6 +40,12 @@ namespace EmberDeck.EditorTools
         [MenuItem("EmberDeck/Build/Windows (Release)")]
         public static void BuildWindowsRelease() => Build(Platform.Windows, development: false);
 
+        [MenuItem("EmberDeck/Build/Android (Development)")]
+        public static void BuildAndroid() => Build(Platform.Android, development: true);
+
+        [MenuItem("EmberDeck/Build/Android (Release)")]
+        public static void BuildAndroidRelease() => Build(Platform.Android, development: false);
+
         [MenuItem("EmberDeck/Build/All Release Builds")]
         public static void BuildAllRelease()
         {
@@ -49,20 +55,29 @@ namespace EmberDeck.EditorTools
 
         static bool Build(Platform platform, bool development)
         {
-            var target = platform == Platform.Windows ? BuildTarget.StandaloneWindows64 : BuildTarget.StandaloneOSX;
+            var target = platform switch
+            {
+                Platform.Windows => BuildTarget.StandaloneWindows64,
+                Platform.Android => BuildTarget.Android,
+                _                => BuildTarget.StandaloneOSX,
+            };
+            var group = platform == Platform.Android ? BuildTargetGroup.Android : BuildTargetGroup.Standalone;
 
             if (!File.Exists(Scene))
                 return Fail($"{Scene} does not exist. Run EmberDeck > Generate Content and Scene first.");
 
             // A missing platform module does not fail loudly on its own: the build is refused with a
             // generic message. Say which module is missing instead.
-            if (!BuildPipeline.IsBuildTargetSupported(BuildTargetGroup.Standalone, target))
-                return Fail(platform == Platform.Windows
-                    ? "Windows Build Support (Mono) is not installed for this editor. Install the module, then build again."
-                    : "Mac Build Support is not installed for this editor.");
+            if (!BuildPipeline.IsBuildTargetSupported(group, target))
+                return Fail(platform switch
+                {
+                    Platform.Windows => "Windows Build Support (Mono) is not installed for this editor. Install the module, then build again.",
+                    Platform.Android => "Android Build Support (with its SDK and NDK) is not installed for this editor.",
+                    _                => "Mac Build Support is not installed for this editor.",
+                });
 
-            // Mono for both. IL2CPP for Windows can only be built on Windows, and one backend for both
-            // platforms means one set of behaviour to test.
+            // Mono for both desktop players. IL2CPP for Windows can only be built on Windows, and one backend
+            // for both platforms means one set of behaviour to test. Android uses IL2CPP (ApplyAndroid).
             PlayerSettings.SetScriptingBackend(NamedBuildTarget.Standalone, ScriptingImplementation.Mono2x);
             PlayerSettings.bundleVersion = Version;
             // Applied on every build, so no build can ship with Unity's default icon.
@@ -70,9 +85,20 @@ namespace EmberDeck.EditorTools
             ProjectSetup.ApplyInput();
             ProjectSetup.ApplyFonts();
             PlayerSettings.macOS.buildNumber = Version;
+            if (platform == Platform.Android) ProjectSetup.ApplyAndroid();
 
-            string folder = platform == Platform.Windows ? "Windows" : "macOS";
-            string file = platform == Platform.Windows ? "EmberDeck.exe" : "EmberDeck.app";
+            string folder = platform switch
+            {
+                Platform.Windows => "Windows",
+                Platform.Android => "Android",
+                _                => "macOS",
+            };
+            string file = platform switch
+            {
+                Platform.Windows => "EmberDeck.exe",
+                Platform.Android => "EmberDeck.apk",
+                _                => "EmberDeck.app",
+            };
             string path = development ? $"Build/{folder}/{file}" : $"Build/Release/{folder}/{file}";
 
             var options = new BuildPlayerOptions

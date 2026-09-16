@@ -29,6 +29,9 @@ namespace EmberDeck.View
 
         readonly List<GameObject> _drawn = new();
 
+        /// <summary>Touch only: the node read by the last tap, which a second tap on it enters.</summary>
+        GameObject _armed;
+
         public event Action<MapNode> NodeChosen;
 
         public static MapView Create(Transform parent)
@@ -97,6 +100,7 @@ namespace EmberDeck.View
             foreach (var item in _drawn)
                 if (item != null) { item.transform.SetParent(null, false); Destroy(item); }
             _drawn.Clear();
+            _armed = null;
 
             // Edges first so no line is drawn over a node's face.
             foreach (var row in _map.Grid)
@@ -173,12 +177,33 @@ namespace EmberDeck.View
 
             if (!available) return;
 
+            // A 58-unit node is a 3.5mm target on a phone. Rather than redraw the map larger — the rows
+            // barely fit as it is — each reachable node gets an invisible pad out to its neighbours, so a
+            // thumb that lands near a node still hits it. Presses on the pad bubble up to the button below.
+            if (TouchMode.Active)
+            {
+                var pad = UiFactory.Panel(panel, "TouchArea", new Color(0f, 0f, 0f, 0f));
+                UiFactory.Place(pad, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero,
+                                new Vector2(Mathf.Max(size, 78f), Mathf.Max(size, 78f)));
+            }
+
             // Only reachable nodes take clicks. An unreachable node that highlights on hover
             // and then does nothing is worse than one that plainly cannot be pressed.
             var button = panel.gameObject.AddComponent<Button>();
             button.targetGraphic = panel.GetComponent<Image>();
             var chosen = node;
-            button.onClick.AddListener(() => NodeChosen?.Invoke(chosen));
+            var target = panel.gameObject;
+            button.onClick.AddListener(() =>
+            {
+                // On touch the first tap only reads the node: it opens the tooltip, and there is no hover to
+                // open it with. Entering the wrong fight cannot be taken back, so going in takes a second tap.
+                if (TouchMode.Active && _armed != target)
+                {
+                    _armed = target;
+                    return;
+                }
+                NodeChosen?.Invoke(chosen);
+            });
             panel.gameObject.AddComponent<NodePulse>();
         }
 

@@ -95,6 +95,38 @@ namespace EmberDeck.EditorTools
             return true;
         }
 
+        /// <summary>
+        /// The Android player's settings. Landscape only, because the board is a wide row of cards above a wide
+        /// hand and nothing about it works in a column. ARM64 with IL2CPP is what the Play Store requires and
+        /// what every phone since 2017 runs; an APK rather than an app bundle, so a tester can install the file
+        /// directly. The debug keystore is deliberate: this signs playtest builds, not store uploads.
+        /// </summary>
+        public static void ApplyAndroid()
+        {
+            PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, Identifier);
+            PlayerSettings.defaultInterfaceOrientation = UIOrientation.LandscapeLeft;
+            PlayerSettings.allowedAutorotateToLandscapeLeft = true;
+            PlayerSettings.allowedAutorotateToLandscapeRight = true;
+            PlayerSettings.allowedAutorotateToPortrait = false;
+            PlayerSettings.allowedAutorotateToPortraitUpsideDown = false;
+
+            PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android, ScriptingImplementation.IL2CPP);
+            PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
+            // 26 is this editor's floor: asking for 24 is silently raised, and the APK then disagrees with
+            // the setting it was built from.
+            PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel26;
+            // Nothing in the game talks to a network. This only stops Unity from *forcing* the permission;
+            // its own unityLibrary manifest declares INTERNET anyway, and the merged APK still asks for it.
+            // Dropping it needs a custom main manifest that overrides the template — worth doing before a
+            // store release, not before a playtest.
+            PlayerSettings.Android.forceInternetPermission = false;
+            PlayerSettings.Android.useCustomKeystore = false;
+            // Declares the one format the art is compressed to (see ArtImportSettings). Every ARM64 phone
+            // this build targets supports ASTC.
+            PlayerSettings.Android.textureCompressionFormats = new[] { TextureCompressionFormat.ASTC };
+            EditorUserBuildSettings.buildAppBundle = false;
+        }
+
         const string ArabicFontPath = "Assets/EmberDeck/Resources/Fonts/NotoNaskhArabicUI-Regular.ttf";
         const string FallbackFontPath = "Assets/EmberDeck/Resources/Fonts/DejaVuSans.ttf";
 

@@ -16,7 +16,7 @@ namespace EmberDeck.View
     /// another trigger. Pointer-enter reaches every ancestor too, so nested triggers would fight
     /// over the one tooltip.
     /// </summary>
-    public sealed class TooltipTrigger : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+    public sealed class TooltipTrigger : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler
     {
         public Func<IReadOnlyList<Tooltip.Entry>> Content;
 
@@ -34,6 +34,12 @@ namespace EmberDeck.View
         }
 
         public void OnPointerEnter(PointerEventData eventData) => ShowNow();
+
+        /// <summary>On a touch screen the tap that presses a card also explains it; on a desktop the hover already did.</summary>
+        public void OnPointerDown(PointerEventData eventData)
+        {
+            if (TouchMode.Active) ShowNow();
+        }
 
         public void OnPointerExit(PointerEventData eventData) => Tooltip.Hide(this);
 
