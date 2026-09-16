@@ -105,7 +105,7 @@ namespace EmberDeck.View
             _enabled = true;
         }
 
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
+#if DEVELOPMENT_BUILD || UNITY_EDITOR || EMBERDECK_CAPTURE
         /// <summary>
         /// Capture-harness only: marks one tip unseen again. The harness presses End Turn before it runs
         /// out of Energy, which rightly completes the end-turn tip early, so it has to be forgotten to be

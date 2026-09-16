@@ -47,6 +47,13 @@ upload never goes to players by accident.
 
 ## 4. The store page
 
+The copy is written: `store/page-en.md` and `store/page-ar.md`, with the content survey answered in
+the English one (the art is AI-generated and the disclosure says so). Eight screenshots at
+1920×1080 are in `store/screenshots/`, taken from a release build with the capture harness compiled
+in (`./tools/build.sh BuildShots`) — a development build stamps "Development Build" across the
+corner, and a plain release build has no harness to drive. `store/checklist.md` is the list of
+everything Steam asks for and who has to do it.
+
 Steam requires the page to be public as "Coming Soon" for at least two weeks, and a first release
 cannot happen until 30 days after the fee is paid. Start the page early.
 

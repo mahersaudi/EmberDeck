@@ -453,7 +453,7 @@ namespace EmberDeck.View
             RefreshList();
         }
 
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
+#if DEVELOPMENT_BUILD || UNITY_EDITOR || EMBERDECK_CAPTURE
         /// <summary>Capture-harness only: the deck in one line.</summary>
         public string DebugSummary() =>
             $"{_deck.Count}/{DeckBuilder.DeckSize} cards, {_pool.Count} in the pool, legal={DeckBuilder.IsLegal(_deck)}";

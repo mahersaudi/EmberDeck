@@ -1,7 +1,7 @@
 // Development builds and the editor only. The harness drives CombatView's Debug* hooks, which are
 // compiled out of release builds — so the harness must be too. Before this guard, no release
 // build could compile; only development builds had ever been made, so nothing had shown it.
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
+#if DEVELOPMENT_BUILD || UNITY_EDITOR || EMBERDECK_CAPTURE
 using System.Collections;
 using System.IO;
 using UnityEngine;
@@ -141,6 +141,11 @@ namespace EmberDeck.View
                     yield return Capture("00f-deck-builder-short.png");
                     Debug.Log($"[AutoCapture] put one back: {builder.DebugAddFirst()}");
                     yield return new WaitForSeconds(0.3f);
+
+                    // Without the tip over it: this is the shot a store page uses.
+                    Click(FindButton("CoachGotIt"));
+                    yield return new WaitForSeconds(0.3f);
+                    yield return Capture("00g-deck-builder-clean.png");
 
                     Click(FindButton("DeckStart"));
                     yield return new WaitForSeconds(0.4f);

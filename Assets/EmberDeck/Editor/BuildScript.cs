@@ -40,6 +40,15 @@ namespace EmberDeck.EditorTools
         [MenuItem("EmberDeck/Build/Windows (Release)")]
         public static void BuildWindowsRelease() => Build(Platform.Windows, development: false);
 
+        /// <summary>
+        /// A release build with the capture harness compiled in (EMBERDECK_CAPTURE), for store
+        /// screenshots. A development build stamps "Development Build" across the corner of every
+        /// frame, and a release build has no harness to drive — this is the only way to photograph
+        /// the game as players will see it.
+        /// </summary>
+        [MenuItem("EmberDeck/Build/Screenshots (release with the harness)")]
+        public static void BuildShots() => Build(Platform.MacOS, development: false, harness: true);
+
         [MenuItem("EmberDeck/Build/Android (Development)")]
         public static void BuildAndroid() => Build(Platform.Android, development: true);
 
@@ -53,7 +62,7 @@ namespace EmberDeck.EditorTools
                 Build(Platform.Windows, development: false);
         }
 
-        static bool Build(Platform platform, bool development)
+        static bool Build(Platform platform, bool development, bool harness = false)
         {
             var target = platform switch
             {
@@ -99,7 +108,9 @@ namespace EmberDeck.EditorTools
                 Platform.Android => "EmberDeck.apk",
                 _                => "EmberDeck.app",
             };
-            string path = development ? $"Build/{folder}/{file}" : $"Build/Release/{folder}/{file}";
+            string path = harness      ? $"Build/Shots/{folder}/{file}"
+                        : development  ? $"Build/{folder}/{file}"
+                                       : $"Build/Release/{folder}/{file}";
 
             var options = new BuildPlayerOptions
             {
@@ -107,11 +118,14 @@ namespace EmberDeck.EditorTools
                 locationPathName = path,
                 target = target,
                 options = development ? BuildOptions.Development : BuildOptions.None,
+                // The harness is compiled out of a release build by its #if. This define puts it back
+                // without turning on the development flag, whose watermark is the thing being avoided.
+                extraScriptingDefines = harness ? new[] { "EMBERDECK_CAPTURE" } : null,
             };
 
             var report = BuildPipeline.BuildPlayer(options);
             var summary = report.summary;
-            string kind = development ? "development" : "release";
+            string kind = harness ? "release+harness" : development ? "development" : "release";
 
             Debug.Log($"[EmberDeck] Build {summary.result}: {platform} {kind} {Version} -> {path}, " +
                       $"{summary.totalSize} bytes, {summary.totalTime}");

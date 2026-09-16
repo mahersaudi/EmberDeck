@@ -1349,7 +1349,7 @@ namespace EmberDeck.View
             FocusHand(index);
         }
 
-#if DEVELOPMENT_BUILD || UNITY_EDITOR
+#if DEVELOPMENT_BUILD || UNITY_EDITOR || EMBERDECK_CAPTURE
         PointerEventData _debugDrag;
         CardView _debugDragView;
 
