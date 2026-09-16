@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.EnemyData
   Id: ashen_knight
   DisplayName: Ashen Knight
-  MinHp: 40
-  MaxHp: 44
+  MinHp: 36
+  MaxHp: 39
   Pattern: 0
   Moves:
   - {fileID: 11400000, guid: d7133df592f9c496992f07a25ba7756a, type: 2}

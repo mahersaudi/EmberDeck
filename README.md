@@ -140,6 +140,7 @@ The slice ends at a single fight. In order:
 11. ~~**Touch and Android**~~ — done: tap to read then tap to act, bigger targets, safe area, and an APK. See `docs/touch-and-android.md`.
 12. ~~**Deck building**~~ — done: thirty cards chosen before each run, with the balance re-measured around them. See `docs/deck-building.md`.
 13. ~~**Drag and feel**~~ — done: cards dragged onto their target, impacts that throw light, staggered deals, enemy entrances and screen fades.
+14. ~~**Act 3**~~ — done: the Emberheart, seven new enemies and a new boss, with Acts 2 and 3 re-tuned around built decks. See `docs/act-three.md`.
 
 Content and balance are the work after that; the architecture above is meant not to change.
 

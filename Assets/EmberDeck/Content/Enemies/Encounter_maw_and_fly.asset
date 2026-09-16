@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd021e651f00448ed89e513f907ab88d, type: 3}
+  m_Name: Encounter_maw_and_fly
+  m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.EncounterData
+  Id: maw_and_fly
+  Tier: 0
+  Act: 3
+  Enemies:
+  - {fileID: 11400000, guid: ba325d82dca594ee1a18a1bbe22902d4, type: 2}
+  - {fileID: 11400000, guid: 1b606be1bd31f4468831ec1864939d02, type: 2}

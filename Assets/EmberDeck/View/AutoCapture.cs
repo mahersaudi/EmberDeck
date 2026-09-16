@@ -500,6 +500,19 @@ namespace EmberDeck.View
                     Click(FindButton("CoachGotIt"));
                     yield return new WaitForSeconds(0.3f);
                     yield return Capture("11b-act2-map-clean.png");
+
+                    // Act 3, the same way, and then one of its fights: the act nobody reaches in a
+                    // capture run is exactly the one that needs photographing.
+                    actHost.DebugStartNextAct();
+                    yield return new WaitForSeconds(0.8f);
+                    Debug.Log($"[AutoCapture] act 3: {actHost.DebugRunSummary()}");
+                    yield return Capture("11c-act3-map.png");
+                    Click(FindButton("CoachGotIt"));
+                    yield return new WaitForSeconds(0.3f);
+
+                    actHost.DebugFightEncounter("emberheart");
+                    yield return new WaitForSeconds(1.0f);
+                    yield return Capture("11d-act3-boss.png");
                 }
 
                 // The end-of-run screen both ways, over the run the harness has been playing.

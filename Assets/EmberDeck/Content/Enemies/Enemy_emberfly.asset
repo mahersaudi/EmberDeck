@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f010fd5b1388f4fdd8472225f49570d0, type: 3}
+  m_Name: Enemy_emberfly
+  m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.EnemyData
+  Id: emberfly
+  DisplayName: Emberfly
+  MinHp: 12
+  MaxHp: 14
+  Pattern: 0
+  Moves:
+  - {fileID: 11400000, guid: 98ab8175a11494ef488f807a63b96fee, type: 2}
+  - {fileID: 11400000, guid: d0975a58e6ca54e53a09fcabe70064f3, type: 2}
+  TintColor: {r: 0.95, g: 0.72, b: 0.3, a: 1}
+  Art: {fileID: 0}

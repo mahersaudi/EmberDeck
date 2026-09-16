@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f010fd5b1388f4fdd8472225f49570d0, type: 3}
+  m_Name: Enemy_ash_priest
+  m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.EnemyData
+  Id: ash_priest
+  DisplayName: Ash Priest
+  MinHp: 27
+  MaxHp: 30
+  Pattern: 0
+  Moves:
+  - {fileID: 11400000, guid: 961c7032b064f495d944ce598d10a24f, type: 2}
+  - {fileID: 11400000, guid: c620fa461c5f34a51842731f7243071f, type: 2}
+  - {fileID: 11400000, guid: 578f3d0394a164bf1b552fc8fd9ff3f5, type: 2}
+  TintColor: {r: 0.8, g: 0.74, b: 0.58, a: 1}
+  Art: {fileID: 0}

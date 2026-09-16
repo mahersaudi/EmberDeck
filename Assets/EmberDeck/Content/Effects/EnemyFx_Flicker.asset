@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 814a6f0a37c6547c5836b9afbd39b15a, type: 3}
   m_Name: EnemyFx_Flicker
   m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.Effects.DealDamageEffect
-  Amount: 4
+  Amount: 3
   Hits: 1
   PerHitStatus: 4
   PerHitStatusAmount: 0

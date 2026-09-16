@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.EnemyData
   Id: obsidian_sentinel
   DisplayName: Obsidian Sentinel
-  MinHp: 44
-  MaxHp: 48
+  MinHp: 40
+  MaxHp: 43
   Pattern: 0
   Moves:
   - {fileID: 11400000, guid: 385c213aef9bd4c00bb7f4694c7d727e, type: 2}

@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.EnemyData
   Id: ember_wisp
   DisplayName: Ember Wisp
-  MinHp: 10
-  MaxHp: 12
+  MinHp: 9
+  MaxHp: 11
   Pattern: 0
   Moves:
   - {fileID: 11400000, guid: d013bdb143ae848f7ad5ed5680b41e82, type: 2}

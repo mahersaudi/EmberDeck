@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 163633e8c14d0467785171be2b41c3e5, type: 3}
   m_Name: EnemyFx_Steel
   m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.Effects.GainBlockEffect
-  Amount: 10
+  Amount: 8

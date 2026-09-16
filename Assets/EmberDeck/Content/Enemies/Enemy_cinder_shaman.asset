@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.EnemyData
   Id: cinder_shaman
   DisplayName: Cinder Shaman
-  MinHp: 24
-  MaxHp: 27
+  MinHp: 22
+  MaxHp: 24
   Pattern: 0
   Moves:
   - {fileID: 11400000, guid: 05251b5a3d5b94145ae7581a002e8397, type: 2}

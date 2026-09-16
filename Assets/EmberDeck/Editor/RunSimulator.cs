@@ -116,15 +116,21 @@ namespace EmberDeck.EditorTools
             // The middle two split the track, so a jump in the second pass can be traced to cards or relics.
             var cardUnlocks = config.Unlocks.Where(u => u != null && u.Cards.Count > 0).Select(u => u.Id).ToList();
             var relicUnlocks = config.Unlocks.Where(u => u != null && u.Relics.Count > 0).Select(u => u.Id).ToList();
-            var passes = new (string Label, List<string> Unlocked, int Difficulty, DeckMode Deck)[]
+            // StartAct exists because of Act 3. Only about one simulated run in fourteen gets past the
+            // Act 1 boss, and a handful past the Wyrm, so a pass that starts at floor 1 measures the last
+            // act with a dozen runs — noise. A pass that starts a run at the top of an act measures that
+            // act on its own terms. It is an emulation, not a real run: see StartAtAct.
+            var passes = new (string Label, List<string> Unlocked, int Difficulty, DeckMode Deck, int StartAct)[]
             {
-                ("[base game: suggested 30-card deck, normal difficulty]", null, 0, DeckMode.Suggested),
-                ("[base game: the best 30-card deck the rules allow, normal difficulty]", null, 0, DeckMode.Best),
-                ("[base game: random 30-card deck, normal difficulty]", null, 0, DeckMode.Random),
-                ("[base game: old 10-card starter deck, normal difficulty — the reference]", null, 0, DeckMode.Starter),
-                ("[everything unlocked, suggested 30-card deck, normal difficulty]", config.AllUnlockIds(), 0, DeckMode.Suggested),
-                ("[everything unlocked, random 30-card deck, normal difficulty]", config.AllUnlockIds(), 0, DeckMode.Random),
-                ("[everything unlocked, suggested 30-card deck, difficulty 5]", config.AllUnlockIds(), DifficultyRules.Max, DeckMode.Suggested),
+                ("[base game: suggested 30-card deck, normal difficulty]", null, 0, DeckMode.Suggested, 1),
+                ("[base game: the best 30-card deck the rules allow, normal difficulty]", null, 0, DeckMode.Best, 1),
+                ("[base game: random 30-card deck, normal difficulty]", null, 0, DeckMode.Random, 1),
+                ("[base game: old 10-card starter deck, normal difficulty — the reference]", null, 0, DeckMode.Starter, 1),
+                ("[everything unlocked, suggested 30-card deck, normal difficulty]", config.AllUnlockIds(), 0, DeckMode.Suggested, 1),
+                ("[act 2 alone: a deck that won Act 1, arriving at full health]", null, 0, DeckMode.Suggested, 2),
+                ("[act 3 alone: a deck that won two acts, arriving at full health]", null, 0, DeckMode.Suggested, 3),
+                ("[everything unlocked, random 30-card deck, normal difficulty]", config.AllUnlockIds(), 0, DeckMode.Random, 1),
+                ("[everything unlocked, suggested 30-card deck, difficulty 5]", config.AllUnlockIds(), DifficultyRules.Max, DeckMode.Suggested, 1),
             };
             foreach (var pass in passes)
             {
@@ -151,7 +157,7 @@ namespace EmberDeck.EditorTools
                 {
                     var results = new List<Result>(Runs);
                     for (int i = 0; i < Runs; i++)
-                        results.Add(PlayRun(config, seed: 10_000 + i, policy, pass.Difficulty, unlocked, pass.Deck));
+                        results.Add(PlayRun(config, seed: 10_000 + i, policy, pass.Difficulty, unlocked, pass.Deck, pass.StartAct));
                     if (firstPass) allResults.AddRange(results);
 
                     int wins = results.Count(r => r.BeatBoss);
@@ -215,7 +221,7 @@ namespace EmberDeck.EditorTools
         // ── One run ──────────────────────────────────────────────────────────────────
 
         static Result PlayRun(RunConfig config, int seed, Policy policy, int difficulty = 0, List<string> unlocked = null,
-                              DeckMode deckMode = DeckMode.Suggested)
+                              DeckMode deckMode = DeckMode.Suggested, int startAct = 1)
         {
             // The deck is built before the run, by the same rules the screen builds under.
             var deck = deckMode switch
@@ -226,6 +232,7 @@ namespace EmberDeck.EditorTools
                 _                  => null,
             };
             var run = RunState.Start(config, seed, difficulty, unlocked, deck);
+            if (startAct > 1) StartAtAct(run, config, startAct);
             var result = new Result();
             result.Stats = run.Stats;
 
@@ -376,6 +383,56 @@ namespace EmberDeck.EditorTools
             run.Hp = Mathf.Max(0, state.Player.Hp);
             session.End();
             return won;
+        }
+
+        /// <summary>
+        /// Drops a fresh run at the top of a later act, as the player who reached it would arrive:
+        /// full health, the act's own scaling counted from here, and a deck and relic shelf that grew
+        /// on the way. Ten fights per act, two cards and one relic per act passed — measured averages
+        /// from the passes that do start at floor 1, so the deck arriving in Act 3 is 34 cards like a
+        /// real one.
+        ///
+        /// It cannot emulate the health a real run arrives with, and does not try: an act's own
+        /// difficulty is what this measures, and arriving at 12 HP is the previous act's verdict.
+        /// </summary>
+        static void StartAtAct(RunState run, RunConfig config, int act)
+        {
+            run.Act = Mathf.Clamp(act, 1, config.Acts);
+            run.FightNumber = 1 + 10 * (run.Act - 1);
+            run.ActStartFight = run.FightNumber;
+            run.Hp = run.MaxHp;
+            run.GenerateMap();
+
+            var rng = new DeterministicRng(run.Seed ^ 0x5EED3);
+            var pool = run.RewardPool(config);
+            for (int i = 0; i < 2 * (run.Act - 1) && pool.Count > 0; i++)
+                run.AddCard(pool[rng.Range(0, pool.Count)]);
+
+            var relics = run.RelicPool(config);
+            for (int i = 0; i < run.Act - 1 && relics.Count > 0; i++)
+            {
+                var relic = relics[rng.Range(0, relics.Count)];
+                if (!run.Relics.Contains(relic)) run.Relics.Add(relic);
+            }
+
+            // Two upgrades and a full potion belt per act passed, and the gold a run arrives with. Without
+            // these the emulation is a weaker player than any real arrival — the first version had none of
+            // them, and made Act 2 look unwinnable when the runs that actually reach it clear it a third of
+            // the time.
+            for (int i = 0; i < 2 * (run.Act - 1); i++)
+            {
+                var upgradable = run.UpgradableCards();
+                if (upgradable.Count == 0) break;
+                run.UpgradeCard(upgradable[rng.Range(0, upgradable.Count)]);
+            }
+
+            while (run.Potions.Count < PotionService.Slots)
+            {
+                var potion = PotionService.RollDrop(run, config);
+                if (potion == null || !PotionService.TryAdd(run, potion)) break;
+            }
+
+            GoldService.Earn(run, 60 * (run.Act - 1));
         }
 
         static void Tally(Result result, bool added)

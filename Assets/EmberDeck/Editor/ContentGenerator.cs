@@ -426,46 +426,46 @@ namespace EmberDeck.EditorTools
             // Scaling restarts with the act (RunState.ActStartFight), so these are authored at full strength
             // rather than arriving multiplied by every fight of Act 1.
             var flicker   = Move("Move_Flicker", "Flicker", IntentKind.Attack, 1,
-                                 Damage("EnemyFx_Flicker", 4), Status("EnemyFx_Flicker_Burn", StatusType.Burn, 1));
-            var wispFlare = Move("Move_WispFlare", "Flare", IntentKind.Attack, 1, Damage("EnemyFx_WispFlare", 7));
-            var emberWisp = MakeEnemy("ember_wisp", "Ember Wisp", 10, 12, MovePattern.Sequence,
+                                 Damage("EnemyFx_Flicker", 3), Status("EnemyFx_Flicker_Burn", StatusType.Burn, 1));
+            var wispFlare = Move("Move_WispFlare", "Flare", IntentKind.Attack, 1, Damage("EnemyFx_WispFlare", 6));
+            var emberWisp = MakeEnemy("ember_wisp", "Ember Wisp", 9, 11, MovePattern.Sequence,
                                       new Color(0.62f, 0.55f, 0.95f), flicker, wispFlare);
 
             var siphon = Move("Move_Siphon", "Siphon", IntentKind.Attack, 1,
-                              Damage("EnemyFx_Siphon", 7), Asset<HealEffect>("EnemyFx_Siphon_Heal", e => e.Amount = 3));
+                              Damage("EnemyFx_Siphon", 6), Asset<HealEffect>("EnemyFx_Siphon_Heal", e => e.Amount = 3));
             var latch  = Move("Move_Latch", "Latch", IntentKind.Attack, 1,
-                              Damage("EnemyFx_Latch", 5), Status("EnemyFx_Latch_Weak", StatusType.Weak, 1));
-            var magmaLeech = MakeEnemy("magma_leech", "Magma Leech", 24, 27, MovePattern.Sequence,
+                              Damage("EnemyFx_Latch", 4), Status("EnemyFx_Latch_Weak", StatusType.Weak, 1));
+            var magmaLeech = MakeEnemy("magma_leech", "Magma Leech", 22, 24, MovePattern.Sequence,
                                        new Color(0.78f, 0.36f, 0.20f), siphon, latch);
 
-            var fortify = Move("Move_Fortify", "Fortify", IntentKind.Block, 1, Block("EnemyFx_Fortify", 14));
-            var halberd = Move("Move_Halberd", "Halberd", IntentKind.Attack, 1, Damage("EnemyFx_Halberd", 11));
-            var sentinel = MakeEnemy("obsidian_sentinel", "Obsidian Sentinel", 44, 48, MovePattern.Sequence,
+            var fortify = Move("Move_Fortify", "Fortify", IntentKind.Block, 1, Block("EnemyFx_Fortify", 12));
+            var halberd = Move("Move_Halberd", "Halberd", IntentKind.Attack, 1, Damage("EnemyFx_Halberd", 9));
+            var sentinel = MakeEnemy("obsidian_sentinel", "Obsidian Sentinel", 40, 43, MovePattern.Sequence,
                                      new Color(0.30f, 0.26f, 0.40f), fortify, halberd, halberd);
 
             var sunder = Move("Move_Sunder", "Sunder", IntentKind.Debuff, 1,
-                              Damage("EnemyFx_Sunder", 7), Status("EnemyFx_Sunder_Vulnerable", StatusType.Vulnerable, 1));
-            var cleave = Move("Move_Cleave", "Cleave", IntentKind.Attack, 1, Damage("EnemyFx_Cleave", 11));
+                              Damage("EnemyFx_Sunder", 6), Status("EnemyFx_Sunder_Vulnerable", StatusType.Vulnerable, 1));
+            var cleave = Move("Move_Cleave", "Cleave", IntentKind.Attack, 1, Damage("EnemyFx_Cleave", 9));
             var steel  = Move("Move_Steel", "Steel", IntentKind.Buff, 1,
-                              Block("EnemyFx_Steel", 10), Status("EnemyFx_Steel_Strength", StatusType.Strength, 1, toSelf: true));
-            var ashenKnight = MakeEnemy("ashen_knight", "Ashen Knight", 40, 44, MovePattern.Sequence,
+                              Block("EnemyFx_Steel", 8), Status("EnemyFx_Steel_Strength", StatusType.Strength, 1, toSelf: true));
+            var ashenKnight = MakeEnemy("ashen_knight", "Ashen Knight", 36, 39, MovePattern.Sequence,
                                         new Color(0.55f, 0.52f, 0.60f), sunder, cleave, steel);
 
             var hex      = Move("Move_Hex", "Hex", IntentKind.Debuff, 1,
                                 Status("EnemyFx_Hex_Weak", StatusType.Weak, 1), Status("EnemyFx_Hex_Vulnerable", StatusType.Vulnerable, 1));
             var firebolt = Move("Move_Firebolt", "Firebolt", IntentKind.Attack, 1,
-                                Damage("EnemyFx_Firebolt", 7), Status("EnemyFx_Firebolt_Burn", StatusType.Burn, 2));
+                                Damage("EnemyFx_Firebolt", 6), Status("EnemyFx_Firebolt_Burn", StatusType.Burn, 2));
             var ritual   = Move("Move_Ritual", "Ritual", IntentKind.Buff, 1,
                                 Status("EnemyFx_Ritual_Strength", StatusType.Strength, 1, toSelf: true));
-            var shaman = MakeEnemy("cinder_shaman", "Cinder Shaman", 24, 27, MovePattern.Sequence,
+            var shaman = MakeEnemy("cinder_shaman", "Cinder Shaman", 22, 24, MovePattern.Sequence,
                                    new Color(0.70f, 0.40f, 0.62f), hex, firebolt, ritual);
 
             // The Act 2 elite that is not a pairing: the Sentinel's question at elite scale.
-            var shatter     = Move("Move_Shatter", "Shatter", IntentKind.Attack, 1, Damage("EnemyFx_Shatter", 4, hits: 3));
-            var quake       = Move("Move_Quake", "Quake", IntentKind.Attack, 1, Damage("EnemyFx_Quake", 14));
+            var shatter     = Move("Move_Shatter", "Shatter", IntentKind.Attack, 1, Damage("EnemyFx_Shatter", 3, hits: 3));
+            var quake       = Move("Move_Quake", "Quake", IntentKind.Attack, 1, Damage("EnemyFx_Quake", 11));
             var crystalWard = Move("Move_CrystalWard", "Ward", IntentKind.Buff, 1,
-                                   Block("EnemyFx_CrystalWard", 16), Status("EnemyFx_CrystalWard_Strength", StatusType.Strength, 1, toSelf: true));
-            var colossus = MakeEnemy("obsidian_colossus", "Obsidian Colossus", 66, 70, MovePattern.Sequence,
+                                   Block("EnemyFx_CrystalWard", 14), Status("EnemyFx_CrystalWard_Strength", StatusType.Strength, 1, toSelf: true));
+            var colossus = MakeEnemy("obsidian_colossus", "Obsidian Colossus", 60, 64, MovePattern.Sequence,
                                      new Color(0.36f, 0.28f, 0.50f), shatter, quake, crystalWard);
 
             // The Act 2 boss. Like the Tyrant, its moves are bigger versions of ones already met: Burn on
@@ -478,16 +478,80 @@ namespace EmberDeck.EditorTools
             var breath = Move("Move_InfernoBreath", "Inferno Breath", IntentKind.Attack, 1,
                               Asset<DealDamageEffect>("EnemyFx_InfernoBreath", e =>
                               {
-                                  e.Amount = 4;
+                                  e.Amount = 3;
                                   e.Hits = 4;
                                   e.PerHitStatus = StatusType.Burn;
                                   e.PerHitStatusAmount = 1;
                               }));
-            var sweep  = Move("Move_TailSweep", "Tail Sweep", IntentKind.Attack, 1, Damage("EnemyFx_TailSweep", 18));
+            var sweep  = Move("Move_TailSweep", "Tail Sweep", IntentKind.Attack, 1, Damage("EnemyFx_TailSweep", 14));
             var coilUp = Move("Move_WyrmCoil", "Coil", IntentKind.Buff, 1,
-                              Block("EnemyFx_WyrmCoil", 20), Status("EnemyFx_WyrmCoil_Strength", StatusType.Strength, 1, toSelf: true));
-            var wyrm = MakeEnemy("cinder_wyrm", "Cinder Wyrm", 140, 150, MovePattern.Sequence,
+                              Block("EnemyFx_WyrmCoil", 16), Status("EnemyFx_WyrmCoil_Strength", StatusType.Strength, 1, toSelf: true));
+            var wyrm = MakeEnemy("cinder_wyrm", "Cinder Wyrm", 120, 130, MovePattern.Sequence,
                                  new Color(0.52f, 0.24f, 0.30f), roar, breath, sweep, coilUp, breath, sweep);
+
+            // ── Act 3: the Emberheart ───────────────────────────────────────────────
+            // Below the Obsidian Deep is what the forge was built over. The act's own question is
+            // attrition: every enemy here either grows, heals, or hits through Block, so a deck that
+            // won two acts by holding still runs out of time.
+            //   Cinder Revenant     grows two Strength a cycle: kill it early or not at all
+            //   Molten Maw          one enormous hit, announced a turn ahead
+            //   Ash Priest          heals itself: burst it down or watch the fight reset
+            //   Emberfly            small, many hits, always in numbers
+            //   Slag Titan          Block and a crushing blow, the Sentinel grown up
+            //   Living Flame (elite) burns while it eats: damage that ignores Block
+            var rend    = Move("Move_Rend", "Rend", IntentKind.Attack, 1, Damage("EnemyFx_Rend", 8));
+            var kindling = Move("Move_Kindling", "Kindle", IntentKind.Buff, 1,
+                                Status("EnemyFx_Kindling_Strength", StatusType.Strength, 2, toSelf: true));
+            var revenant = MakeEnemy("cinder_revenant", "Cinder Revenant", 25, 28, MovePattern.Sequence,
+                                     new Color(0.85f, 0.42f, 0.28f), kindling, rend, rend);
+
+            var gape     = Move("Move_Gape", "Gape", IntentKind.Buff, 1, Block("EnemyFx_Gape", 8));
+            var swallow  = Move("Move_Swallow", "Swallow", IntentKind.Attack, 1, Damage("EnemyFx_Swallow", 14));
+            var moltenMaw = MakeEnemy("molten_maw", "Molten Maw", 30, 33, MovePattern.Sequence,
+                                      new Color(0.72f, 0.22f, 0.24f), gape, swallow);
+
+            var censer     = Move("Move_Censer", "Censer", IntentKind.Attack, 1,
+                                  Damage("EnemyFx_Censer", 5), Status("EnemyFx_Censer_Burn", StatusType.Burn, 2));
+            var absolution = Move("Move_Absolution", "Absolution", IntentKind.Buff, 1,
+                                  Asset<HealEffect>("EnemyFx_Absolution", e => e.Amount = 8), Block("EnemyFx_Absolution_Block", 8));
+            var doom       = Move("Move_Doom", "Doom", IntentKind.Attack, 1, Damage("EnemyFx_Doom", 10));
+            var ashPriest = MakeEnemy("ash_priest", "Ash Priest", 27, 30, MovePattern.Sequence,
+                                      new Color(0.80f, 0.74f, 0.58f), censer, absolution, doom);
+
+            var sting = Move("Move_Sting", "Sting", IntentKind.Attack, 1, Damage("EnemyFx_Sting", 3, hits: 3));
+            var mote  = Move("Move_Mote", "Mote", IntentKind.Attack, 1,
+                             Damage("EnemyFx_Mote", 4), Status("EnemyFx_Mote_Weak", StatusType.Weak, 1));
+            var emberfly = MakeEnemy("emberfly", "Emberfly", 12, 14, MovePattern.Sequence,
+                                     new Color(0.95f, 0.72f, 0.30f), sting, mote);
+
+            var stomp  = Move("Move_Stomp", "Stomp", IntentKind.Attack, 1, Damage("EnemyFx_Stomp", 12));
+            var titanHarden = Move("Move_TitanHarden", "Harden", IntentKind.Buff, 1,
+                                   Block("EnemyFx_TitanHarden", 15), Status("EnemyFx_TitanHarden_Strength", StatusType.Strength, 1, toSelf: true));
+            var titanCrush  = Move("Move_TitanCrush", "Crush", IntentKind.Attack, 1, Damage("EnemyFx_TitanCrush", 15));
+            var slagTitan = MakeEnemy("slag_titan", "Slag Titan", 50, 55, MovePattern.Sequence,
+                                      new Color(0.44f, 0.34f, 0.30f), titanHarden, stomp, titanCrush);
+
+            var flareUp = Move("Move_FlareUp", "Flare Up", IntentKind.Attack, 1, Damage("EnemyFx_FlareUp", 4, hits: 3, burnPerHit: 1));
+            var consume = Move("Move_Consume", "Consume", IntentKind.Attack, 1,
+                               Damage("EnemyFx_Consume", 13), Asset<HealEffect>("EnemyFx_Consume_Heal", e => e.Amount = 6));
+            var gutter  = Move("Move_Gutter", "Gutter", IntentKind.Buff, 1,
+                               Block("EnemyFx_Gutter", 12), Status("EnemyFx_Gutter_Strength", StatusType.Strength, 1, toSelf: true));
+            var livingFlame = MakeEnemy("living_flame", "Living Flame", 66, 72, MovePattern.Sequence,
+                                        new Color(1f, 0.55f, 0.22f), flareUp, consume, gutter);
+
+            // The Emberheart. The run's last fight, and the only enemy that does all three of the act's
+            // things: it grows, it hits through Block with Burn, and it heals itself once a cycle. Its
+            // pattern is six turns long so the player can learn it and plan two turns ahead, which is the
+            // only way a fight this size can be won rather than survived.
+            var pulse     = Move("Move_Pulse", "Pulse", IntentKind.Debuff, 1,
+                                 Status("EnemyFx_Pulse_Weak", StatusType.Weak, 1), Status("EnemyFx_Pulse_Vulnerable", StatusType.Vulnerable, 1));
+            var eruption  = Move("Move_Eruption", "Eruption", IntentKind.Attack, 1, Damage("EnemyFx_Eruption", 4, hits: 4, burnPerHit: 1));
+            var cataclysm = Move("Move_Cataclysm", "Cataclysm", IntentKind.Attack, 1, Damage("EnemyFx_Cataclysm", 17));
+            var reforge   = Move("Move_Reforge", "Reforge", IntentKind.Buff, 1,
+                                 Block("EnemyFx_Reforge", 18), Asset<HealEffect>("EnemyFx_Reforge_Heal", e => e.Amount = 8),
+                                 Status("EnemyFx_Reforge_Strength", StatusType.Strength, 1, toSelf: true));
+            var emberheart = MakeEnemy("emberheart", "The Emberheart", 150, 160, MovePattern.Sequence,
+                                       new Color(1f, 0.42f, 0.18f), pulse, eruption, cataclysm, reforge, eruption, cataclysm);
 
             var encounters = new List<EncounterData>
             {
@@ -523,6 +587,23 @@ namespace EmberDeck.EditorTools
                 EncounterIn(2, "shaman_leech_wisp", EncounterTier.Elite, shaman, magmaLeech, emberWisp),
 
                 EncounterIn(2, "cinder_wyrm", EncounterTier.Boss, wyrm),
+
+                // Act 3
+                EncounterIn(3, "emberfly_swarm", EncounterTier.Early, emberfly, emberfly, emberfly),
+                EncounterIn(3, "revenant_pair", EncounterTier.Early, revenant, revenant),
+                EncounterIn(3, "maw_and_fly", EncounterTier.Early, moltenMaw, emberfly),
+                EncounterIn(3, "priest_and_fly", EncounterTier.Early, ashPriest, emberfly),
+
+                EncounterIn(3, "titan", EncounterTier.Late, slagTitan),
+                EncounterIn(3, "priest_and_revenant", EncounterTier.Late, ashPriest, revenant),
+                EncounterIn(3, "maw_and_priest", EncounterTier.Late, moltenMaw, ashPriest),
+                EncounterIn(3, "revenant_and_flies", EncounterTier.Late, revenant, emberfly, emberfly),
+
+                EncounterIn(3, "living_flame", EncounterTier.Elite, livingFlame),
+                EncounterIn(3, "titan_and_priest", EncounterTier.Elite, slagTitan, ashPriest),
+                EncounterIn(3, "maws", EncounterTier.Elite, moltenMaw, moltenMaw, emberfly),
+
+                EncounterIn(3, "emberheart", EncounterTier.Boss, emberheart),
             };
 
             var emberCore = Asset<EmberCoreRelic>("Relics/Relic_EmberCore", relic =>
@@ -638,7 +719,10 @@ namespace EmberDeck.EditorTools
                 // Act 2 grows more slowly. At 8% its first rows killed almost nobody while its last rows
                 // killed a fifth of runs: the difficulty sat in the multiplier, not in the enemies. 4%
                 // keeps the climb and leaves the enemies themselves to carry the act.
-                cfg.ActScalingPerFight = new List<float> { 0.06f, 0.04f };
+                // Act 3 grows slowest of the three. Its enemies are authored at the strength of a deck
+                // that has already won two acts, and a multiplier on top of that only decides the run in
+                // the last three rows.
+                cfg.ActScalingPerFight = new List<float> { 0.06f, 0.04f, 0.03f };
                 cfg.Relics = new List<RelicData> { emberCore };
                 cfg.RelicPool = relicPool;
                 cfg.PotionPool = potions;
@@ -661,7 +745,7 @@ namespace EmberDeck.EditorTools
                 cfg.EliteEncounter = new List<EnemyData> { emberling, ashHound };
                 cfg.BossEncounter = new List<EnemyData> { tyrant };
                 cfg.Encounters = encounters;
-                cfg.Acts = 2;
+                cfg.Acts = 3;
                 // Thresholds in lifetime Embers. A first run that dies on floor 6 earns about 8, a loss at the
                 // Tyrant about 15, a win about 60: the first unlock inside two runs, the last after roughly a
                 // dozen. See docs/meta-progression.md.
@@ -674,7 +758,7 @@ namespace EmberDeck.EditorTools
                     Unlock("inferno_cards", "Inferno cards", 100, cards: new[] { magmaHeart, supernova, phoenixPlume }),
                     Unlock("anvil_crown", "Anvil Crown", 140, relic: anvilCrown),
                 };
-                cfg.ActNames = new List<string> { "The Forge", "The Obsidian Deep" };
+                cfg.ActNames = new List<string> { "The Forge", "The Obsidian Deep", "The Emberheart" };
                 cfg.EarlyRows = 3;
                 cfg.RestHealFraction = 0.3f;
                 // Enough for one removal or one common at the first shop, not both.

@@ -41,6 +41,16 @@ BACKGROUNDS = {
                  "violet crystals high above, red glow and heat haze, overwhelming scale, " + EMPTY,
     "bg_map_2": "top-down view of deep dark caverns of black glass, faint violet crystal veins and thin glowing "
                 "magma channels, like an old map seen from above, muted and dark, " + EMPTY,
+
+    # Act 3, the Emberheart: below the glass, where the fire comes from. White-gold instead of violet.
+    "bg_hallway_3": "enormous cavern at the core of a volcano, walls of glowing white-hot rock veined with gold, "
+                    "molten channels running along the floor, heat haze and rising sparks, " + EMPTY,
+    "bg_elite_3": "vast hall of blackened iron ribs arching over a floor of cracked incandescent stone, "
+                  "white-gold light pouring up through the cracks, drifting sparks, ominous, " + EMPTY,
+    "bg_boss_3": "the molten heart of the world, a colossal chamber walled in blackened iron and white-hot stone, "
+                 "a lake of incandescent gold light far below, arcs of fire rising, overwhelming scale, " + EMPTY,
+    "bg_map_3": "top-down view of the molten core of a volcano, branching rivers of white-gold lava through black "
+                "rock, like an old map seen from above, dark with a burning centre, " + EMPTY,
 }
 
 # (colours wanted, things to avoid), in the generator's palette format.
@@ -53,6 +63,10 @@ PALETTES = {
     "bg_elite_2": ("black and cold violet palette, dim crystal light", AVOID + ", snow, ice, winter"),
     "bg_boss_2": ("molten red lava and black obsidian, violet highlights", AVOID),
     "bg_map_2": ("very dark violet and black tones, faint orange glow", AVOID + ", snow, ice"),
+    "bg_hallway_3": ("white-hot gold and deep orange palette, blackened rock", AVOID + ", violet, purple, snow, ice"),
+    "bg_elite_3": ("black iron and incandescent white-gold palette", AVOID + ", violet, purple, snow, ice"),
+    "bg_boss_3": ("blinding white-gold light, molten gold, black iron", AVOID + ", violet, purple"),
+    "bg_map_3": ("black rock with white-gold lava veins", AVOID + ", violet, purple, snow, ice"),
 }
 
 WIDTH, HEIGHT = 1344, 768

@@ -702,7 +702,7 @@ namespace EmberDeck.View
             _pause.Hide();
             _rewardPanel.gameObject.SetActive(false);
 
-            // Floors count through every act, the boss included: Act 2's first row is floor 11 of 20.
+            // Floors count through every act, the boss included: Act 2's first row is floor 11 of 30.
             int perAct = (_run.Map?.Grid.Count ?? RunMap.Rows) + 1;
             int floor = (_run.Act - 1) * perAct + (_run.ActiveNode?.Row ?? 0) + 1;
             int floors = perAct * Mathf.Max(1, _config.Acts);

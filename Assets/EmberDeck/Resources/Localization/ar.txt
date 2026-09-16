@@ -638,6 +638,8 @@ THE FORGE
 = الكير
 THE OBSIDIAN DEEP
 = أعماق الأوبسيديان
+THE EMBERHEART
+= قلب الجمر
 The Forge
 = الكير
 The Obsidian Deep
@@ -1194,3 +1196,51 @@ Suggested builds a deck that works, and you can change any of it.
 = زر «مقترحة» يبني مجموعة تعمل، وتقدر تغير أي شيء فيها.
 Screen shake and flashes
 = اهتزاز الشاشة والوميض
+
+# ── Act 3: the Emberheart ───────────────────────────────────────────────────────
+The Emberheart
+= قلب الجمر
+Cinder Revenant
+= عائد الجمر
+Molten Maw
+= الفم المنصهر
+Ash Priest
+= كاهن الرماد
+Emberfly
+= ذبابة الجمر
+Slag Titan
+= عملاق الخبث
+Living Flame
+= لهب حي
+Rend
+= تمزيق
+Gape
+= تثاؤب
+Swallow
+= ابتلاع
+Censer
+= مبخرة
+Absolution
+= غفران
+Doom
+= هلاك
+Sting
+= لسعة
+Mote
+= ذرة
+Stomp
+= دوس
+Flare Up
+= اشتعال
+Consume
+= التهام
+Gutter
+= خمود
+Pulse
+= نبضة
+Eruption
+= ثورة
+Cataclysm
+= كارثة
+Reforge
+= إعادة صهر

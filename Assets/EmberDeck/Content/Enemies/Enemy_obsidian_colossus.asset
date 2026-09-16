@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.EnemyData
   Id: obsidian_colossus
   DisplayName: Obsidian Colossus
-  MinHp: 66
-  MaxHp: 70
+  MinHp: 60
+  MaxHp: 64
   Pattern: 0
   Moves:
   - {fileID: 11400000, guid: ca6e0a07ab6224641a0094fef6a5cc3e, type: 2}

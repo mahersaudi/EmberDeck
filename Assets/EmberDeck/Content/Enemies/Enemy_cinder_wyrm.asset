@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.EnemyData
   Id: cinder_wyrm
   DisplayName: Cinder Wyrm
-  MinHp: 140
-  MaxHp: 150
+  MinHp: 120
+  MaxHp: 130
   Pattern: 0
   Moves:
   - {fileID: 11400000, guid: 2b06ba25e5746457d8ea7cb46cfab5fb, type: 2}

@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f010fd5b1388f4fdd8472225f49570d0, type: 3}
+  m_Name: Enemy_molten_maw
+  m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.EnemyData
+  Id: molten_maw
+  DisplayName: Molten Maw
+  MinHp: 30
+  MaxHp: 33
+  Pattern: 0
+  Moves:
+  - {fileID: 11400000, guid: c6f85d014e1fa4d4e9e229a80fa3d902, type: 2}
+  - {fileID: 11400000, guid: 60d34ea50f1a846abb3ffe64e1a27b1b, type: 2}
+  TintColor: {r: 0.72, g: 0.22, b: 0.24, a: 1}
+  Art: {fileID: 0}

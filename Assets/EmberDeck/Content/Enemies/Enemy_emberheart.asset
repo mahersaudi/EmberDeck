@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f010fd5b1388f4fdd8472225f49570d0, type: 3}
+  m_Name: Enemy_emberheart
+  m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.EnemyData
+  Id: emberheart
+  DisplayName: The Emberheart
+  MinHp: 150
+  MaxHp: 160
+  Pattern: 0
+  Moves:
+  - {fileID: 11400000, guid: 4b256409b46ed4050910d2b343b890fb, type: 2}
+  - {fileID: 11400000, guid: d0302c24b9e39443698c06f9d172a6bf, type: 2}
+  - {fileID: 11400000, guid: 41099d4d2d72d4e8badffb602b14130b, type: 2}
+  - {fileID: 11400000, guid: 81d257d9255bb48e594936c5dcb9e9b6, type: 2}
+  - {fileID: 11400000, guid: d0302c24b9e39443698c06f9d172a6bf, type: 2}
+  - {fileID: 11400000, guid: 41099d4d2d72d4e8badffb602b14130b, type: 2}
+  TintColor: {r: 1, g: 0.42, b: 0.18, a: 1}
+  Art: {fileID: 0}

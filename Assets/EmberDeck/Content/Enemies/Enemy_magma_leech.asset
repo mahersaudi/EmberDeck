@@ -14,8 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.EnemyData
   Id: magma_leech
   DisplayName: Magma Leech
-  MinHp: 24
-  MaxHp: 27
+  MinHp: 22
+  MaxHp: 24
   Pattern: 0
   Moves:
   - {fileID: 11400000, guid: 1fbe39cf30ad54a03b27a0e9cb553cf6, type: 2}

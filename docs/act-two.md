@@ -32,13 +32,18 @@ only from effects that already existed; no engine code was added.
 
 | Enemy | HP | Moves | The question |
 |---|---|---|---|
-| Ember Wisp | 10–12 | Flicker 4 + 1 Burn · Flare 7 | Area damage, while Burn stacks on you |
-| Magma Leech | 24–27 | Siphon 7 and heals 3 · Latch 5 + 1 Weak | A race: it heals as it bites |
-| Obsidian Sentinel | 44–48 | Fortify 14 Block · Halberd 11 · Halberd 11 | Block big enough that only burst or Burn gets through |
-| Ashen Knight | 40–44 | Sunder 7 + 1 Vulnerable · Cleave 11 · Steel 10 Block, +1 Strength | Vulnerable, then the hit that punishes it |
-| Cinder Shaman | 24–27 | Hex 1 Weak, 1 Vulnerable · Firebolt 7 + 2 Burn · Ritual +1 Strength | Debuffs, and stronger every cycle it is left alone |
-| Obsidian Colossus (elite) | 66–70 | Shatter 4×3 · Quake 14 · Ward 16 Block, +1 Strength | The Sentinel's question at elite scale |
-| **Cinder Wyrm (boss)** | 140–150 | Roar 1 Weak, 1 Vulnerable · Inferno Breath 4×4, 1 Burn per hit · Tail Sweep 18 · Coil 20 Block, +1 Strength | Everything above at once |
+| Ember Wisp | 9–11 | Flicker 3 + 1 Burn · Flare 6 | Area damage, while Burn stacks on you |
+| Magma Leech | 22–24 | Siphon 6 and heals 3 · Latch 4 + 1 Weak | A race: it heals as it bites |
+| Obsidian Sentinel | 40–43 | Fortify 12 Block · Halberd 9 · Halberd 9 | Block big enough that only burst or Burn gets through |
+| Ashen Knight | 36–39 | Sunder 6 + 1 Vulnerable · Cleave 9 · Steel 8 Block, +1 Strength | Vulnerable, then the hit that punishes it |
+| Cinder Shaman | 22–24 | Hex 1 Weak, 1 Vulnerable · Firebolt 6 + 2 Burn · Ritual +1 Strength | Debuffs, and stronger every cycle it is left alone |
+| Obsidian Colossus (elite) | 60–64 | Shatter 3×3 · Quake 11 · Ward 14 Block, +1 Strength | The Sentinel's question at elite scale |
+| **Cinder Wyrm (boss)** | 120–130 | Roar 1 Weak, 1 Vulnerable · Inferno Breath 3×4, 1 Burn per hit · Tail Sweep 14 · Coil 16 Block, +1 Strength | Everything above at once |
+
+> These numbers are about a quarter below the ones this act was first tuned at. They were authored
+> for a player with 63 HP who drafted their deck from card rewards; a run now starts from thirty
+> chosen cards, and the player has 50 HP. Measured in isolation at the old numbers, one simulated
+> player in ten cleared this act. See `docs/act-three.md`, "Balance".
 
 | Pool | Encounters |
 |---|---|

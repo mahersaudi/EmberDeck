@@ -73,6 +73,11 @@ PALETTES = {
     # the fire behind.
     "deep":      ("black obsidian and deep violet crystal glow palette, cold purple light, "
                   "molten orange accents", "snow, ice, winter, green, daylight, woman, girl, human face, hair"),
+    # Act 3, the Emberheart: the source of the fire. White-hot at the centre, gold and orange
+    # around it — brighter and paler than the forge above, and nothing violet, so an Act 3
+    # creature never reads as an Act 2 one.
+    "heart":     ("white-hot and gold palette, incandescent yellow-white core, molten gold and orange, "
+                  "blinding heat glow", "violet, purple, blue, cold colours, snow, ice, daylight"),
 }
 
 
@@ -208,6 +213,27 @@ ACT2_ENEMIES = {
 }
 ENEMIES.update(ACT2_ENEMIES)
 
+# Act 3, the Emberheart. Its own table for the "heart" palette, merged into ENEMIES so
+# install_painted.sh files them as enemy portraits.
+ACT3_ENEMIES = {
+    "cinder_revenant": "a gaunt burning revenant risen from ash, cracked charcoal body with white-hot fissures, "
+                       "hollow blazing eye sockets, reaching clawed hands, wreathed in rising heat",
+    "molten_maw": "a hulking eyeless beast that is mostly mouth, enormous jaws of glowing cracked stone lined with "
+                  "white-hot teeth, squat heavy body, drooling molten rock",
+    "ash_priest": "a tall gaunt priest in pale ash-white ceremonial robes and a horned golden mask, holding a "
+                  "swinging censer that pours burning embers, arms raised, solemn",
+    "emberfly": "a single large glowing insect of living fire, four bright translucent wings trailing sparks, "
+                "slender ember body, hovering, small creature",
+    "slag_titan": "a colossal broad-shouldered titan built of cooled slag and iron scrap, white-hot seams between "
+                  "its plates, tiny head sunk between huge shoulders, standing heavy and still",
+    "living_flame": "a towering humanoid figure made entirely of white-gold fire, no skin and no armour, flame "
+                    "streaming upward from its shoulders, two blazing eyes, elite monster, imposing",
+    "emberheart": "a colossal burning heart of the world suspended in a chamber of molten gold, a vast pulsing "
+                  "core of white-hot fire held in a cage of blackened iron ribs, arcs of flame reaching out, "
+                  "boss monster, overwhelming scale, no face, not a person",
+}
+ENEMIES.update(ACT3_ENEMIES)
+
 
 # One prompt per card. Each describes what the card DOES, not what it is called: a player
 # should be able to guess "Detonate" from a contained blast and "Vent" from a pressure
@@ -342,7 +368,8 @@ def main():
             continue
         start = time.time()
         palette = (PALETTES.get(archetype_of(name)) if name in CARDS
-                   else PALETTES["deep"] if name in ACT2_ENEMIES else None)
+                   else PALETTES["deep"] if name in ACT2_ENEMIES
+                   else PALETTES["heart"] if name in ACT3_ENEMIES else None)
         ok = render(prompt, args.seed + i * 1000, destination, palette=palette)
         print(f"[art] [{i + 1}/{total}] {name}: {'ok' if ok else 'FAILED'} "
               f"({time.time() - start:.0f}s)")
