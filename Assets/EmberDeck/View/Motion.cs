@@ -159,6 +159,7 @@ namespace EmberDeck.View
         public static void Shake(RectTransform rect, float strength, float duration = 0.32f, float delay = 0f)
         {
             if (rect == null) return;
+            if (Settings.ReducedMotion) return;
             if (!ShakeOrigins.TryGetValue(rect, out var origin))
             {
                 origin = rect.anchoredPosition;

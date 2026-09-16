@@ -1172,3 +1172,25 @@ max {0}
 = {0} × {1}
 {0}  ({1} Energy)
 = {0}  ({1} طاقة)
+Attacks
+= هجمات
+Skills
+= مهارات
+Powers
+= قدرات
+In deck
+= في المجموعة
+All
+= الكل
+Attacks {0}    Skills {1}    Powers {2}    Average cost {3}
+= هجمات {0}    مهارات {1}    قدرات {2}    متوسط التكلفة {3}
+Build your deck
+= ابن مجموعتك
+Thirty cards, from everything you have unlocked.
+= ثلاثون بطاقة من كل ما فتحته.
+A rarer card is limited to fewer copies — the limit is on every card.
+= البطاقة الأندر نسخها أقل، والحد مكتوب على كل بطاقة.
+Suggested builds a deck that works, and you can change any of it.
+= زر «مقترحة» يبني مجموعة تعمل، وتقدر تغير أي شيء فيها.
+Screen shake and flashes
+= اهتزاز الشاشة والوميض

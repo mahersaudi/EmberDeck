@@ -29,6 +29,17 @@ namespace EmberDeck.View
         public static int Height;
         public static bool VSync = true;
 
+        /// <summary>
+        /// Off by default: the board shakes when a heavy blow lands and every hit throws a ring of
+        /// light. On, that decoration stops — the screen never shakes and no impact is drawn — while
+        /// every piece of motion that carries information stays: the damage numbers, the cards dealing
+        /// in, the enemy portraits, the screen fades.
+        ///
+        /// A phone held close to the face is exactly where shaking and flashing stop being a thrill,
+        /// and someone who needs this switch should not have to finish a fight to find it.
+        /// </summary>
+        public static bool ReducedMotion;
+
         static bool _displayChosen;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -50,6 +61,7 @@ namespace EmberDeck.View
             Width = PlayerPrefs.GetInt(Prefix + "width", Screen.width);
             Height = PlayerPrefs.GetInt(Prefix + "height", Screen.height);
             VSync = PlayerPrefs.GetInt(Prefix + "vsync", 1) == 1;
+            ReducedMotion = PlayerPrefs.GetInt(Prefix + "reducedMotion", 0) == 1;
         }
 
         public static void ApplyAudio()
@@ -57,6 +69,13 @@ namespace EmberDeck.View
             AudioDirector.MasterVolume = MasterVolume;
             AudioDirector.MusicVolume = MusicVolume;
             AudioDirector.SfxVolume = SfxVolume;
+        }
+
+        /// <summary>Saved on its own: it applies the moment it is switched, like the tutorial tips.</summary>
+        public static void SaveReducedMotion()
+        {
+            PlayerPrefs.SetInt(Prefix + "reducedMotion", ReducedMotion ? 1 : 0);
+            PlayerPrefs.Save();
         }
 
         public static void SaveAudio()

@@ -185,12 +185,20 @@ namespace EmberDeck.Run
                 return string.Compare(a.DisplayName, b.DisplayName, System.StringComparison.Ordinal);
             });
 
-            // Two at a time, down the list: a deck of thirty different cards draws a different hand
-            // every turn and can never be relied on, which is the worst thing a default deck can be.
-            foreach (var card in fillers)
+            // Two at a time, alternating attacks and skills, down the two lists. Two at a time because a
+            // deck of thirty different cards draws a different hand every turn and can never be relied
+            // on; alternating because scoring the whole pool together built a deck of twenty-one skills
+            // and nine attacks — every efficient card in this game is a defensive one, and a deck that
+            // cannot kill anything teaches a new player nothing about the game.
+            var attacks = fillers.FindAll(c => c.Type == CardType.Attack);
+            var skills = fillers.FindAll(c => c.Type != CardType.Attack);
+            for (int i = 0; deck.Count < DeckSize && (i < attacks.Count || i < skills.Count); i++)
             {
+                if (i < attacks.Count)
+                    for (int copy = 0; copy < 2 && CanAdd(deck, attacks[i]); copy++) deck.Add(attacks[i]);
                 if (deck.Count >= DeckSize) break;
-                for (int copy = 0; copy < 2 && CanAdd(deck, card); copy++) deck.Add(card);
+                if (i < skills.Count)
+                    for (int copy = 0; copy < 2 && CanAdd(deck, skills[i]); copy++) deck.Add(skills[i]);
             }
 
             // Nothing but starter cards left to give: fill with the first card that still fits.

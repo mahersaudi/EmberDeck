@@ -29,6 +29,7 @@ namespace EmberDeck.View
         UiControls.Stepper _vsyncStepper;
         Text _displayNote;
         UiControls.Stepper _tipsStepper;
+        UiControls.Stepper _motionStepper;
         UiControls.Stepper _languageStepper;
         Text _languageNote;
         Language _language;
@@ -54,21 +55,24 @@ namespace EmberDeck.View
         {
             var title = UiFactory.Label(root, "SettingsTitle", "SETTINGS", 44, Palette.Ink);
             UiFactory.Place(title.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
-                            new Vector2(0f, -90f), new Vector2(800f, 60f));
+                            new Vector2(0f, -70f), new Vector2(800f, 60f));
 
-            float y = -190f;
+            // The column is tight: eleven rows, three section headings and two buttons inside 1080
+            // units. Every gap below is spent, not decorative — adding a row means taking the space
+            // from somewhere, which is what the switch for screen shake did.
+            float y = -150f;
             Section(root, "AUDIO", y);
             y -= 48f;
 
             var master = UiControls.Row(root, "Master", "Master volume", y);
             _master = UiControls.VolumeSlider(master, Settings.MasterVolume,
                                               v => { Settings.MasterVolume = v; Settings.ApplyAudio(); }, out _masterReadout);
-            y -= 64f;
+            y -= 58f;
 
             var music = UiControls.Row(root, "Music", "Music", y);
             _music = UiControls.VolumeSlider(music, Settings.MusicVolume,
                                              v => { Settings.MusicVolume = v; Settings.ApplyAudio(); }, out _musicReadout);
-            y -= 64f;
+            y -= 58f;
 
             var effects = UiControls.Row(root, "Effects", "Sound effects", y);
             _effects = UiControls.VolumeSlider(effects, Settings.SfxVolume, v =>
@@ -77,7 +81,7 @@ namespace EmberDeck.View
                 Settings.ApplyAudio();
                 AudioDirector.Play(Sfx.Click);
             }, out _effectsReadout);
-            y -= 80f;
+            y -= 70f;
 
             Section(root, "DISPLAY", y);
             y -= 48f;
@@ -97,12 +101,12 @@ namespace EmberDeck.View
 
             var vsync = UiControls.Row(root, "VSync", "V-Sync", y);
             _vsyncStepper = UiControls.AddStepper(vsync, "VSync", () => _vsync ? "On" : "Off", _ => _vsync = !_vsync);
-            y -= 70f;
+            y -= 64f;
 
             _displayNote = UiFactory.Label(root, "DisplayNote", "", 20, Palette.InkMuted);
             UiFactory.Place(_displayNote.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
                             new Vector2(0f, y), new Vector2(900f, 30f));
-            y -= 62f;
+            y -= 52f;
 
             // Applies at once, unlike display: turning tips back on starts them over.
             Section(root, "GAMEPLAY", y);
@@ -110,7 +114,15 @@ namespace EmberDeck.View
             var tips = UiControls.Row(root, "Tips", "Tutorial tips", y);
             _tipsStepper = UiControls.AddStepper(tips, "Tips", () => Coach.Enabled ? "On" : "Off",
                                                  _ => Coach.SetEnabled(!Coach.Enabled));
-            y -= 64f;
+            y -= 58f;
+
+            var motion = UiControls.Row(root, "Motion", "Screen shake and flashes", y);
+            _motionStepper = UiControls.AddStepper(motion, "Motion", () => Settings.ReducedMotion ? "Off" : "On", _ =>
+            {
+                Settings.ReducedMotion = !Settings.ReducedMotion;
+                Settings.SaveReducedMotion();
+            });
+            y -= 58f;
 
             // Chosen here, applied when this screen closes: the whole interface is rebuilt in the new language,
             // which is why it can only be changed from the main menu, where nothing unsaved is lost.
@@ -179,6 +191,7 @@ namespace EmberDeck.View
             _resolutionStepper.Refresh();
             _vsyncStepper.Refresh();
             _tipsStepper.Refresh();
+            _motionStepper.Refresh();
             _displayNote.text = "Display changes take effect when applied.";
 
             gameObject.SetActive(true);

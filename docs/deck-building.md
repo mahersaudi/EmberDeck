@@ -48,7 +48,7 @@ Three decks are simulated, and the spread between them is the point:
 
 | starting deck | run win% | Act 1 boss% | deck at the final boss |
 |---|---|---|---|
-| **suggested** — what the button builds | 3.7 – 7.7 | 30 – 38 | 34 |
+| **suggested** — what the button builds | 6.3 – 7.3 | 31 – 35 | 34 |
 | **best the rules allow** — every efficient card, at its copy limit | 22 – 29 | 58 – 65 | 34 |
 | **thirty at random** | 0.3 | 2 – 3 | 34 |
 | the old ten-card starter deck (reference only) | 0 – 1 | 8 – 10 | 14 |
@@ -65,9 +65,12 @@ What it took to get there, in the order the measurements forced it:
 3. **Cremate and Overclock now exhaust.** Both cost nothing and give back energy or two cards, so
    stacked copies simply turned the energy limit off; the best deck held four Cremates and never ran
    out of energy again.
-4. **The suggested deck is built from commons only.** Built from the whole pool by the same measure
-   it won 78% of runs, and a default that good ends deck building — nothing the player does to it can
-   be an improvement.
+4. **The suggested deck is built from commons only, alternating attacks and skills.** Built from the
+   whole pool by the same measure it won 78% of runs, and a default that good ends deck building —
+   nothing the player does to it can be an improvement. Scoring attacks and skills in one list was
+   just as wrong in the other direction: every efficient card in this game is a defensive one, so the
+   deck came out twenty-one skills and nine attacks and taught a new player nothing. Taking two of the
+   best attack and two of the best skill in turn gives a deck of fourteen attacks and sixteen skills.
 5. **Player HP 63 → 50 and enemy HP × 1.15.** Player health rather than enemy damage, because an
    enemy's announced number has to stay exactly what lands; that promise is worth more than the
    convenience of one knob. Swept together: 63 HP and ×0.92 gave the suggested deck 47–53% of runs,
@@ -92,7 +95,8 @@ that can be compared between builds.
   a wider band.
 - **Act 2's early fights kill nobody** (0–0.7%). The player arrives there at full health with a
   deck that has been working for ten fights; those four encounters need their own pass.
-- **No filters or sort order** on the pool: it is ordered attacks, then skills, then powers, each by
-  cost. With sixty-three cards that is still readable; it will not be at a hundred.
-- **The pad cannot scroll the pool.** Focus moves to a tile that is off screen without bringing it
-  into view.
+- **No search or sort order** on the pool: it filters by type and by what is in the deck, and within
+  that it is ordered attacks, then skills, then powers, each by cost. With sixty-three cards that is
+  readable; at two hundred it will want a search box.
+- **The copy limits are not explained anywhere but on the cards.** A player who wants four of
+  something has to work out from the tile that they cannot have it.

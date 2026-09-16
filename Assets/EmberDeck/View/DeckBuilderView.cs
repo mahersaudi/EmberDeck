@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using EmberDeck.Content;
 using EmberDeck.Run;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace EmberDeck.View
@@ -34,14 +35,24 @@ namespace EmberDeck.View
         /// <summary>Back, without starting anything.</summary>
         public event Action Cancelled;
 
+        /// <summary>Which part of the pool the grid is showing.</summary>
+        enum Filter { All, Attacks, Skills, Powers, InDeck }
+
         RunConfig _config;
         ICollection<string> _unlocked;
+        Filter _filter = Filter.All;
+        readonly List<(Filter Kind, Button Button, Image Frame)> _filters = new();
+        GameObject _lastFocused;
         readonly List<CardData> _pool = new();
         readonly List<CardData> _deck = new();
         readonly List<(CardData Card, RectTransform Root, Image Frame, Text Count)> _tiles = new();
 
         Text _counter;
         Text _hint;
+        Text _summary;
+        RectTransform _suggestedRect;
+        RectTransform _poolViewport;
+        RectTransform _listViewport;
         Button _start;
         RectTransform _listContent;
         RectTransform _poolContent;
@@ -86,6 +97,7 @@ namespace EmberDeck.View
             var suggested = UiFactory.TextButton(root, "DeckSuggested", "Suggested", Palette.PanelRaised, Palette.Ink, 24);
             UiFactory.Place((RectTransform)suggested.transform, new Vector2(0f, 1f), new Vector2(0f, 1f),
                             new Vector2(200f, -30f), new Vector2(210f, 58f));
+            _suggestedRect = (RectTransform)suggested.transform;
             suggested.onClick.AddListener(() =>
             {
                 _deck.Clear();
@@ -108,10 +120,31 @@ namespace EmberDeck.View
             _start.onClick.AddListener(Confirm);
             NavHint.On(_start).Priority = 20;
 
+            // Filters across the top of the pool. A pool of sixty-three cards is readable; the same
+            // screen at a hundred is not, and looking for "an attack that costs one" is the commonest
+            // thing anyone does here.
+            float x = 40f;
+            foreach (Filter kind in System.Enum.GetValues(typeof(Filter)))
+            {
+                var button = UiFactory.TextButton(root, $"Filter{kind}", FilterName(kind), Palette.PanelDark, Palette.Ink, 20);
+                UiFactory.Place((RectTransform)button.transform, new Vector2(0f, 1f), new Vector2(0f, 1f),
+                                new Vector2(x, -100f), new Vector2(150f, 44f));
+                var captured = kind;
+                button.onClick.AddListener(() =>
+                {
+                    _filter = captured;
+                    BuildTiles();
+                    Refresh();
+                });
+                _filters.Add((kind, button, button.GetComponent<Image>()));
+                x += 158f;
+            }
+
             // The pool, scrolling, with the deck beside it.
             _poolContent = BuildScroll(root, "Pool",
                                        new Vector2(0f, 0f), new Vector2(1f, 1f),
-                                       new Vector2(40f, 40f), new Vector2(-(ListWidth + 80f), -150f));
+                                       new Vector2(40f, 40f), new Vector2(-(ListWidth + 80f), -156f));
+            _poolViewport = (RectTransform)_poolContent.parent;
 
             var listPanel = UiFactory.Panel(root, "DeckPanel", Palette.PanelDark);
             listPanel.anchorMin = new Vector2(1f, 0f);
@@ -125,10 +158,35 @@ namespace EmberDeck.View
             UiFactory.Place(listTitle.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
                             new Vector2(0f, -12f), new Vector2(ListWidth - 24f, 34f));
 
+            // What the deck adds up to. Building without it is guessing: a deck can be thirty cards and
+            // still hold four ways to deal damage.
+            _summary = UiFactory.Label(listPanel, "Summary", "", 18, Palette.InkMuted);
+            UiFactory.Place(_summary.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
+                            new Vector2(0f, -46f), new Vector2(ListWidth - 24f, 26f));
+
             _listContent = BuildScroll(listPanel, "DeckList",
                                        Vector2.zero, Vector2.one,
-                                       new Vector2(12f, 12f), new Vector2(-12f, -54f));
+                                       new Vector2(12f, 12f), new Vector2(-12f, -78f));
+            _listViewport = (RectTransform)_listContent.parent;
         }
+
+        static string FilterName(Filter filter) => filter switch
+        {
+            Filter.Attacks => "Attacks",
+            Filter.Skills  => "Skills",
+            Filter.Powers  => "Powers",
+            Filter.InDeck  => "In deck",
+            _              => "All",
+        };
+
+        bool Shown(CardData card) => _filter switch
+        {
+            Filter.Attacks => card.Type == CardType.Attack,
+            Filter.Skills  => card.Type == CardType.Skill,
+            Filter.Powers  => card.Type == CardType.Power,
+            Filter.InDeck  => DeckBuilder.CountOf(_deck, card) > 0,
+            _              => true,
+        };
 
         /// <summary>
         /// A scrolling column. Written out rather than taken from a layout group: the content's height
@@ -188,6 +246,13 @@ namespace EmberDeck.View
             gameObject.SetActive(true);
             transform.SetAsLastSibling();
             Refresh();
+
+            // Pointed at Suggested, which is the button the tip is really about, and placed below it —
+            // beside Start it covered the deck list and the summary the tip is telling them to read.
+            Coach.Show("deck", "Build your deck",
+                       "Thirty cards, from everything you have unlocked. A rarer card is limited to fewer copies — "
+                       + "the limit is on every card. Suggested builds a deck that works, and you can change any of it.",
+                       () => new[] { _suggestedRect }, Coach.Side.Below);
         }
 
         public void Hide()
@@ -221,9 +286,13 @@ namespace EmberDeck.View
                 }
             _tiles.Clear();
 
-            for (int i = 0; i < _pool.Count; i++)
+            var shown = new List<CardData>();
+            foreach (var card in _pool)
+                if (Shown(card)) shown.Add(card);
+
+            for (int i = 0; i < shown.Count; i++)
             {
-                var card = _pool[i];
+                var card = shown[i];
                 int column = i % Columns;
                 int row = i / Columns;
 
@@ -272,9 +341,45 @@ namespace EmberDeck.View
                 _tiles.Add((card, tile, tile.GetComponent<Image>(), count));
             }
 
-            int rows = Mathf.Max(1, Mathf.CeilToInt(_pool.Count / (float)Columns));
+            int rows = Mathf.Max(1, Mathf.CeilToInt(shown.Count / (float)Columns));
             _poolContent.sizeDelta = new Vector2(0f, rows * (TileHeight + TileGap) + 8f);
             _poolContent.anchoredPosition = Vector2.zero;
+        }
+
+        /// <summary>
+        /// Keeps whatever the keyboard or pad has focused inside its scroll view. uGUI does not do this
+        /// on its own: focus moves to a tile three rows below the fold and the screen simply does not
+        /// follow it, which makes the pad useless on this screen.
+        /// </summary>
+        void Update()
+        {
+            if (EventSystem.current == null) return;
+            var focused = EventSystem.current.currentSelectedGameObject;
+            if (focused == null || focused == _lastFocused) return;
+            _lastFocused = focused;
+
+            var rect = focused.transform as RectTransform;
+            if (rect == null) return;
+            if (rect.parent == _poolContent) KeepInView(_poolViewport, _poolContent, rect);
+            else if (rect.parent == _listContent) KeepInView(_listViewport, _listContent, rect);
+        }
+
+        static void KeepInView(RectTransform viewport, RectTransform content, RectTransform target)
+        {
+            if (viewport == null || content == null) return;
+
+            // Both are anchored to their top edge, so a row's distance below the content's top is the
+            // negation of its anchored y.
+            float top = -target.anchoredPosition.y;
+            float bottom = top + target.rect.height;
+            float view = viewport.rect.height;
+            float scroll = content.anchoredPosition.y;
+
+            if (top < scroll) scroll = top;
+            else if (bottom > scroll + view) scroll = bottom - view;
+
+            float max = Mathf.Max(0f, content.rect.height - view);
+            content.anchoredPosition = new Vector2(content.anchoredPosition.x, Mathf.Clamp(scroll, 0f, max));
         }
 
         IReadOnlyList<Tooltip.Entry> Describe(CardData card)
@@ -318,6 +423,21 @@ namespace EmberDeck.View
                 ? "Tap a card to add it. Tap it in your deck to take it out."
                 : "Click a card to add it. Click it in your deck to take it out.";
             _start.interactable = DeckBuilder.IsLegal(_deck);
+
+            int attacks = 0, skills = 0, powers = 0, cost = 0;
+            foreach (var card in _deck)
+            {
+                if (card.Type == CardType.Attack) attacks++;
+                else if (card.Type == CardType.Power) powers++;
+                else skills++;
+                cost += card.Cost;
+            }
+            _summary.text = _deck.Count == 0
+                ? ""
+                : $"Attacks {attacks}    Skills {skills}    Powers {powers}    Average cost {(float)cost / _deck.Count:F1}";
+
+            foreach (var entry in _filters)
+                entry.Frame.color = entry.Kind == _filter ? Palette.PanelRaised : Palette.PanelDark;
 
             foreach (var tile in _tiles)
             {

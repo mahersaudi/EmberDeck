@@ -36,6 +36,12 @@ a player cannot see that. Touch adds a Menu button in the top corner.
 screen becomes margin instead of squeezing the board. The stage is also inset to `Screen.safeArea`
 (`SafeArea`), which keeps the interface clear of a notch, a rounded corner and the gesture bar.
 
+**Shaking and flashing are optional.** Settings has a switch for screen shake and impact flashes
+(`Settings.ReducedMotion`), and it is the phone that makes it necessary: a screen held a foot from
+the face is where a shaking board and a ring of light at every hit stop being a thrill. Off, the
+decoration stops and every piece of motion that carries information stays — the damage numbers, the
+cards dealing in, the portraits, the fades.
+
 `TouchMode.Active` is the one switch behind all of it: `Application.isMobilePlatform`, or forced on
 by `-emberdeck-touch` so the phone layout can be captured and reviewed on a Mac.
 

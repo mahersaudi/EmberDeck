@@ -74,7 +74,7 @@ namespace EmberDeck.View
         public static void Burst(RectTransform layer, Vector2 position, Color color, float size,
                                  float delay = 0f, float duration = 0.42f)
         {
-            if (layer == null) return;
+            if (layer == null || Settings.ReducedMotion) return;
 
             var image = Image(layer, "Burst", Ring, color, position, size);
             var rect = image.rectTransform;
@@ -92,7 +92,7 @@ namespace EmberDeck.View
         public static void Flare(RectTransform layer, Vector2 position, Color color, float size,
                                  float delay = 0f, float duration = 0.3f)
         {
-            if (layer == null) return;
+            if (layer == null || Settings.ReducedMotion) return;
 
             var image = Image(layer, "Flare", Glow, color, position, size);
             var rect = image.rectTransform;

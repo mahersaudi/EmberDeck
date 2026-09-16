@@ -173,8 +173,9 @@ namespace EmberDeck.View
                 if (_settingsFromPause) _pause.Show();
             };
 
-            Coach.Suspended = () => _mainMenu.IsOpen || _pause.IsOpen || _settings.IsOpen || _endOfRun.IsOpen
-                                    || _deckBuilder.IsOpen;
+            // The deck builder is not suspended: it raises a tip of its own, and every other screen
+            // clears its tips when it leaves.
+            Coach.Suspended = () => _mainMenu.IsOpen || _pause.IsOpen || _settings.IsOpen || _endOfRun.IsOpen;
         }
 
         /// <summary>
