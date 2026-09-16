@@ -39,6 +39,9 @@ namespace EmberDeck.View
         Text _restLabel;
         RectTransform _rewardPanel;
         Text _rewardTitle;
+        Text _rewardHint;
+        Button _rewardSkip;
+        Text _rewardSkipLabel;
         Text _relicLabel;
         readonly System.Collections.Generic.List<CardView> _rewardViews = new();
         CombatState State => _session.State;
@@ -518,16 +521,17 @@ namespace EmberDeck.View
             UiFactory.Place(_rewardTitle.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
                             new Vector2(0f, -120f), new Vector2(1000f, 60f));
 
-            var hint = UiFactory.Label(_rewardPanel, "RewardHint", "Choose one card to add to your deck",
-                                       22, Palette.InkMuted);
-            UiFactory.Place(hint.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
-                            new Vector2(0f, -178f), new Vector2(1000f, 34f));
+            _rewardHint = UiFactory.Label(_rewardPanel, "RewardHint", "", 22, Palette.InkMuted);
+            UiFactory.Place(_rewardHint.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
+                            new Vector2(0f, -178f), new Vector2(1200f, 34f));
 
             _relicLabel = UiFactory.Label(_rewardPanel, "RelicGained", "", 22, Palette.RarityRare);
             UiFactory.Place(_relicLabel.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
                             new Vector2(0f, -222f), new Vector2(1100f, 34f));
 
             var skip = UiFactory.TextButton(_rewardPanel, "Skip", "Skip", Palette.PanelRaised, Palette.InkMuted, 24);
+            _rewardSkip = skip;
+            _rewardSkipLabel = skip.GetComponentInChildren<Text>();
             UiFactory.Place((RectTransform)skip.transform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
                             new Vector2(0f, 90f), new Vector2(200f, 62f));
             // Skipping is a real option: a deck that never refuses a card drowns its own
@@ -1103,9 +1107,17 @@ namespace EmberDeck.View
                 if (view != null) Destroy(view.gameObject);
             _rewardViews.Clear();
 
-            var offers = RewardService.Roll(_run.RewardPool(_config), _run.RewardRng(),
-                                            eliteOdds: _run.IsElite || _run.IsBoss || _run.ActiveNode?.Type == NodeType.Treasure);
+            // A hallway win pays gold and no card: see RewardService.OffersCards.
+            bool cards = RewardService.OffersCards(_run);
+            var offers = cards
+                ? RewardService.Roll(_run.RewardPool(_config), _run.RewardRng(), eliteOdds: true)
+                : new List<CardData>();
+
             _rewardTitle.text = title;
+            _rewardHint.text = cards
+                ? $"Choose one card to add to your deck      Deck: {_run.Deck.Count} cards"
+                : $"Gold instead of a card here. Cards come from elites, bosses and treasure.      Deck: {_run.Deck.Count} cards";
+            if (_rewardSkipLabel != null) _rewardSkipLabel.text = cards ? "Skip" : "Continue";
             var gains = new List<string>();
             if (gold > 0) gains.Add($"+{gold} gold");
             if (potion != null) gains.Add(potionKept ? $"Potion: {potion.DisplayName}" : $"Found {potion.DisplayName}, but the belt is full");
@@ -1137,10 +1149,16 @@ namespace EmberDeck.View
             _rewardPanel.gameObject.SetActive(true);
 
             Coach.EndScreen();
-            Coach.Show("reward", "Choose a reward",
-                       "Take one card, or Skip. A smaller deck draws its best cards more often, so only take cards "
-                       + "that make it stronger.",
-                       RewardRects, Coach.Side.Right);
+            if (cards)
+                Coach.Show("reward", "Choose a reward",
+                           "Take one card, or Skip. Every card added is one more card between you and the thirty you "
+                           + "built, so only take cards that make the deck stronger.",
+                           RewardRects, Coach.Side.Right);
+            else
+                Coach.Show("goldreward", "Gold, not cards",
+                           "Hallway fights pay gold. Cards come from elites, bosses and treasure — and from shops, "
+                           + "where the card is one you picked instead of one of three.",
+                           null, Coach.Side.Below);
         }
 
         void TakeReward(CardData card)

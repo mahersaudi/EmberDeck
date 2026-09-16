@@ -56,7 +56,7 @@ namespace EmberDeck.EditorTools
         /// deck the screen opens on, and a legal deck thrown together at random.
         /// Starter is the old ten-card deck, kept as the reference every earlier number was measured at.
         /// </summary>
-        enum DeckMode { Suggested, Random, Starter }
+        enum DeckMode { Suggested, Random, Starter, Best }
 
         sealed class Result
         {
@@ -119,6 +119,7 @@ namespace EmberDeck.EditorTools
             var passes = new (string Label, List<string> Unlocked, int Difficulty, DeckMode Deck)[]
             {
                 ("[base game: suggested 30-card deck, normal difficulty]", null, 0, DeckMode.Suggested),
+                ("[base game: the best 30-card deck the rules allow, normal difficulty]", null, 0, DeckMode.Best),
                 ("[base game: random 30-card deck, normal difficulty]", null, 0, DeckMode.Random),
                 ("[base game: old 10-card starter deck, normal difficulty — the reference]", null, 0, DeckMode.Starter),
                 ("[everything unlocked, suggested 30-card deck, normal difficulty]", config.AllUnlockIds(), 0, DeckMode.Suggested),
@@ -134,6 +135,13 @@ namespace EmberDeck.EditorTools
                 var unlocked = pass.Unlocked;
                 report.AppendLine();
                 report.AppendLine(pass.Label);
+                if (pass.Deck == DeckMode.Suggested || pass.Deck == DeckMode.Best)
+                {
+                    var shown = pass.Deck == DeckMode.Suggested
+                        ? DeckBuilder.Suggested(config, unlocked)
+                        : DeckBuilder.Best(config, unlocked);
+                    report.AppendLine($"  deck: {DeckBuilder.Describe(shown)}");
+                }
                 // "boss" columns are the final boss. act1% is how many runs beat the first boss, the old
                 // single-act win rate, kept so a change to Act 2 can be told apart from a change to Act 1.
                 report.AppendLine("policy      run win%  act1 boss%  reach boss%  elites/run  HP@boss  deck@boss  win|reached  boss HP left at death");
@@ -214,6 +222,7 @@ namespace EmberDeck.EditorTools
             {
                 DeckMode.Suggested => DeckBuilder.Suggested(config, unlocked),
                 DeckMode.Random    => DeckBuilder.Randomised(config, unlocked, new DeterministicRng(seed ^ 0x2B7E15)),
+                DeckMode.Best      => DeckBuilder.Best(config, unlocked),
                 _                  => null,
             };
             var run = RunState.Start(config, seed, difficulty, unlocked, deck);
@@ -317,10 +326,12 @@ namespace EmberDeck.EditorTools
                     }
                 }
 
-                // Mirrors CombatView: gold is paid before the card reward, from the same position.
+                // Mirrors CombatView: gold is paid before the card reward, from the same position, and a
+                // hallway win pays no card at all (RewardService.OffersCards).
                 GoldService.Earn(run, GoldService.ForVictory(run));
                 PotionService.TryAdd(run, PotionService.RollDrop(run, config));
-                Tally(result, TakeReward(run, config, eliteOdds: node.Type == NodeType.Elite || node.Type == NodeType.Boss));
+                if (RewardService.OffersCards(run))
+                    Tally(result, TakeReward(run, config, eliteOdds: true));
                 if (node.Type == NodeType.Elite)
                     for (int extra = 1; extra < EliteRewardPicks; extra++)
                         Tally(result, TakeReward(run, config, eliteOdds: true, extraPick: extra));

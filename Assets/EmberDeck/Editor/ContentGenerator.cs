@@ -133,7 +133,10 @@ namespace EmberDeck.EditorTools
             Card(cards, "heat_sink", "Heat Sink", CardType.Skill, 1, TargetMode.Self, CardRarity.Common, heat3, blk5);
 
             // ── Common — Ashfall ────────────────────────────────────────────────────
-            Card(cards, "cremate", "Cremate", CardType.Skill, 0, TargetMode.Self, CardRarity.Common, exhaustTop, energy1);
+            // Exhausting, since decks are built rather than drafted: at 0 cost for +1 Energy it is a net
+            // gain every time it is played, and the best constructed deck simply held four of them and
+            // never ran out of Energy again.
+            Exhausting(Card(cards, "cremate", "Cremate", CardType.Skill, 0, TargetMode.Self, CardRarity.Common, exhaustTop, energy1));
             Exhausting(Card(cards, "ash_cloud", "Ash Cloud", CardType.Skill, 1, TargetMode.AllEnemies, CardRarity.Common, weak2));
             Exhausting(Card(cards, "salvage", "Salvage", CardType.Skill, 1, TargetMode.Self, CardRarity.Common, draw2));
 
@@ -190,7 +193,9 @@ namespace EmberDeck.EditorTools
                  Asset<SpendHeatEffect>("SpendHeat_Dmg2x", e => { e.Payout = HeatPayout.Damage; e.Ratio = 2f; }));
             Card(cards, "heat_shield", "Heat Shield", CardType.Skill, 1, TargetMode.Self, CardRarity.Uncommon,
                  Asset<ScaleWithHeatEffect>("ScaleHeat_Block", e => { e.Payout = HeatPayout.Block; e.Base = 0; }));
-            Card(cards, "overclock", "Overclock", CardType.Skill, 0, TargetMode.Self, CardRarity.Uncommon, heat5, draw2);
+            // Exhausting, for the same reason as Cremate: 0 cost and two cards drawn is an engine, and a
+            // deck holding three of them drew its whole deck every fight and paid only in Heat.
+            Exhausting(Card(cards, "overclock", "Overclock", CardType.Skill, 0, TargetMode.Self, CardRarity.Uncommon, heat5, draw2));
             Card(cards, "coolant", "Coolant", CardType.Skill, 1, TargetMode.Self, CardRarity.Uncommon,
                  Asset<SpendHeatEffect>("SpendHeat_Block6", e =>
                  {
@@ -586,7 +591,11 @@ namespace EmberDeck.EditorTools
             var config = CreateAsset<RunConfig>(ConfigPath, cfg =>
             {
                 cfg.PlayerName = "Ember";
-                cfg.MaxHp = 63;
+                // 50, down from 63. The enemies were authored against a drafted deck that was two fifths
+                // Strike and Guard; a deck of thirty cards the player chose is about six times as strong,
+                // and at 63 HP the suggested deck won half of all simulated runs. Player health rather
+                // than enemy damage, because an enemy's announced number has to stay exactly what lands.
+                cfg.MaxHp = 50;
                 cfg.EnergyPerTurn = 3;
                 // 5, not 6. Tested once the deck grew to thirty built cards, on the theory that a bigger
                 // deck wants a bigger hand: one extra card per turn took the simulated win rate from
@@ -617,6 +626,15 @@ namespace EmberDeck.EditorTools
                 // diluted by every reward on top of it — and at 8% the simulated win rate fell from
                 // 5.0-7.3% to 3.3-4.3%. 6% puts it back in the band the rest of the game was tuned at.
                 cfg.EnemyScalingPerFight = 0.06f;
+                // 0.92: the bestiary was authored against the ten-card starter deck, which a fight cycles
+                // through two or three times. A thirty-card deck shows two thirds of itself across a whole
+                // fight, so the same enemy takes far longer to kill with the same cards. Swept at 5 cards
+                // per turn and no hallway card rewards: 1.0 gave 0.7-2.3% run wins, 0.8 gave 12.7-24.0%,
+                // and 0.92 gives 3.3-8.3% — the band the game was tuned at before decks were built.
+                // 1.15, with the 50 HP above. Swept together against the suggested deck: at 63 HP and 0.92
+                // it won 47-53% of runs, at 50 HP and 1.15 it wins 3.7-7.7% — the band this game has been
+                // tuned at since the first act existed. See docs/deck-building.md for the whole table.
+                cfg.EnemyHpFactor = 1.15f;
                 // Act 2 grows more slowly. At 8% its first rows killed almost nobody while its last rows
                 // killed a fifth of runs: the difficulty sat in the multiplier, not in the enemies. 4%
                 // keeps the climb and leaves the enemies themselves to carry the act.

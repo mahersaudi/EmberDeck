@@ -146,6 +146,9 @@ namespace EmberDeck.Content
         [Tooltip("Per-act overrides of EnemyScalingPerFight, first entry for Act 1. Missing entries use it.")]
         public List<float> ActScalingPerFight = new();
 
+        [Tooltip("Multiplies every enemy's rolled HP. One knob for the whole bestiary; see docs/deck-building.md.")]
+        public float EnemyHpFactor = 1f;
+
         public float ScalingPerFight(int act) =>
             act >= 1 && act <= ActScalingPerFight.Count ? ActScalingPerFight[act - 1] : EnemyScalingPerFight;
 

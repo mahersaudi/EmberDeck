@@ -57,6 +57,11 @@ namespace EmberDeck.Combat
                 ? 1f
                 : 1f + Config.ScalingPerFight(Run?.Act ?? 1) * (Run?.FightsIntoAct ?? 0);
             scale *= global::EmberDeck.Run.DifficultyRules.EnemyHpMultiplier(Run);
+            // The bestiary's health was authored against the old ten-card starting deck, which a fight
+            // cycles through two or three times. A thirty-card deck shows a player two thirds of itself
+            // across a whole fight, so the same enemy is a much longer fight against the same cards. One
+            // factor for all of them, rather than thirty edited numbers: see docs/deck-building.md.
+            scale *= Config.EnemyHpFactor <= 0f ? 1f : Config.EnemyHpFactor;
 
             // A run draws from the encounter pools. A one-off fight (the balance simulator) has no
             // run and no map position, so it keeps the fixed lists.

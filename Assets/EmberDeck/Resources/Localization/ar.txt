@@ -608,6 +608,16 @@ TREASURE
 = كنز
 Choose one card to add to your deck
 = اختر بطاقة واحدة لتضيفها إلى مجموعتك
+Choose one card to add to your deck      Deck: {0} cards
+= اختر بطاقة واحدة لتضيفها إلى مجموعتك      المجموعة: {0} بطاقة
+Gold instead of a card here. Cards come from elites, bosses and treasure.      Deck: {0} cards
+= ذهب بدل البطاقة هنا. البطاقات تأتي من النخبة والزعماء والكنوز.      المجموعة: {0} بطاقة
+Gold instead of a card here.
+= ذهب بدل البطاقة هنا.
+Cards come from elites, bosses and treasure.
+= البطاقات تأتي من النخبة والزعماء والكنوز.
+Deck: {0} cards
+= المجموعة: {0} بطاقة
 Skip
 = تخط
 +{0} gold
@@ -728,6 +738,14 @@ Take one card, or Skip.
 = خذ بطاقة واحدة، أو تخط.
 A smaller deck draws its best cards more often, so only take cards that make it stronger.
 = المجموعة الأصغر تسحب أفضل بطاقاتها أكثر، فلا تأخذ إلا ما يقويها.
+Every card added is one more card between you and the thirty you built, so only take cards that make the deck stronger.
+= كل بطاقة تضيفها تبعدك عن الثلاثين التي بنيتها، فلا تأخذ إلا ما يقوي المجموعة.
+Gold, not cards
+= ذهب، لا بطاقات
+Hallway fights pay gold.
+= معارك الممرات تعطي ذهبا.
+Cards come from elites, bosses and treasure — and from shops, where the card is one you picked instead of one of three.
+= البطاقات تأتي من النخبة والزعماء والكنوز، ومن المتجر حيث تختار البطاقة بنفسك بدل واحدة من ثلاث.
 A deeper act
 = فصل أعمق
 Beating the boss healed you to full.

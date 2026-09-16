@@ -16,6 +16,20 @@ namespace EmberDeck.Run
     {
         public const int OfferCount = 3;
 
+        /// <summary>
+        /// Whether a won fight offers cards at all.
+        ///
+        /// Hallway fights pay gold instead. A run now starts from thirty cards the player chose, and a
+        /// card after every fight took that deck to forty-three by the final boss — every card added
+        /// makes the thirty that were chosen come up less often. Gold has no such cost: it buys a card
+        /// the player picked, or removes one, or pays for a relic.
+        ///
+        /// Cards still come from the places that are a choice to enter or a detour to reach: elites,
+        /// bosses and treasure. That keeps a card a prize rather than a tax.
+        /// </summary>
+        public static bool OffersCards(RunState run) =>
+            run != null && (run.IsElite || run.IsBoss || run.ActiveNode?.Type == NodeType.Treasure);
+
         static int Weight(CardRarity rarity, bool elite) => rarity switch
         {
             CardRarity.Common   => elite ? 25 : 60,

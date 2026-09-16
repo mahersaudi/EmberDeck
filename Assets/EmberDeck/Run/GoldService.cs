@@ -15,9 +15,10 @@ namespace EmberDeck.Run
         public static int ForVictory(RunState run)
         {
             var rng = new DeterministicRng(run.Seed ^ unchecked(run.FightNumber * 0x5851F42D) ^ ((run.ActiveNode?.Row ?? 0) * 0x2F1E3D));
-            // An elite pays about two and a half hallways, on top of its relic: it costs about that
-            // much more health.
-            return run.IsBoss ? rng.Range(55, 71) : run.IsElite ? rng.Range(25, 36) : rng.Range(10, 17);
+            // An elite pays about an extra hallway on top of its relic and its card: it costs about that
+            // much more health. A hallway pays double what it used to, because it no longer pays a card
+            // (RewardService.OffersCards) — the gold is what the player buys a chosen card with instead.
+            return run.IsBoss ? rng.Range(55, 71) : run.IsElite ? rng.Range(30, 41) : rng.Range(22, 31);
         }
 
         /// <summary>Gold found at a treasure node, alongside its card.</summary>

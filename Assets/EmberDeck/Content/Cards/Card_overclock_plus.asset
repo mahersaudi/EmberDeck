@@ -18,7 +18,7 @@ MonoBehaviour:
   Rarity: 2
   Cost: 0
   Target: 0
-  Exhaust: 0
+  Exhaust: 1
   Effects:
   - {fileID: 11400000, guid: 86257a8acea5e4533b6fc36ff833ee4c, type: 2}
   - {fileID: 11400000, guid: 25d1fa90a1e154e71a56a77affebd3c8, type: 2}

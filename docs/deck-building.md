@@ -40,34 +40,58 @@ Two Unity details worth keeping:
 
 ## What it did to the balance
 
-Measured with `./tools/simulate.sh`, 300 runs per policy, five policies. A built deck is **harder**
-for the simulated player, not easier — it is diluted by every reward taken on top of it, and thirty
-cards means each good card comes up half as often as it did in a ten-card deck:
+Measured with `./tools/simulate.sh`, 300 runs per policy, five policies. The short version: a deck
+of thirty cards the player chose is about six times as strong as the drafted deck the enemies were
+authored against, and the whole bestiary had to be re-tuned around it.
+
+Three decks are simulated, and the spread between them is the point:
 
 | starting deck | run win% | Act 1 boss% | deck at the final boss |
 |---|---|---|---|
-| suggested thirty | 3.3 – 5.0 | 24 – 25 | 43 |
-| thirty at random | 1.0 – 2.3 | 10 – 13 | 43 |
-| the old ten-card starter (reference) | 5.7 – 8.3 | 30 – 34 | 23 |
+| **suggested** — what the button builds | 3.7 – 7.7 | 30 – 38 | 34 |
+| **best the rules allow** — every efficient card, at its copy limit | 22 – 29 | 58 – 65 | 34 |
+| **thirty at random** | 0.3 | 2 – 3 | 34 |
+| the old ten-card starter deck (reference only) | 0 – 1 | 8 – 10 | 14 |
 
-Enemy HP scaling per fight went from 8% to 6% (Act 2: 5% to 4%) to put the suggested deck back near
-the band the rest of the game was tuned at. The random-deck row is the point of keeping it: a deck
-thrown together without reading it loses, which is what makes the screen a decision.
+What it took to get there, in the order the measurements forced it:
 
-**A sixth card per turn was tried and rejected.** A thirty-card deck cycles slowly, so drawing one
-more card each turn looked like the obvious compensation. It took the simulated win rate from
-3.3–5.0% to 17.7–23.3%. A sixth card is not a sixth more power — it is another Block every turn,
-and the whole game is built on there not being one.
+1. **Card rewards moved off hallway fights** (`RewardService.OffersCards`). A card after every fight
+   took a built deck from 30 to 43 by the final boss — every card added makes the thirty that were
+   chosen come up less often. Hallways pay gold instead, at double the old rate, and cards come from
+   elites, bosses and treasure. Deck at the boss: 43 → 34.
+2. **Copy limits tightened** to 2 of a common or uncommon, 1 of a rare, 6 of a starter. At the first
+   limits (4/3/2) the best legal deck was nine distinct cards stacked four deep and won **97%** of
+   runs.
+3. **Cremate and Overclock now exhaust.** Both cost nothing and give back energy or two cards, so
+   stacked copies simply turned the energy limit off; the best deck held four Cremates and never ran
+   out of energy again.
+4. **The suggested deck is built from commons only.** Built from the whole pool by the same measure
+   it won 78% of runs, and a default that good ends deck building — nothing the player does to it can
+   be an improvement.
+5. **Player HP 63 → 50 and enemy HP × 1.15.** Player health rather than enemy damage, because an
+   enemy's announced number has to stay exactly what lands; that promise is worth more than the
+   convenience of one knob. Swept together: 63 HP and ×0.92 gave the suggested deck 47–53% of runs,
+   50 HP and ×1.15 gives it 3.7–7.7%.
 
-These are bots. They take almost every card reward, never plan a synergy and never skip a fight
-they should skip, so a person who chose their own thirty cards should do much better than the table
-says — but the table is the only number that can be compared between builds.
+A sixth card per turn was tried twice as the thing a bigger deck seemed to want, and rejected both
+times — 17.7–23.3% with the old economy. A sixth card is not a sixth more power; it is another Block
+every turn, and the whole game is built on there not being one.
+
+Where the fights sit now (pooled across policies): Act 1 hallways kill 0% early and 10–21% late,
+elites 14–21%, the Act 1 boss 34%, Act 2 hallways 14–28%, Act 2 elites 22–28%, the Cinder Wyrm 62%.
+
+These are bots. They take almost every card reward, never plan a synergy and never skip a fight they
+should skip, so a person should do much better than the table says — the table is the only number
+that can be compared between builds.
 
 ## What is left
 
-- **Rewards still add to a built deck**, which takes it from 30 to about 43 by the final boss.
-  Skipping a reward is now often right, and the game does not say so anywhere. Either the reward
-  screen should make dilution visible, or hallway fights should pay gold instead of cards.
+- **A deck picked carelessly loses every run** — 0.3%, against 3.7–7.7% for the suggested one. That
+  is what constructed play means, and the Suggested button is the whole defence against it. If
+  playtesters bounce off the screen, the answer is a better default and a clearer first-run tip, not
+  a wider band.
+- **Act 2's early fights kill nobody** (0–0.7%). The player arrives there at full health with a
+  deck that has been working for ten fights; those four encounters need their own pass.
 - **No filters or sort order** on the pool: it is ordered attacks, then skills, then powers, each by
   cost. With sixty-three cards that is still readable; it will not be at a hundred.
 - **The pad cannot scroll the pool.** Focus moves to a tile that is off screen without bringing it

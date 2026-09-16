@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using EmberDeck.Content;
+using EmberDeck.Content.Effects;
 using EmberDeck.Core;
+using UnityEngine;
 
 namespace EmberDeck.Run
 {
@@ -20,13 +22,21 @@ namespace EmberDeck.Run
     {
         public const int DeckSize = 30;
 
-        /// <summary>How many copies of one card a deck may hold: the rarer it is, the fewer.</summary>
+        /// <summary>
+        /// How many copies of one card a deck may hold: the rarer it is, the fewer.
+        ///
+        /// Two of anything real, one of a rare, and starter cards as filler. The first version allowed
+        /// four commons, three uncommons and two rares, and the best deck the rules allowed then was nine
+        /// distinct cards stacked four deep — it won 97% of simulated runs. A deck of thirty now needs
+        /// fifteen cards that work, which is the difference between building a deck and finding the two
+        /// best cards in the game.
+        /// </summary>
         public static int MaxCopies(CardData card) => card == null ? 0 : card.Rarity switch
         {
-            CardRarity.Rare     => 2,
-            CardRarity.Uncommon => 3,
-            CardRarity.Common   => 4,
-            _                   => 10,   // the starter cards, which are filler by design
+            CardRarity.Rare     => 1,
+            CardRarity.Uncommon => 2,
+            CardRarity.Common   => 2,
+            _                   => 6,   // the starter cards, which are filler by design
         };
 
         /// <summary>
@@ -81,32 +91,97 @@ namespace EmberDeck.Run
         }
 
         /// <summary>
-        /// The deck the screen opens with, and the one the Suggested button restores: the old starting
-        /// deck, filled out with cheap attacks and skills. Deliberately plain — it has to be a deck a
-        /// new player can win with without understanding any card, and one an experienced player will
-        /// immediately want to change.
+        /// Roughly what one play of a card is worth, in points of damage.
+        ///
+        /// Read off the effects themselves, so a new card is scored the moment it exists and no table
+        /// has to be kept in step. Deliberately crude: it values damage, block, a drawn card and a point
+        /// of energy, discounts a card that exhausts, and understands nothing about synergy. It exists so
+        /// the Suggested deck is built out of cards that do something, rather than out of the cheapest
+        /// cards in the pool — the first version sorted by cost, and a deck of nought-cost utility cards
+        /// lost to a deck picked at random.
+        /// </summary>
+        public static float Value(CardData card)
+        {
+            if (card == null) return 0f;
+
+            float value = 0f;
+            foreach (var effect in card.Effects)
+            {
+                switch (effect)
+                {
+                    case DealDamageEffect damage:
+                        value += damage.Amount * Mathf.Max(1, damage.Hits);
+                        value += damage.PerHitStatusAmount * Mathf.Max(1, damage.Hits) * 1.5f;
+                        break;
+                    case GainBlockEffect block:
+                        value += block.Amount * 0.9f;
+                        break;
+                    case DrawCardsEffect draw:
+                        value += draw.Amount * 4f;
+                        break;
+                    case GainEnergyEffect energy:
+                        value += energy.Amount * 5f;
+                        break;
+                    case HealEffect heal:
+                        value += heal.Amount * 0.7f;
+                        break;
+                    case ApplyStatusEffect status:
+                        value += status.Amount * 1.6f;
+                        break;
+                    // Everything else — Heat, block multipliers, scaling with a counter, rule changes —
+                    // is worth something no arithmetic here can state. A small credit keeps such a card
+                    // from scoring zero and being treated as blank.
+                    case null:
+                        break;
+                    default:
+                        value += 3f;
+                        break;
+                }
+            }
+
+            if (card.Exhaust) value *= 0.6f;
+            return value;
+        }
+
+        /// <summary>Value per point of energy. The 0.7 keeps a nought-cost card from scoring infinitely well.</summary>
+        public static float Efficiency(CardData card) => card == null ? 0f : Value(card) / (card.Cost + 0.7f);
+
+        /// <summary>
+        /// The deck the screen opens with, and the one the Suggested button restores: a couple of starter
+        /// cards and then the most efficient attacks and skills in the pool, two copies each. It has to be
+        /// a deck a new player can win with without understanding any card, and one an experienced player
+        /// will immediately want to change.
         /// </summary>
         public static List<CardData> Suggested(RunConfig config, ICollection<string> unlocked)
         {
             var deck = new List<CardData>();
             if (config == null) return deck;
 
+            // Two of each starter card, not the four the old opening deck held. Strike and Guard are
+            // filler by design, and a suggested deck that is twelve of them loses to a deck thrown
+            // together at random — measured, before this cap.
             foreach (var entry in config.StarterDeck)
             {
                 if (entry?.Card == null) continue;
-                for (int i = 0; i < entry.Count && CanAdd(deck, entry.Card); i++) deck.Add(entry.Card);
+                int copies = Mathf.Min(entry.Count, 2);
+                for (int i = 0; i < copies && CanAdd(deck, entry.Card); i++) deck.Add(entry.Card);
             }
 
-            // Two copies each of the cheapest attacks and skills, commons before anything rarer. Powers
-            // are skipped: one that arrives late in a thirty-card deck has no turns left to pay off.
+            // Two copies each of the most efficient common attacks and skills.
+            //
+            // Commons only, on purpose. Built from the whole pool by the same measure, this deck won 78%
+            // of simulated runs — a default that good is the end of deck building, because nothing the
+            // player does to it can be an improvement. The uncommons and rares are what they are for.
+            // Powers are skipped too: one that arrives late in a thirty-card deck has no turns left to
+            // pay off.
             var fillers = new List<CardData>(Pool(config, unlocked));
-            fillers.RemoveAll(c => c.Type == CardType.Power);
+            fillers.RemoveAll(c => c.Type == CardType.Power || c.Rarity > CardRarity.Common);
             fillers.Sort((a, b) =>
             {
+                int byValue = Efficiency(b).CompareTo(Efficiency(a));
+                if (byValue != 0) return byValue;
                 int byCost = a.Cost.CompareTo(b.Cost);
                 if (byCost != 0) return byCost;
-                int byRarity = a.Rarity.CompareTo(b.Rarity);
-                if (byRarity != 0) return byRarity;
                 return string.Compare(a.DisplayName, b.DisplayName, System.StringComparison.Ordinal);
             });
 
@@ -132,6 +207,49 @@ namespace EmberDeck.Run
                 if (!added) break;
             }
             return deck;
+        }
+
+        /// <summary>
+        /// The strongest deck the rules allow, by Value: two of everything efficient, rares first.
+        ///
+        /// Not offered to the player anywhere — it is the other end of the measurement. The suggested
+        /// deck says what a beginner meets; this says what someone who reads every card and works out the
+        /// arithmetic can build, which is what the enemies eventually have to hold up against.
+        /// </summary>
+        public static List<CardData> Best(RunConfig config, ICollection<string> unlocked)
+        {
+            var deck = new List<CardData>();
+            var pool = new List<CardData>(Pool(config, unlocked));
+            pool.RemoveAll(c => c.Type == CardType.Power);
+            pool.Sort((a, b) =>
+            {
+                int byValue = Efficiency(b).CompareTo(Efficiency(a));
+                if (byValue != 0) return byValue;
+                return string.Compare(a.DisplayName, b.DisplayName, System.StringComparison.Ordinal);
+            });
+
+            foreach (var card in pool)
+            {
+                if (deck.Count >= DeckSize) break;
+                for (int copy = 0; copy < MaxCopies(card) && CanAdd(deck, card); copy++) deck.Add(card);
+            }
+            return deck;
+        }
+
+        /// <summary>Two lines describing a deck, for the simulator's report.</summary>
+        public static string Describe(IReadOnlyList<CardData> deck)
+        {
+            if (deck == null || deck.Count == 0) return "(empty)";
+
+            var seen = new List<CardData>();
+            var parts = new List<string>();
+            foreach (var card in deck)
+            {
+                if (seen.Contains(card)) continue;
+                seen.Add(card);
+                parts.Add($"{CountOf(deck, card)}x {card.DisplayName}");
+            }
+            return string.Join(", ", parts);
         }
 
         /// <summary>
