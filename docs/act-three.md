@@ -74,3 +74,14 @@ values keep that promise.
   place for one new rule, and it has none.
 - **The act has no relic of its own** and no cards that belong to it: its rewards are the same pools
   as Act 2's.
+
+## Where the art stands
+
+The act's portraits are rendered a few at a time: the checkpoint is 6.5 GB, the machine's ComfyUI is
+shared with other work, and each image takes a few minutes. Rendered so far: the Cinder Revenant,
+the Molten Maw, the Ash Priest. Still to paint: the Emberfly, the Slag Titan, the Living Flame, the
+Emberheart — and the act's four backgrounds (`bg_hallway_3`, `bg_elite_3`, `bg_boss_3`, `bg_map_3`).
+
+Resume with the commands in `docs/art-pipeline.md`: both generators skip what already exists, so
+picking up where this left off is one command and no wasted work. An enemy with no painting draws as
+its tinted placeholder, which is what that fallback is for, and the act is fully playable now.

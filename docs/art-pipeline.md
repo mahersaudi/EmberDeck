@@ -71,6 +71,31 @@ worth art, this pipeline hands an artist a clear silhouette brief and gets repla
 Being explicit about that matters, because procedural art is seductive: it is easy to keep
 polishing a script that will never produce what a person would produce in an afternoon.
 
+## The checkpoint, and where it comes from
+
+Every painting in the game — sixty card illustrations, every enemy portrait, every background — was
+generated locally with **DreamShaper XL Lightning** in ComfyUI, at 8 steps and CFG 2 with the
+DPM++ SDE sampler. That is the whole reason the set looks like one game: one checkpoint, one style
+string, one palette table.
+
+The file the scripts ask for is
+`~/Desktop/ComfyUI/models/checkpoints/dreamshaperXL_lightningDPMSDE.safetensors`, 6.5 GB. It was not
+in the repository (nothing that size should be) and it was not on the machine either by the time Act
+3 needed portraits — so it had to be found again, which took a guess. **It is
+`DreamShaperXL_Lightning.safetensors` from `huggingface.co/Lykon/dreamshaper-xl-lightning`**, saved
+under the name above. Writing that down is the point of this section: a checkpoint that cannot be
+found again makes every later piece of art a different game.
+
+```bash
+cd ~/Desktop/ComfyUI && ./venv/bin/python main.py --port 8188   # the server the scripts talk to
+python3 art/generate_art.py --enemies                           # skips what is already rendered
+python3 art/generate_backgrounds.py
+./art/install_painted.sh && ./art/install_backgrounds.sh        # crop and file into Assets/
+```
+
+Both generators are resumable: a painting already in `art/out/` is skipped, so a batch can be
+interrupted and restarted, and a new act only renders its own enemies.
+
 ## Two traps already hit, worth writing down
 
 **Blender's default view transform is AgX**, which desaturates bright colour hard. It is
