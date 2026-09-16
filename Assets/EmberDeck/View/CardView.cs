@@ -15,7 +15,8 @@ namespace EmberDeck.View
     /// square, which is smaller than the detail in the art — a painting at that size is mud,
     /// and the whole point of having art is lost.
     /// </summary>
-    public sealed class CardView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, ISelectHandler, IDeselectHandler
+    public sealed class CardView : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, ISelectHandler, IDeselectHandler,
+                                   IBeginDragHandler, IDragHandler, IEndDragHandler
     {
         public const float Width = 202f;
         public const float Height = 296f;
@@ -37,14 +38,29 @@ namespace EmberDeck.View
         Button _button;
 
         Vector2 _restPosition;
+        float _restRotation;
+        float _hold;
         CanvasGroup _group;
         bool _placed;
         bool _selected;
         bool _hovered;
         bool _leaving;
+        bool _dragging;
         int _siblingBeforeHover = -1;
 
+        /// <summary>
+        /// Whether this card can be dragged onto a target. Only cards in hand: a reward, a shop
+        /// offer and a card in the upgrade picker are the same view and are chosen, not played.
+        /// </summary>
+        public bool Draggable { get; set; }
+
         public event Action<CardView> Clicked;
+
+        /// <summary>A drag has begun, so the board can show what this card can be dropped on.</summary>
+        public event Action<CardView> DragStarted;
+
+        /// <summary>Dropped. The event data says what is under the finger; the listener decides what that means.</summary>
+        public event Action<CardView, PointerEventData> Dropped;
 
         /// <summary>Flying to a pile after being played: no longer part of the hand, and never focused.</summary>
         public bool IsLeaving => _leaving;
@@ -143,12 +159,17 @@ namespace EmberDeck.View
         /// Where the card belongs. The first call places it there; later calls make it glide, so a
         /// hand that re-fans after a play slides into its new shape instead of jumping.
         /// </summary>
-        public void SetRestPosition(Vector2 position)
+        public void SetRestPosition(Vector2 position) => SetRest(position, 0f);
+
+        /// <summary>Where the card belongs, and the angle it rests at. Both are glided to, never snapped.</summary>
+        public void SetRest(Vector2 position, float rotationDegrees)
         {
             _restPosition = position;
+            _restRotation = rotationDegrees;
             if (_placed) return;
             _placed = true;
             ((RectTransform)transform).anchoredPosition = position;
+            ((RectTransform)transform).localRotation = Quaternion.Euler(0f, 0f, rotationDegrees);
         }
 
         /// <summary>Starts the card somewhere else — the draw pile — so it travels to its rest position.</summary>
@@ -160,11 +181,24 @@ namespace EmberDeck.View
             rect.localScale = new Vector3(scale, scale, 1f);
         }
 
+        /// <summary>
+        /// Dealt from the pile: small, turned over, and held there until its turn comes. The hold is
+        /// what makes a five-card draw a riffle instead of five cards arriving at once — the cards
+        /// wait on the pile, then each flies out as the deal sound for it plays.
+        /// </summary>
+        public void DealIn(Vector2 from, float scale, float rotation, float delay)
+        {
+            SpawnAt(from, scale);
+            ((RectTransform)transform).localRotation = Quaternion.Euler(0f, 0f, rotation);
+            _hold = delay;
+        }
+
         /// <summary>Sends the card off — to the board when played, to the discard pile otherwise — and destroys it.</summary>
-        public void FlyAway(Vector2 to, float endScale, float duration)
+        public void FlyAway(Vector2 to, float endScale, float duration, float delay = 0f)
         {
             if (_leaving) return;
             _leaving = true;
+            _dragging = false;
             _group.blocksRaycasts = false;
             Tooltip.Hide(GetComponent<TooltipTrigger>());
 
@@ -180,7 +214,7 @@ namespace EmberDeck.View
                 rect.localScale = new Vector3(s, s, 1f);
                 rect.localRotation = Quaternion.Slerp(fromRotation, Quaternion.identity, t);
                 _group.alpha = t < 0.55f ? 1f : 1f - (t - 0.55f) / 0.45f;
-            }, Motion.OutCubic, 0f, () => { if (this != null) Destroy(gameObject); });
+            }, Motion.OutCubic, delay, () => { if (this != null) Destroy(gameObject); });
         }
 
         public void OnPointerEnter(PointerEventData eventData)
@@ -215,7 +249,14 @@ namespace EmberDeck.View
 
         void Update()
         {
-            if (_leaving) return;
+            if (_leaving || _dragging) return;
+
+            // Waiting its turn in the deal.
+            if (_hold > 0f)
+            {
+                _hold -= Time.unscaledDeltaTime;
+                return;
+            }
 
             // Exponential smoothing rather than a timed tween: the target changes whenever the hand
             // re-fans or the selection moves, and this follows a moving target without restarts.
@@ -226,6 +267,52 @@ namespace EmberDeck.View
             rect.anchoredPosition = Vector2.Lerp(rect.anchoredPosition, target, k);
             float s = Mathf.Lerp(rect.localScale.x, scale, k);
             rect.localScale = new Vector3(s, s, 1f);
+            // A lifted card straightens up, so the one being read is the one that is level.
+            float angle = _selected || _hovered ? 0f : _restRotation;
+            rect.localRotation = Quaternion.Slerp(rect.localRotation, Quaternion.Euler(0f, 0f, angle), k);
+        }
+
+        // ── Dragging ─────────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Dragging a card onto its target is how a card game is played with a finger: the two-tap
+        /// path still works, but nobody has to be taught this one. The drag only moves the view —
+        /// the drop decides whether anything is played, and CombatView decides that.
+        /// </summary>
+        public void OnBeginDrag(PointerEventData eventData)
+        {
+            if (!Draggable || _leaving) return;
+            _dragging = true;
+            _hold = 0f;
+            Tooltip.Hide(GetComponent<TooltipTrigger>());
+            transform.SetAsLastSibling();
+            DragStarted?.Invoke(this);
+        }
+
+        public void OnDrag(PointerEventData eventData)
+        {
+            if (!_dragging) return;
+
+            var parent = transform.parent as RectTransform;
+            if (parent == null) return;
+            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(parent, eventData.position,
+                                                                        eventData.pressEventCamera, out var local))
+                return;
+
+            // ScreenPointToLocalPointInRectangle measures from the parent's pivot; anchoredPosition
+            // measures from the centre of its rect. Under a mirrored stage the conversion handles the
+            // flip on its own, which is the whole reason for going through it.
+            var rect = (RectTransform)transform;
+            rect.anchoredPosition = local - parent.rect.center;
+            rect.localRotation = Quaternion.identity;
+            rect.localScale = new Vector3(1.06f, 1.06f, 1f);
+        }
+
+        public void OnEndDrag(PointerEventData eventData)
+        {
+            if (!_dragging) return;
+            _dragging = false;
+            Dropped?.Invoke(this, eventData);
         }
 
         /// <summary>

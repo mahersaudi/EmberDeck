@@ -18,6 +18,9 @@ namespace EmberDeck.View
         Image _flash;
         Vector2 _bodyRest;
         float _breathPhase;
+        CanvasGroup _group;
+        Vector2 _recoil;
+        bool _dying;
 
         /// <summary>The row above the portrait showing the next move.</summary>
         public RectTransform IntentRect => _intentRow;
@@ -121,11 +124,67 @@ namespace EmberDeck.View
             UiFactory.Place((RectTransform)_statuses.transform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
                             new Vector2(0f, 4f), new Vector2(250f, 30f));
 
+            _group = gameObject.AddComponent<CanvasGroup>();
+
             _button = gameObject.AddComponent<Button>();
             _button.targetGraphic = GetComponent<Image>();
             _button.onClick.AddListener(() => Clicked?.Invoke(this));
 
             TooltipTrigger.Attach(gameObject, DescribeForTooltip);
+        }
+
+        /// <summary>
+        /// Walks onto the board: up from below the row, fading in, overshooting a little. Staggered by
+        /// the caller so a group of three arrives as three enemies rather than as one block.
+        /// </summary>
+        public void Enter(float delay)
+        {
+            var rect = (RectTransform)transform;
+            Vector2 rest = rect.anchoredPosition;
+            _group.alpha = 0f;
+            rect.anchoredPosition = rest + new Vector2(0f, -80f);
+
+            Motion.Run(this, "enter", 0.5f, t =>
+            {
+                rect.anchoredPosition = rest + new Vector2(0f, -80f * (1f - t));
+                _group.alpha = Mathf.Clamp01(t * 1.8f);
+            }, Motion.OutBack, delay, () =>
+            {
+                if (this == null) return;
+                rect.anchoredPosition = rest;
+                _group.alpha = 1f;
+            });
+        }
+
+        /// <summary>
+        /// Dies: sinks, tips over and dims, and stays on the board as a body. Update leaves the
+        /// portrait alone once the enemy is dead, so this tween owns it from here.
+        /// </summary>
+        public void Die(float delay = 0f)
+        {
+            if (_dying) return;
+            _dying = true;
+
+            Motion.Run(this, "die", 0.75f, t =>
+            {
+                _group.alpha = 1f - 0.5f * t;
+                if (_body == null) return;
+                var rect = _body.rectTransform;
+                rect.anchoredPosition = _bodyRest + new Vector2(0f, -30f * t);
+                rect.localRotation = Quaternion.Euler(0f, 0f, -10f * t);
+                float s = 1f - 0.08f * t;
+                rect.localScale = new Vector3(s, s, 1f);
+            }, Motion.OutCubic, delay);
+        }
+
+        /// <summary>
+        /// Knocked back by a hit. Applied inside Update so it rides on top of the idle breath rather
+        /// than fighting it, and decays on its own.
+        /// </summary>
+        public void Recoil(float strength)
+        {
+            if (Enemy == null || !Enemy.IsAlive) return;
+            _recoil = new Vector2(0f, Mathf.Clamp(strength, 4f, 26f));
         }
 
         /// <summary>
@@ -137,8 +196,12 @@ namespace EmberDeck.View
             if (Enemy == null || !Enemy.IsAlive || _body == null) return;
             float t = Time.time * 1.7f + _breathPhase;
             var rect = _body.rectTransform;
-            rect.anchoredPosition = _bodyRest + new Vector2(0f, Mathf.Sin(t) * 3f);
-            float s = 1f + Mathf.Sin(t + 0.8f) * 0.012f;
+
+            // The recoil of the last hit, dying away.
+            _recoil = Vector2.Lerp(_recoil, Vector2.zero, 1f - Mathf.Exp(-Time.unscaledDeltaTime * 9f));
+
+            rect.anchoredPosition = _bodyRest + new Vector2(0f, Mathf.Sin(t) * 3f) + _recoil;
+            float s = 1f + Mathf.Sin(t + 0.8f) * 0.012f - _recoil.y * 0.0016f;
             rect.localScale = new Vector3(s, s, 1f);
         }
 

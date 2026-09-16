@@ -24,25 +24,32 @@ namespace EmberDeck.View
         const int HeavyHit = 12;
 
         static readonly Color BurnColor = new(1f, 0.56f, 0.2f);
+        static readonly Color ImpactOnEnemy = new(1f, 0.86f, 0.55f);
+        static readonly Color ImpactOnPlayer = new(1f, 0.4f, 0.32f);
         static readonly Color DebuffColor = new(0.72f, 0.55f, 1f);
         static readonly Color HitFlash = new(1f, 0.22f, 0.18f, 0.6f);
 
         readonly CombatState _state;
         readonly RectTransform _layer;
+        readonly RectTransform _board;
         readonly Func<Actor, RectTransform> _anchorFor;
         readonly Func<Actor, Graphic> _flashFor;
+        readonly Func<Actor, EnemyView> _viewFor;
 
         int _frame = -1;
         int _eventsThisFrame;
         int _drawsThisFrame;
 
-        public CombatFeedback(CombatState state, RectTransform layer,
-                              Func<Actor, RectTransform> anchorFor, Func<Actor, Graphic> flashFor)
+        public CombatFeedback(CombatState state, RectTransform layer, RectTransform board,
+                              Func<Actor, RectTransform> anchorFor, Func<Actor, Graphic> flashFor,
+                              Func<Actor, EnemyView> viewFor)
         {
             _state = state;
             _layer = layer;
+            _board = board;
             _anchorFor = anchorFor;
             _flashFor = flashFor;
+            _viewFor = viewFor;
 
             var bus = state.Bus;
             bus.Subscribe<DamageAppliedEvent>(OnDamage);
@@ -92,18 +99,36 @@ namespace EmberDeck.View
                 Motion.Flash(_flashFor(e.Target), fromAttack ? HitFlash : new Color(BurnColor.r, BurnColor.g, BurnColor.b, 0.45f),
                              0.32f, delay);
 
+                // Where the hit lands, drawn on top of it: a flare of light inside an expanding ring.
+                // Sized by the damage, so a 20-point blow does not look like a 3-point one.
+                var impact = fromAttack ? (e.Target.IsPlayer ? ImpactOnPlayer : ImpactOnEnemy) : BurnColor;
+                var centre = Motion.PointIn(_layer, anchor);
+                float size = Mathf.Lerp(150f, 320f, Mathf.Clamp01(e.HpLost / 24f));
+                Fx.Flare(_layer, centre, new Color(impact.r, impact.g, impact.b, 0.75f), size * 0.8f, delay);
+                Fx.Burst(_layer, centre, new Color(impact.r, impact.g, impact.b, 0.9f), size, delay);
+
+                // The board itself moves for a blow that matters. Small, and only for heavy hits or a
+                // hit on the player: a screen that shakes at every 3-point jab is exhausting to read.
+                if (heavy || (e.Target.IsPlayer && fromAttack))
+                    Motion.Shake(_board, heavy ? 9f : 5f, 0.34f, delay);
+
                 var sound = !fromAttack ? Sfx.Burn : heavy ? Sfx.HeavyHit : Sfx.Hit;
                 bool hurtPlayer = e.Target.IsPlayer && fromAttack;
+                float recoil = Mathf.Clamp(e.HpLost * 1.3f, 5f, 26f);
+                var hitView = _viewFor?.Invoke(e.Target);
                 Motion.After(delay, () =>
                 {
                     AudioDirector.Play(sound, fromAttack ? 1f : 0.6f);
                     if (hurtPlayer) AudioDirector.Play(Sfx.PlayerHurt, 0.65f);
+                    if (hitView != null) hitView.Recoil(recoil);
                 });
             }
             else
             {
                 Motion.FloatText(_layer, PointAbove(anchor, 30f), "Blocked", Palette.Block, 30, delay);
                 Motion.Shake(anchor, 4f, 0.18f, delay);
+                Fx.Burst(_layer, Motion.PointIn(_layer, anchor), new Color(Palette.Block.r, Palette.Block.g, Palette.Block.b, 0.8f),
+                         170f, delay, 0.34f);
                 Motion.After(delay, () => AudioDirector.Play(Sfx.BlockedHit));
             }
         }
@@ -128,6 +153,8 @@ namespace EmberDeck.View
             Motion.Run(anchor, "death", 0.55f,
                        t => anchor.localScale = Vector3.one * (1f - 0.14f * t),
                        Motion.OutCubic, delay);
+            _viewFor?.Invoke(e.Actor)?.Die(delay);
+            Fx.Burst(_layer, Motion.PointIn(_layer, anchor), new Color(1f, 0.72f, 0.4f, 0.75f), 300f, delay, 0.6f);
             Motion.After(delay, () => AudioDirector.Play(Sfx.EnemyDeath));
         }
 

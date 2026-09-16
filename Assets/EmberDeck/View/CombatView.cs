@@ -64,6 +64,10 @@ namespace EmberDeck.View
         static readonly Vector2 PlayedPoint = new(0f, 330f);
         readonly List<CardView> _cardViews = new();
         CardView _selectedCard;
+        CardView _dragCard;
+
+        /// <summary>What the last card played was aimed at, so the card can be thrown at it.</summary>
+        RectTransform _lastPlayTarget;
 
         Image _playerHealthFill;
         Text _playerHealthLabel;
@@ -161,7 +165,9 @@ namespace EmberDeck.View
         /// Leaves whatever is on screen and shows the main menu. Nothing is saved here: the run on
         /// disk is the one written at the last map, which is what Continue will offer.
         /// </summary>
-        void ShowMainMenu()
+        void ShowMainMenu() => Curtain.Wipe(ShowMainMenuNow);
+
+        void ShowMainMenuNow()
         {
             _pause.Hide();
             if (_settings.IsOpen) _settings.gameObject.SetActive(false);
@@ -175,6 +181,8 @@ namespace EmberDeck.View
             _enemyViews.Clear();
             _cardViews.Clear();
             _selectedCard = null;
+            _dragCard = null;
+            _lastPlayTarget = null;
             _mapView?.Hide();
             _restView?.Hide();
             _shopView?.Hide();
@@ -600,7 +608,7 @@ namespace EmberDeck.View
             });
             // Attached after Begin so the views it animates exist. Nothing needs an effect
             // before the first turn: the opening hand already deals itself in.
-            new CombatFeedback(_session.State, _fxLayer, AnchorFor, FlashFor);
+            new CombatFeedback(_session.State, _fxLayer, _root, AnchorFor, FlashFor, ViewFor);
             TrackStats(_session.State);
             _run.Stats.FinalEncounter = DescribeEncounter(_session.State);
             AudioDirector.PlayMusic(_run.IsBoss ? MusicTrack.Boss : MusicTrack.Combat);
@@ -647,7 +655,9 @@ namespace EmberDeck.View
             return string.Join(" and ", names);
         }
 
-        void ShowEndOfRun(bool won)
+        void ShowEndOfRun(bool won) => Curtain.Wipe(() => ShowEndOfRunNow(won));
+
+        void ShowEndOfRunNow(bool won)
         {
             if (_run == null) return;
             Tooltip.Hide();
@@ -878,13 +888,25 @@ namespace EmberDeck.View
                 UiFactory.Place((RectTransform)view.transform, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f),
                                 new Vector2(startX + i * spacing, 0f), new Vector2(260f, 300f));
                 view.Clicked += OnEnemyClicked;
+                // They walk on one after another, left to right, before the hand is dealt.
+                view.Enter(0.05f + i * 0.12f);
                 _enemyViews.Add(view);
             }
         }
 
+        /// <summary>The view for an actor, for the effects that have to reach into it — a recoil, a death.</summary>
+        EnemyView ViewFor(Actor actor)
+        {
+            foreach (var view in _enemyViews)
+                if (view != null && view.Enemy == actor) return view;
+            return null;
+        }
+
         void OnStateChanged(CombatStateChangedEvent _) => Redraw();
 
-        void ShowMap()
+        void ShowMap() => Curtain.Wipe(ShowMapNow);
+
+        void ShowMapNow()
         {
             _restView?.Hide();
             _shopView?.Hide();
@@ -932,38 +954,41 @@ namespace EmberDeck.View
         void OnNodeChosen(MapNode node)
         {
             AudioDirector.Play(Sfx.MapSelect);
-            Coach.EndScreen();
-            _run.Map.Current = node;
-            _run.ActiveNode = node;
-            node.Visited = true;
-            _mapView.Hide();
-
-            switch (node.Type)
+            Curtain.Wipe(() =>
             {
-                case NodeType.Rest:
-                    OpenRest();
-                    break;
+                Coach.EndScreen();
+                _run.Map.Current = node;
+                _run.ActiveNode = node;
+                node.Visited = true;
+                _mapView.Hide();
 
-                case NodeType.Shop:
-                    OpenShop();
-                    break;
+                switch (node.Type)
+                {
+                    case NodeType.Rest:
+                        OpenRest();
+                        break;
 
-                case NodeType.Event:
-                    _eventView.Show(EventService.Pick(_run), EventService.Context(_run, _config));
-                    break;
+                    case NodeType.Shop:
+                        OpenShop();
+                        break;
 
-                case NodeType.Treasure:
-                    // A free card with no fight attached, and some gold. The card is still a choice,
-                    // and still skippable.
-                    int treasureGold = GoldService.ForTreasure(_run);
-                    GoldService.Earn(_run, treasureGold);
-                    ShowRewards(title: "TREASURE", gold: treasureGold);
-                    break;
+                    case NodeType.Event:
+                        _eventView.Show(EventService.Pick(_run), EventService.Context(_run, _config));
+                        break;
 
-                default:
-                    StartFight();
-                    break;
-            }
+                    case NodeType.Treasure:
+                        // A free card with no fight attached, and some gold. The card is still a choice,
+                        // and still skippable.
+                        int treasureGold = GoldService.ForTreasure(_run);
+                        GoldService.Earn(_run, treasureGold);
+                        ShowRewards(title: "TREASURE", gold: treasureGold);
+                        break;
+
+                    default:
+                        StartFight();
+                        break;
+                }
+            });
         }
 
         void OpenShop()
@@ -1137,10 +1162,117 @@ namespace EmberDeck.View
             }
 
             int index = _cardViews.IndexOf(view);
+            _lastPlayTarget = null;
             Engine.TryPlayCard(view.Card, State.Player);
             _selectedCard = null;
             Redraw();
             FocusHand(index);
+        }
+
+        /// <summary>A card has been picked up: drop any other selection, and light up what it can hit.</summary>
+        void OnCardDragStarted(CardView view)
+        {
+            if (_session == null || State.IsOver) return;
+            _selectedPotion = -1;
+            _selectedCard = null;
+            _dragCard = view;
+            Tooltip.Hide();
+            Redraw();
+        }
+
+        /// <summary>
+        /// A card let go. A card that needs a target plays on the enemy under the finger — or, when
+        /// only one enemy is left alive, anywhere off the hand, since there is nothing to mis-aim at.
+        /// A card that needs no target plays when it was dragged clear of the hand. Anything else
+        /// glides back, which costs the player nothing.
+        /// </summary>
+        void OnCardDropped(CardView view, PointerEventData eventData)
+        {
+            _dragCard = null;
+            if (_session == null || State.IsOver || !_cardViews.Contains(view))
+            {
+                Redraw();
+                return;
+            }
+
+            bool clear = DroppedClearOfHand(eventData);
+            var dropped = EnemyUnder(eventData);
+            var target = dropped != null && dropped.Enemy.IsAlive ? dropped : null;
+
+            if (view.Card.Data.Target == TargetMode.SingleEnemy)
+            {
+                if (target == null && clear)
+                {
+                    var only = OnlyLivingEnemy();
+                    if (only != null) target = only;
+                }
+                if (target == null)
+                {
+                    Redraw();
+                    return;
+                }
+
+                int index = _cardViews.IndexOf(view);
+                _lastPlayTarget = (RectTransform)target.transform;
+                Engine.TryPlayCard(view.Card, target.Enemy);
+                Redraw();
+                FocusHand(index);
+                return;
+            }
+
+            if (!clear && target == null)
+            {
+                Redraw();
+                return;
+            }
+
+            int slot = _cardViews.IndexOf(view);
+            _lastPlayTarget = target != null ? (RectTransform)target.transform : null;
+            Engine.TryPlayCard(view.Card, State.Player);
+            Redraw();
+            FocusHand(slot);
+        }
+
+        /// <summary>Whether the drop happened above the hand, which is what makes it a play and not a return.</summary>
+        bool DroppedClearOfHand(PointerEventData eventData)
+        {
+            if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(_handRow, eventData.position,
+                                                                        eventData.pressEventCamera, out var local))
+                return false;
+            return local.y - _handRow.rect.center.y > 120f;
+        }
+
+        /// <summary>The enemy under the pointer, by what the event system hit — including a hit on a child of it.</summary>
+        EnemyView EnemyUnder(PointerEventData eventData)
+        {
+            var hit = eventData.pointerCurrentRaycast.gameObject;
+            var view = hit != null ? hit.GetComponentInParent<EnemyView>() : null;
+            if (view != null) return view;
+
+            // pointerCurrentRaycast is empty when the finger is over something that takes no raycasts,
+            // such as the effects layer, so ask the event system directly.
+            if (EventSystem.current == null) return null;
+            var results = new List<RaycastResult>();
+            EventSystem.current.RaycastAll(eventData, results);
+            foreach (var result in results)
+            {
+                if (result.gameObject == null) continue;
+                var found = result.gameObject.GetComponentInParent<EnemyView>();
+                if (found != null) return found;
+            }
+            return null;
+        }
+
+        EnemyView OnlyLivingEnemy()
+        {
+            EnemyView only = null;
+            foreach (var view in _enemyViews)
+            {
+                if (view == null || !view.Enemy.IsAlive) continue;
+                if (only != null) return null;
+                only = view;
+            }
+            return only;
         }
 
         void OnEnemyClicked(EnemyView view)
@@ -1159,6 +1291,7 @@ namespace EmberDeck.View
             if (_selectedCard == null) return;
 
             int index = _cardViews.IndexOf(_selectedCard);
+            _lastPlayTarget = (RectTransform)view.transform;
             Engine.TryPlayCard(_selectedCard.Card, view.Enemy);
             _selectedCard = null;
             Redraw();
@@ -1166,6 +1299,47 @@ namespace EmberDeck.View
         }
 
 #if DEVELOPMENT_BUILD || UNITY_EDITOR
+        PointerEventData _debugDrag;
+        CardView _debugDragView;
+
+        /// <summary>
+        /// Capture-harness only: picks up the first card in hand and holds it over the first living
+        /// enemy, exactly as a finger would — the same handlers, the same pointer data. Returns a
+        /// description, or null if there was nothing to drag. DebugReleaseDrag drops it.
+        /// </summary>
+        public string DebugDragCardToEnemy()
+        {
+            if (_session == null || State.IsOver || _cardViews.Count == 0) return null;
+            var enemy = FirstLivingEnemy();
+            if (enemy == null) return null;
+
+            var view = _cardViews[0];
+            var target = (RectTransform)enemy.transform;
+            var world = target.TransformPoint(target.rect.center);
+
+            _debugDrag = new PointerEventData(EventSystem.current)
+            {
+                position = RectTransformUtility.WorldToScreenPoint(null, world),
+                button = PointerEventData.InputButton.Left,
+            };
+
+            _debugDragView = view;
+            view.OnBeginDrag(_debugDrag);
+            view.OnDrag(_debugDrag);
+            return $"{view.Card.Data.DisplayName} -> {enemy.name}";
+        }
+
+        /// <summary>Capture-harness only: lets go of the card held by DebugDragCardToEnemy.</summary>
+        public string DebugReleaseDrag()
+        {
+            if (_debugDrag == null || _debugDragView == null) return null;
+            int before = State.Hand.Count;
+            _debugDragView.OnEndDrag(_debugDrag);
+            _debugDrag = null;
+            _debugDragView = null;
+            return $"hand {before} -> {State.Hand.Count}";
+        }
+
         /// <summary>Capture-harness only: a one-line description of the run, for save tests.</summary>
         public string DebugRunSummary() =>
             _run == null ? "none"
@@ -1377,7 +1551,7 @@ namespace EmberDeck.View
             SyncHand();
 
             RefreshPotions();
-            bool targeting = _selectedCard != null || _selectedPotion >= 0;
+            bool targeting = _selectedCard != null || _selectedPotion >= 0 || _dragCard != null;
             foreach (var enemyView in _enemyViews)
                 enemyView.Refresh(targeting);
 
@@ -1431,6 +1605,7 @@ namespace EmberDeck.View
             // flies to wherever it went. Rebuilding the hand from scratch — as this did before
             // there was motion — would make every card re-deal itself on every play.
             var next = new List<CardView>(State.Hand.Count);
+            int dealt = 0;
             foreach (var card in State.Hand)
             {
                 var view = _cardViews.Find(v => v != null && v.Card == card);
@@ -1438,17 +1613,36 @@ namespace EmberDeck.View
                 {
                     view = CardView.Create(_handRow, card);
                     view.Clicked += OnCardClicked;
+                    view.Draggable = true;
+                    view.DragStarted += OnCardDragStarted;
+                    view.Dropped += OnCardDropped;
                     NavHint.On(view).Priority = 10;   // a fight opens with focus in the hand
-                    view.SpawnAt(DrawPilePoint, 0.3f);
+                    // Face down on the pile, then dealt in turn. The stagger matches the draw sound's,
+                    // so each card lands on its own click.
+                    view.DealIn(DrawPilePoint, 0.3f, -32f, 0.05f + dealt++ * 0.07f);
                 }
                 next.Add(view);
             }
 
+            int discarded = 0;
             foreach (var view in _cardViews)
             {
                 if (view == null || next.Contains(view)) continue;
                 bool played = view.Card == _lastPlayedCard;
-                view.FlyAway(played ? PlayedPoint : DiscardPilePoint, played ? 1.1f : 0.3f, played ? 0.45f : 0.35f);
+                if (played)
+                {
+                    // Thrown at whatever it was aimed at, so an attack visibly travels to the enemy it
+                    // hits. A card with no target flies to the middle of the board instead.
+                    var target = _lastPlayTarget != null && _lastPlayTarget.gameObject.activeInHierarchy
+                        ? Motion.PointIn(_handRow, _lastPlayTarget)
+                        : PlayedPoint;
+                    view.FlyAway(target, 1.15f, 0.3f);
+                }
+                else
+                {
+                    // Swept to the discard pile in order, so a five-card discard reads as a sweep.
+                    view.FlyAway(DiscardPilePoint, 0.3f, 0.35f, delay: discarded++ * 0.05f);
+                }
             }
 
             _cardViews.Clear();
@@ -1479,9 +1673,11 @@ namespace EmberDeck.View
 
                 rect.SetSiblingIndex(i);
                 // Shallow: past about 3 degrees the rules text becomes noticeably harder to read.
-                rect.localRotation = Quaternion.Euler(0f, 0f, -centred * 3f);
-                _cardViews[i].SetRestPosition(new Vector2(startX + i * step, lift));
+                _cardViews[i].SetRest(new Vector2(startX + i * step, lift), -centred * 3f);
             }
+
+            // A card held in a finger stays above the rest of the hand.
+            if (_dragCard != null) _dragCard.transform.SetAsLastSibling();
         }
 
         static void ClearChildren(Transform parent)

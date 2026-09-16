@@ -39,6 +39,7 @@ namespace EmberDeck.View
             // -emberdeck-lang ar photographs the Arabic interface; the choice is never saved.
             if (ReadArg("-emberdeck-lang") == "ar") Loc.UseMemoryOnly(Language.Arabic);
             if (System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "-emberdeck-touch") >= 0) TouchMode.Force(true);
+            Curtain.Instant = true;
             Coach.UseMemoryOnly();
             // The harness drives focus itself; a mouse moved on the desk must not switch it off mid-shot.
             PadNavigator.IgnoreHardware = true;
@@ -309,6 +310,23 @@ namespace EmberDeck.View
 
                         // Nothing was consumed, so no card in hand is affordable.
                         if (FindObjectsByType<CardView>(FindObjectsSortMode.None).Length == cards.Length) break;
+                    }
+
+                    // Dragging a card onto an enemy: held over it, photographed, then let go. This is
+                    // the touch path, and the only way to check it is to drive the drag handlers.
+                    var dragView = FindFirstObjectByType<CombatView>();
+                    if (dragView != null)
+                    {
+                        string held = dragView.DebugDragCardToEnemy();
+                        if (held != null)
+                        {
+                            Debug.Log($"[AutoCapture] dragging {held}");
+                            yield return new WaitForSeconds(0.25f);
+                            yield return Capture("03e-drag-held.png");
+                            Debug.Log($"[AutoCapture] dropped: {dragView.DebugReleaseDrag()}");
+                            yield return new WaitForSeconds(0.5f);
+                            yield return Capture("03f-drag-played.png");
+                        }
                     }
 
                     // After the harness has played its hand and before the turn ends: the only
