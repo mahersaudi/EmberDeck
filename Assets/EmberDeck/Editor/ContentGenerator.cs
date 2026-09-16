@@ -588,6 +588,10 @@ namespace EmberDeck.EditorTools
                 cfg.PlayerName = "Ember";
                 cfg.MaxHp = 63;
                 cfg.EnergyPerTurn = 3;
+                // 5, not 6. Tested once the deck grew to thirty built cards, on the theory that a bigger
+                // deck wants a bigger hand: one extra card per turn took the simulated win rate from
+                // 3.3-5.0% to 17.7-23.3%. A sixth card is not a sixth more power — it is another Block
+                // every turn, and the whole game is built on there not being one.
                 cfg.CardsPerTurn = 5;
 
                 // The designed 10-card opener. The two singletons are seeds, not filler:
@@ -607,13 +611,16 @@ namespace EmberDeck.EditorTools
                 // Upgraded cards are in the lookup, so a save can name them, but not in the
                 // reward pool: rewards offer base cards, and upgrading is the rest site's job.
                 cfg.AllCards.AddRange(upgrades);
-                // 8%, not 18%: the scaling compounds per fight, and 18% put row-eight enemies
-                // at 2.4x their base health.
-                cfg.EnemyScalingPerFight = 0.08f;
+                // 6%, not 18%: the scaling compounds per fight, and 18% put row-eight enemies at 2.4x
+                // their base health. It was 8% while a run started from the ten-card starter deck; a run
+                // that starts from thirty built cards is harder, not easier — the deck the player chose is
+                // diluted by every reward on top of it — and at 8% the simulated win rate fell from
+                // 5.0-7.3% to 3.3-4.3%. 6% puts it back in the band the rest of the game was tuned at.
+                cfg.EnemyScalingPerFight = 0.06f;
                 // Act 2 grows more slowly. At 8% its first rows killed almost nobody while its last rows
-                // killed a fifth of runs: the difficulty sat in the multiplier, not in the enemies. 5%
+                // killed a fifth of runs: the difficulty sat in the multiplier, not in the enemies. 4%
                 // keeps the climb and leaves the enemies themselves to carry the act.
-                cfg.ActScalingPerFight = new List<float> { 0.08f, 0.05f };
+                cfg.ActScalingPerFight = new List<float> { 0.06f, 0.04f };
                 cfg.Relics = new List<RelicData> { emberCore };
                 cfg.RelicPool = relicPool;
                 cfg.PotionPool = potions;

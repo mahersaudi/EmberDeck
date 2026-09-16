@@ -4,6 +4,7 @@ using System.Text;
 using EmberDeck.Combat;
 using EmberDeck.Content;
 using EmberDeck.Content.Effects;
+using EmberDeck.Core;
 using EmberDeck.Run;
 using UnityEditor;
 using UnityEngine;
@@ -48,6 +49,14 @@ namespace EmberDeck.EditorTools
         // alike — 0.17 elites per run apart — which is too little difference for a comparison
         // between them to show whether elites pay off. These two plan their route.
         enum Policy { Cautious, Balanced, Greedy, Hunter, Avoider }
+
+        /// <summary>
+        /// Which deck a run starts from. Runs now begin at a deck the player built, so the starting
+        /// deck is a parameter of the run and the two ends of it have to be measured: the suggested
+        /// deck the screen opens on, and a legal deck thrown together at random.
+        /// Starter is the old ten-card deck, kept as the reference every earlier number was measured at.
+        /// </summary>
+        enum DeckMode { Suggested, Random, Starter }
 
         sealed class Result
         {
@@ -107,13 +116,14 @@ namespace EmberDeck.EditorTools
             // The middle two split the track, so a jump in the second pass can be traced to cards or relics.
             var cardUnlocks = config.Unlocks.Where(u => u != null && u.Cards.Count > 0).Select(u => u.Id).ToList();
             var relicUnlocks = config.Unlocks.Where(u => u != null && u.Relics.Count > 0).Select(u => u.Id).ToList();
-            var passes = new (string Label, List<string> Unlocked, int Difficulty)[]
+            var passes = new (string Label, List<string> Unlocked, int Difficulty, DeckMode Deck)[]
             {
-                ("[base game: nothing unlocked, normal difficulty]", null, 0),
-                ("[unlocked cards only, normal difficulty]", cardUnlocks, 0),
-                ("[unlocked relics only, normal difficulty]", relicUnlocks, 0),
-                ("[everything unlocked, normal difficulty]", config.AllUnlockIds(), 0),
-                ("[everything unlocked, difficulty 5]", config.AllUnlockIds(), DifficultyRules.Max),
+                ("[base game: suggested 30-card deck, normal difficulty]", null, 0, DeckMode.Suggested),
+                ("[base game: random 30-card deck, normal difficulty]", null, 0, DeckMode.Random),
+                ("[base game: old 10-card starter deck, normal difficulty — the reference]", null, 0, DeckMode.Starter),
+                ("[everything unlocked, suggested 30-card deck, normal difficulty]", config.AllUnlockIds(), 0, DeckMode.Suggested),
+                ("[everything unlocked, random 30-card deck, normal difficulty]", config.AllUnlockIds(), 0, DeckMode.Random),
+                ("[everything unlocked, suggested 30-card deck, difficulty 5]", config.AllUnlockIds(), DifficultyRules.Max, DeckMode.Suggested),
             };
             foreach (var pass in passes)
             {
@@ -133,7 +143,7 @@ namespace EmberDeck.EditorTools
                 {
                     var results = new List<Result>(Runs);
                     for (int i = 0; i < Runs; i++)
-                        results.Add(PlayRun(config, seed: 10_000 + i, policy, pass.Difficulty, unlocked));
+                        results.Add(PlayRun(config, seed: 10_000 + i, policy, pass.Difficulty, unlocked, pass.Deck));
                     if (firstPass) allResults.AddRange(results);
 
                     int wins = results.Count(r => r.BeatBoss);
@@ -196,9 +206,17 @@ namespace EmberDeck.EditorTools
 
         // ── One run ──────────────────────────────────────────────────────────────────
 
-        static Result PlayRun(RunConfig config, int seed, Policy policy, int difficulty = 0, List<string> unlocked = null)
+        static Result PlayRun(RunConfig config, int seed, Policy policy, int difficulty = 0, List<string> unlocked = null,
+                              DeckMode deckMode = DeckMode.Suggested)
         {
-            var run = RunState.Start(config, seed, difficulty, unlocked);
+            // The deck is built before the run, by the same rules the screen builds under.
+            var deck = deckMode switch
+            {
+                DeckMode.Suggested => DeckBuilder.Suggested(config, unlocked),
+                DeckMode.Random    => DeckBuilder.Randomised(config, unlocked, new DeterministicRng(seed ^ 0x2B7E15)),
+                _                  => null,
+            };
+            var run = RunState.Start(config, seed, difficulty, unlocked, deck);
             var result = new Result();
             result.Stats = run.Stats;
 

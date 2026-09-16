@@ -1130,3 +1130,27 @@ A few sure strokes, and {0} is upgraded.
 = بضع ضربات واثقة، وتصبح {0} مطورة.
 The smith shrugs; there was nothing to improve.
 = يهز الحداد كتفيه؛ لم يكن هناك ما يحسن.
+
+# ── Deck builder ────────────────────────────────────────────────────────────────
+BUILD YOUR DECK
+= ابن مجموعتك
+{0} / {1} cards
+= {0} / {1} بطاقة
+Click a card to add it. Click it in your deck to take it out.
+= اضغط بطاقة لتضيفها، واضغطها في مجموعتك لتخرجها.
+Tap a card to add it. Tap it in your deck to take it out.
+= اضغط بطاقة لتضيفها، واضغطها في مجموعتك لتخرجها.
+Your deck
+= مجموعتك
+Suggested
+= مقترحة
+Clear
+= تفريغ
+Start run
+= ابدأ الجولة
+max {0}
+= الحد {0}
+{0} x  {1}
+= {0} × {1}
+{0}  ({1} Energy)
+= {0}  ({1} طاقة)

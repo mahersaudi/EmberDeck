@@ -322,8 +322,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: ed1e89210889f4dc68e3d4b94a323d7c, type: 2}
   - {fileID: 11400000, guid: 4e14c0db4f2c1451a8b5ffa2b784557f, type: 2}
   - {fileID: 11400000, guid: dde09c85e932d45f9997418dcf0b9f69, type: 2}
-  EnemyScalingPerFight: 0.08
+  EnemyScalingPerFight: 0.06
   ActScalingPerFight:
-  - 0.08
-  - 0.05
+  - 0.06
+  - 0.04
   StartingGold: 75

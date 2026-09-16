@@ -126,6 +126,26 @@ namespace EmberDeck.View
                     Click(FindButton("NewRun"));
                     yield return new WaitForSeconds(0.4f);
                 }
+
+                // New Run opens the deck builder. It comes up on the suggested deck, which is legal,
+                // so the harness photographs it, edits it once, and starts the run from it.
+                var builder = FindFirstObjectByType<DeckBuilderView>();
+                if (builder != null && builder.IsOpen)
+                {
+                    yield return new WaitForSeconds(0.5f);
+                    yield return Capture("00e-deck-builder.png");
+
+                    Debug.Log($"[AutoCapture] deck builder: {builder.DebugSummary()}");
+                    Debug.Log($"[AutoCapture] took a card out: {builder.DebugRemoveFirst()}");
+                    yield return new WaitForSeconds(0.3f);
+                    yield return Capture("00f-deck-builder-short.png");
+                    Debug.Log($"[AutoCapture] put one back: {builder.DebugAddFirst()}");
+                    yield return new WaitForSeconds(0.3f);
+
+                    Click(FindButton("DeckStart"));
+                    yield return new WaitForSeconds(0.4f);
+                }
+
                 yield return new WaitForSeconds(0.8f);
                 yield return Capture("01-map.png");
 

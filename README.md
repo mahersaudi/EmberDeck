@@ -69,8 +69,13 @@ Steam depot does.
 
 ## How to play
 
-Click a card to select it, then click an enemy to aim it. Cards that need no target play on the
-first click. `End Turn` resolves the enemy turn. Enemies announce what they will do next — the
+New Run opens the deck builder: thirty cards, chosen from everything unlocked, with a copy limit
+that falls as a card gets rarer. `Suggested` fills it with a plain, workable deck. See
+[`docs/deck-building.md`](docs/deck-building.md).
+
+Click a card to select it, then click an enemy to aim it — or drag it onto the enemy. Cards that
+need no target play on the first click (on a touch screen, on the second tap: see
+[`docs/touch-and-android.md`](docs/touch-and-android.md)). `End Turn` resolves the enemy turn. Enemies announce what they will do next — the
 number above an enemy is its actual damage after every modifier, not a base value.
 
 ## Architecture
@@ -133,6 +138,8 @@ The slice ends at a single fight. In order:
 9. ~~**Controller support**~~ — done: keyboard and gamepad focus on every screen, with button hints. See `docs/controller.md`.
 10. ~~**Arabic**~~ — done: the whole game in Arabic, right to left, chosen in Settings. See `docs/localization.md`.
 11. ~~**Touch and Android**~~ — done: tap to read then tap to act, bigger targets, safe area, and an APK. See `docs/touch-and-android.md`.
+12. ~~**Deck building**~~ — done: thirty cards chosen before each run, with the balance re-measured around them. See `docs/deck-building.md`.
+13. ~~**Drag and feel**~~ — done: cards dragged onto their target, impacts that throw light, staggered deals, enemy entrances and screen fades.
 
 Content and balance are the work after that; the architecture above is meant not to change.
 

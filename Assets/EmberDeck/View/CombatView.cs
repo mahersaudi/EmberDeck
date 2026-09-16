@@ -31,6 +31,7 @@ namespace EmberDeck.View
         ShopView _shopView;
         EventView _eventView;
         MainMenuView _mainMenu;
+        DeckBuilderView _deckBuilder;
         SettingsView _settings;
         PauseMenuView _pause;
         EndOfRunView _endOfRun;
@@ -133,7 +134,18 @@ namespace EmberDeck.View
 
             _mainMenu = MainMenuView.Create(_root, backdrop);
             _mainMenu.ContinueChosen += () => BeginRun(resume: true);
-            _mainMenu.NewRunChosen += () => BeginRun(resume: false);
+            _mainMenu.NewRunChosen += OpenDeckBuilder;
+
+            // Every new run goes through the builder: the thirty cards it starts with are the run's
+            // first and largest decision, and there is no default worth taking it away for.
+            _deckBuilder = DeckBuilderView.Create(_root);
+            _deckBuilder.Cancelled += ShowMainMenu;
+            _deckBuilder.Confirmed += deck => Curtain.Wipe(() =>
+            {
+                _deckBuilder.Hide();
+                Profile.SetDeck(DeckBuilder.Ids(deck));
+                BeginRun(resume: false, deck);
+            });
             _mainMenu.SettingsChosen += () => OpenSettings(fromPause: false);
             _mainMenu.QuitChosen += () => Application.Quit();
 
@@ -144,7 +156,7 @@ namespace EmberDeck.View
             _pause.QuitChosen += () => Application.Quit();
 
             _endOfRun = EndOfRunView.Create(_root);
-            _endOfRun.NewRunChosen += () => BeginRun(resume: false);
+            _endOfRun.NewRunChosen += OpenDeckBuilder;
             _endOfRun.MainMenuChosen += ShowMainMenu;
 
             _settings = SettingsView.Create(_root);
@@ -158,7 +170,8 @@ namespace EmberDeck.View
                 if (_settingsFromPause) _pause.Show();
             };
 
-            Coach.Suspended = () => _mainMenu.IsOpen || _pause.IsOpen || _settings.IsOpen || _endOfRun.IsOpen;
+            Coach.Suspended = () => _mainMenu.IsOpen || _pause.IsOpen || _settings.IsOpen || _endOfRun.IsOpen
+                                    || _deckBuilder.IsOpen;
         }
 
         /// <summary>
@@ -169,6 +182,7 @@ namespace EmberDeck.View
 
         void ShowMainMenuNow()
         {
+            _deckBuilder.Hide();
             _pause.Hide();
             if (_settings.IsOpen) _settings.gameObject.SetActive(false);
             Tooltip.Hide();
@@ -228,6 +242,7 @@ namespace EmberDeck.View
         Transform NavScope()
         {
             if (_settings.IsOpen) return _settings.transform;
+            if (_deckBuilder.IsOpen) return _deckBuilder.transform;
             if (_pause.IsOpen) return _pause.transform;
             if (_mainMenu.IsOpen) return _mainMenu.transform;
             if (_endOfRun.IsOpen) return _endOfRun.transform;
@@ -524,8 +539,25 @@ namespace EmberDeck.View
 
         // ── Combat lifecycle ─────────────────────────────────────────────────────────
 
-        void BeginRun(bool resume)
+        /// <summary>The deck builder, opened on the last deck played so a second run is one tap from the first.</summary>
+        void OpenDeckBuilder()
         {
+            if (_config == null) return;
+            var profile = Profile.Data;
+            var unlocked = UnlockService.UnlockedIds(_config, profile.embers);
+
+            Curtain.Wipe(() =>
+            {
+                _mainMenu.Hide();
+                _endOfRun.Hide();
+                Coach.EndScreen();
+                _deckBuilder.Show(_config, unlocked, DeckBuilder.Resolve(_config, profile.deck, unlocked));
+            });
+        }
+
+        void BeginRun(bool resume, List<CardData> deck = null)
+        {
+            _deckBuilder.Hide();
             _mainMenu.Hide();
             _pause.Hide();
             _endOfRun.Hide();
@@ -550,7 +582,7 @@ namespace EmberDeck.View
                 int runSeed = _useRandomSeed ? Random.Range(int.MinValue, int.MaxValue) : _fixedSeed;
                 var profile = Profile.Data;
                 _run = RunState.Start(_config, runSeed, Mathf.Clamp(profile.difficulty, 0, profile.maxDifficulty),
-                                      UnlockService.UnlockedIds(_config, profile.embers));
+                                      UnlockService.UnlockedIds(_config, profile.embers), deck);
             }
 
             ShowMap();

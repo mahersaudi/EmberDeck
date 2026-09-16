@@ -19,6 +19,11 @@ namespace EmberDeck.Run
         public int maxDifficulty;
         /// <summary>The difficulty the next new run starts at.</summary>
         public int difficulty;
+        /// <summary>
+        /// Card ids of the last deck built, so the builder opens on the deck that was just played
+        /// rather than on an empty one. Cards no longer in the pool are dropped when it is read.
+        /// </summary>
+        public List<string> deck = new();
     }
 
     /// <summary>What one finished run added to the profile, for the end-of-run screen.</summary>
@@ -67,6 +72,13 @@ namespace EmberDeck.Run
         {
             _persist = false;
             _data = new ProfileData { embers = embers, maxDifficulty = maxDifficulty };
+        }
+
+        /// <summary>Remembers the deck a run was started with.</summary>
+        public static void SetDeck(List<string> ids)
+        {
+            Data.deck = ids ?? new List<string>();
+            Save();
         }
 
         public static void SetDifficulty(int level)
@@ -123,6 +135,7 @@ namespace EmberDeck.Run
             }
 
             _data ??= new ProfileData();
+            _data.deck ??= new List<string>();
             _data.embers = Mathf.Max(0, _data.embers);
             _data.maxDifficulty = Mathf.Clamp(_data.maxDifficulty, 0, DifficultyRules.Max);
             _data.difficulty = Mathf.Clamp(_data.difficulty, 0, _data.maxDifficulty);

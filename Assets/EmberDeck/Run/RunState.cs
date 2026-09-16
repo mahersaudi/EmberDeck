@@ -144,7 +144,13 @@ namespace EmberDeck.Run
             Hp = maxHp;
         }
 
-        public static RunState Start(RunConfig config, int seed, int difficulty = 0, IEnumerable<string> unlocked = null)
+        /// <summary>
+        /// A new run. <paramref name="deck"/> is the deck built before it started; without one the run
+        /// falls back to the config's starter deck, which is what the simulator's reference pass and any
+        /// one-off fight use.
+        /// </summary>
+        public static RunState Start(RunConfig config, int seed, int difficulty = 0, IEnumerable<string> unlocked = null,
+                                     IEnumerable<CardData> deck = null)
         {
             var run = new RunState(seed, DifficultyRules.StartingMaxHp(config, difficulty));
             run.Difficulty = difficulty;
@@ -153,12 +159,20 @@ namespace EmberDeck.Run
             run.Gold = config.StartingGold;
             foreach (var relic in config.Relics)
                 if (relic != null) run.Relics.Add(relic);
-            foreach (var entry in config.StarterDeck)
+            if (deck != null)
             {
-                if (entry?.Card == null) continue;
-                for (int i = 0; i < entry.Count; i++)
-                    run.Deck.Add(entry.Card);
+                foreach (var card in deck)
+                    if (card != null) run.Deck.Add(card);
             }
+
+            if (run.Deck.Count == 0)
+                foreach (var entry in config.StarterDeck)
+                {
+                    if (entry?.Card == null) continue;
+                    for (int i = 0; i < entry.Count; i++)
+                        run.Deck.Add(entry.Card);
+                }
+
             return run;
         }
 
