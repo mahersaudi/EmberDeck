@@ -75,13 +75,12 @@ values keep that promise.
 - **The act has no relic of its own** and no cards that belong to it: its rewards are the same pools
   as Act 2's.
 
-## Where the art stands
+## The art
 
-The act's portraits are rendered a few at a time: the checkpoint is 6.5 GB, the machine's ComfyUI is
-shared with other work, and each image takes a few minutes. Rendered so far: the Cinder Revenant,
-the Molten Maw, the Ash Priest. Still to paint: the Emberfly, the Slag Titan, the Living Flame, the
-Emberheart — and the act's four backgrounds (`bg_hallway_3`, `bg_elite_3`, `bg_boss_3`, `bg_map_3`).
+All seven portraits and the act's four backgrounds are painted, in the "heart" palette — white-hot
+and gold, and nothing violet, so no Act 3 creature reads as an Act 2 one. The Living Flame came back
+as a white-gold armoured figure rather than a body made only of fire; it reads as its own thing and
+was kept. The Emberheart is a burning heart held in black iron, which is the act's name made literal.
 
-Resume with the commands in `docs/art-pipeline.md`: both generators skip what already exists, so
-picking up where this left off is one command and no wasted work. An enemy with no painting draws as
-its tinted placeholder, which is what that fallback is for, and the act is fully playable now.
+The batch was rendered over two sessions on a ComfyUI shared with other work. Both generators skip
+what already exists, so the second session painted only what the first had not reached.

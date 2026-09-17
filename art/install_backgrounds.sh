@@ -15,7 +15,8 @@ command -v ffmpeg >/dev/null || { echo "ffmpeg not found" >&2; exit 1; }
 mkdir -p "$DEST"
 
 count=0
-NAMES=(bg_hallway bg_elite bg_boss bg_map bg_hallway_2 bg_elite_2 bg_boss_2 bg_map_2)
+NAMES=(bg_hallway bg_elite bg_boss bg_map bg_hallway_2 bg_elite_2 bg_boss_2 bg_map_2
+       bg_hallway_3 bg_elite_3 bg_boss_3 bg_map_3)
 for name in "${NAMES[@]}"; do
   if [ ! -f "$SRC/$name.png" ]; then
     echo "[bg] $name.png not rendered yet" >&2

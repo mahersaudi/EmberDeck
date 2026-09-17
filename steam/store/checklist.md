@@ -14,7 +14,7 @@ What Steam asks for, what exists, and what only the owner of the game can do. An
 | ✓ | Store copy, Arabic | `steam/store/page-ar.md` |
 | ✓ | Screenshots, 8 at 1920×1080 | `steam/store/screenshots/` |
 | ✓ | Content survey answers, including the AI disclosure | in `page-en.md` |
-| | Capsule art — 6 sizes | sizes in `steam/README.md`; not produced |
+| ✓ | Capsule art — 6 sizes and the library logo | `steam/store/capsules/`, first pass (see below) |
 | | Trailer | needs footage of a real run |
 | **you** | Age rating questionnaires (only needed for some territories) | not started |
 
@@ -45,3 +45,15 @@ not the build.
   is a separate account, a separate fee, an app-bundle build and a privacy declaration.
 - **The name.** "EmberDeck" is not checked against the trademark register or against Steam's
   existing catalogue.
+
+## About the capsules
+
+`art/generate_capsules.py` paints each size from the game's own checkpoint and style, then sets the
+title as type, because a diffusion model cannot spell. They are a first pass, and two things about
+them should not survive to launch:
+
+- **The face is DejaVu Sans**, the game's Latin fallback — a user-interface face, not a display one.
+  A designer choosing a title face is the single largest improvement available to the store page.
+- **The main capsule's cards are ordinary playing cards**, spades and all. The prompt asked for cards
+  of ember and ash; the model painted the cards it knows. Re-rolling the seed or naming what the cards
+  are not is a five-minute fix.

@@ -91,5 +91,5 @@ Steamworks asks, and these are the answers for this build:
 
 - **A trailer.** Steam wants one, and it needs real footage of a run — not something that can be
   assembled from screenshots.
-- **The capsule art.** Sizes are in `steam/README.md`; the game's own art can be re-composed for
-  them, but the title has to be set as type, not generated.
+- **Final capsule art.** A first pass is in `steam/store/capsules/`; see the checklist for what is
+  wrong with it.
