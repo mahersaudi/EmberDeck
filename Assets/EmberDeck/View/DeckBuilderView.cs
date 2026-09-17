@@ -86,6 +86,13 @@ namespace EmberDeck.View
             UiFactory.Place(_hint.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
                             new Vector2(0f, -120f), new Vector2(1400f, 30f));
 
+            // The copy limits, stated once and always visible. They used to exist only as "max 2" on each
+            // tile, so a player who wanted four of something found out by the tap doing nothing.
+            var limits = UiFactory.Label(root, "Limits", DeckBuilder.LimitsText, 18, Palette.Energy);
+            UiFactory.Place(limits.rectTransform, new Vector2(1f, 1f), new Vector2(1f, 1f),
+                            new Vector2(-40f, -96f), new Vector2(ListWidth + 200f, 26f));
+            limits.alignment = Loc.IsRtl ? TextAnchor.MiddleLeft : TextAnchor.MiddleRight;
+
             // Back and Suggested on one side, Start on the other: the button that ends the screen is
             // never next to the button that empties it.
             var back = UiFactory.TextButton(root, "DeckBack", "Back", Palette.PanelRaised, Palette.Ink, 24);
@@ -94,16 +101,13 @@ namespace EmberDeck.View
             back.onClick.AddListener(() => Cancelled?.Invoke());
             NavHint.On(back).Cancel = true;
 
-            var suggested = UiFactory.TextButton(root, "DeckSuggested", "Suggested", Palette.PanelRaised, Palette.Ink, 24);
-            UiFactory.Place((RectTransform)suggested.transform, new Vector2(0f, 1f), new Vector2(0f, 1f),
+            // Ready-made decks and the player's saved ones live behind one button: a new player looking for
+            // "a deck that works" and a returning one looking for "the deck I made" want the same thing.
+            var decks = UiFactory.TextButton(root, "DeckDecks", "Decks", Palette.PanelRaised, Palette.Ink, 24);
+            UiFactory.Place((RectTransform)decks.transform, new Vector2(0f, 1f), new Vector2(0f, 1f),
                             new Vector2(200f, -30f), new Vector2(210f, 58f));
-            _suggestedRect = (RectTransform)suggested.transform;
-            suggested.onClick.AddListener(() =>
-            {
-                _deck.Clear();
-                _deck.AddRange(DeckBuilder.Suggested(_config, _unlocked));
-                Refresh();
-            });
+            _suggestedRect = (RectTransform)decks.transform;
+            decks.onClick.AddListener(OpenDecks);
 
             var clear = UiFactory.TextButton(root, "DeckClear", "Clear", Palette.PanelDark, Palette.InkMuted, 24);
             UiFactory.Place((RectTransform)clear.transform, new Vector2(0f, 1f), new Vector2(0f, 1f),
@@ -251,7 +255,7 @@ namespace EmberDeck.View
             // beside Start it covered the deck list and the summary the tip is telling them to read.
             Coach.Show("deck", "Build your deck",
                        "Thirty cards, from everything you have unlocked. A rarer card is limited to fewer copies — "
-                       + "the limit is on every card. Suggested builds a deck that works, and you can change any of it.",
+                       + "the limit is on every card. Decks has ready-made decks that work, and you can change any of them.",
                        () => new[] { _suggestedRect }, Coach.Side.Below);
         }
 
@@ -259,6 +263,132 @@ namespace EmberDeck.View
         {
             Tooltip.Hide();
             gameObject.SetActive(false);
+        }
+
+        RectTransform _decksPanel;
+
+        /// <summary>
+        /// The decks panel: Suggested, the four presets, and three save slots. Built each time it opens —
+        /// what a slot holds changes, and nine rows cost nothing to rebuild.
+        /// </summary>
+        void OpenDecks()
+        {
+            if (_decksPanel != null) Destroy(_decksPanel.gameObject);
+
+            var shade = UiFactory.Panel(transform, "DecksShade", new Color(0f, 0f, 0f, 0.72f));
+            UiFactory.Stretch(shade);
+            _decksPanel = shade;
+
+            var panel = UiFactory.Panel(shade, "DecksPanel", Palette.PanelDark);
+            UiFactory.Place(panel, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(1100f, 900f));
+            UiFactory.Frame(panel.GetComponent<Image>(), "frame_panel", 4f);
+
+            var title = UiFactory.Label(panel, "Title", "DECKS", 36, Palette.Energy);
+            UiFactory.Place(title.rectTransform, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, -24f),
+                            new Vector2(900f, 48f));
+
+            float y = -96f;
+            AddDeckRow(panel, ref y, "Suggested", "A plain deck of commons that works. Change anything.",
+                       () => DeckBuilder.Suggested(_config, _unlocked), "Use", null);
+            foreach (var preset in DeckBuilder.Presets)
+            {
+                var captured = preset;
+                AddDeckRow(panel, ref y, preset.Name, preset.Description,
+                           () => DeckBuilder.Build(captured, _config, _unlocked), "Use", null);
+            }
+
+            y -= 14f;
+            var saved = UiFactory.Label(panel, "SavedTitle", "YOUR SAVED DECKS", 22, Palette.InkMuted, TextAnchor.MiddleLeft);
+            UiFactory.Place(saved.rectTransform, new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(40f, y),
+                            new Vector2(600f, 32f));
+            y -= 44f;
+
+            for (int slot = 0; slot < Profile.DeckSlots; slot++)
+            {
+                int captured = slot;
+                var ids = Profile.SavedDeck(slot);
+                var cards = DeckBuilder.Resolve(_config, ids, _unlocked);
+                string description = cards.Count == 0 ? "Empty" : DescribeDeck(cards);
+                AddDeckRow(panel, ref y, $"Slot {slot + 1}", description,
+                           cards.Count == 0 ? null : () => DeckBuilder.Resolve(_config, Profile.SavedDeck(captured), _unlocked),
+                           "Load", () =>
+                           {
+                               Profile.SaveDeck(captured, DeckBuilder.Ids(_deck));
+                               AudioDirector.Play(Sfx.Upgrade, 0.8f);
+                               OpenDecks();
+                           });
+            }
+
+            var close = UiFactory.TextButton(panel, "DecksClose", "Close", Palette.PanelRaised, Palette.Ink, 24);
+            UiFactory.Place((RectTransform)close.transform, new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
+                            new Vector2(0f, 28f), new Vector2(200f, 58f));
+            close.onClick.AddListener(CloseDecks);
+            NavHint.On(close).Cancel = true;
+        }
+
+        void CloseDecks()
+        {
+            if (_decksPanel == null) return;
+            Destroy(_decksPanel.gameObject);
+            _decksPanel = null;
+        }
+
+        /// <summary>The panel is open, for the harness and for Back.</summary>
+        public bool DecksOpen => _decksPanel != null;
+
+        /// <summary>One row: a name, a line, a button that replaces the deck, and — for a save slot — Save.</summary>
+        void AddDeckRow(RectTransform panel, ref float y, string name, string description,
+                        Func<List<CardData>> deck, string useLabel, Action save)
+        {
+            var row = UiFactory.Panel(panel, $"Row_{name}", Palette.PanelRaised);
+            UiFactory.Place(row, new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0f, y), new Vector2(1020f, 70f));
+
+            var label = UiFactory.Label(row, "Name", name, 26, Palette.Ink, TextAnchor.MiddleLeft);
+            UiFactory.Place(label.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(20f, 12f),
+                            new Vector2(260f, 34f));
+            var text = UiFactory.Label(row, "Description", description, 18, Palette.InkMuted, TextAnchor.MiddleLeft);
+            UiFactory.Place(text.rectTransform, new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(20f, -18f),
+                            new Vector2(700f, 30f));
+
+            float right = -16f;
+            if (save != null)
+            {
+                var saveButton = UiFactory.TextButton(row, "Save", "Save", Palette.PanelDark, Palette.Ink, 20);
+                UiFactory.Place((RectTransform)saveButton.transform, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f),
+                                new Vector2(right, 0f), new Vector2(120f, 52f));
+                saveButton.onClick.AddListener(() => save());
+                right -= 132f;
+            }
+
+            if (deck != null)
+            {
+                var use = UiFactory.TextButton(row, useLabel, useLabel, Palette.Energy, Palette.Background, 22);
+                UiFactory.Place((RectTransform)use.transform, new Vector2(1f, 0.5f), new Vector2(1f, 0.5f),
+                                new Vector2(right, 0f), new Vector2(120f, 52f));
+                use.onClick.AddListener(() =>
+                {
+                    _deck.Clear();
+                    _deck.AddRange(deck());
+                    CloseDecks();
+                    BuildTiles();
+                    Refresh();
+                });
+            }
+
+            // 78 a row: at 88 the third save slot sat under the Close button.
+            y -= 78f;
+        }
+
+        static string DescribeDeck(List<CardData> deck)
+        {
+            int attacks = 0, skills = 0, powers = 0;
+            foreach (var card in deck)
+            {
+                if (card.Type == CardType.Attack) attacks++;
+                else if (card.Type == CardType.Power) powers++;
+                else skills++;
+            }
+            return $"{deck.Count} cards    Attacks {attacks}    Skills {skills}    Powers {powers}";
         }
 
         void Confirm()
@@ -398,6 +528,17 @@ namespace EmberDeck.View
             if (!DeckBuilder.CanAdd(_deck, card))
             {
                 AudioDirector.Play(Sfx.Click, 0.5f);
+                // Say which rule refused it, over the tile that was tapped.
+                var tile = _tiles.Find(t => t.Card == card).Root;
+                if (tile != null)
+                {
+                    string why = _deck.Count >= DeckBuilder.DeckSize
+                        ? "The deck is full"
+                        : DeckBuilder.MaxCopies(card) == 1 ? "Only 1 copy of a rare" : $"Only {DeckBuilder.MaxCopies(card)} copies allowed";
+                    Motion.FloatText((RectTransform)transform, Motion.PointIn((RectTransform)transform, tile), why,
+                                     Palette.IntentAttack, 24, 0f, 40f);
+                    Motion.Shake(tile, 6f, 0.2f);
+                }
                 return;
             }
 
@@ -455,6 +596,34 @@ namespace EmberDeck.View
 
 #if DEVELOPMENT_BUILD || UNITY_EDITOR || EMBERDECK_CAPTURE
         /// <summary>Capture-harness only: the deck in one line.</summary>
+        public void DebugOpenDecks() => OpenDecks();
+
+        /// <summary>Capture-harness only: uses a ready-made deck by index, as its Use button would.</summary>
+        public string DebugUsePreset(int index)
+        {
+            var preset = DeckBuilder.Presets[index];
+            _deck.Clear();
+            _deck.AddRange(DeckBuilder.Build(preset, _config, _unlocked));
+            CloseDecks();
+            BuildTiles();
+            Refresh();
+            return $"{preset.Name}: {_deck.Count} cards, legal={DeckBuilder.IsLegal(_deck)}";
+        }
+
+        /// <summary>Capture-harness only: saves the deck into a slot and reads it back.</summary>
+        public string DebugSaveAndReload(int slot)
+        {
+            Profile.SaveDeck(slot, DeckBuilder.Ids(_deck));
+            var back = DeckBuilder.Resolve(_config, Profile.SavedDeck(slot), _unlocked);
+            return $"slot {slot + 1}: saved {_deck.Count}, read back {back.Count}, same={DeckBuilder.Ids(back).Count == _deck.Count}";
+        }
+
+        /// <summary>Capture-harness only: tries to add a card the deck has no room for, to show the refusal.</summary>
+        public void DebugRefuseAdd()
+        {
+            if (_pool.Count > 0) Add(_pool[0]);
+        }
+
         public string DebugSummary() =>
             $"{_deck.Count}/{DeckBuilder.DeckSize} cards, {_pool.Count} in the pool, legal={DeckBuilder.IsLegal(_deck)}";
 

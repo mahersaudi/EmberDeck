@@ -1244,3 +1244,61 @@ Cataclysm
 = كارثة
 Reforge
 = إعادة صهر
+
+# ── Ready-made and saved decks ──────────────────────────────────────────────────
+Decks
+= مجموعات
+DECKS
+= المجموعات
+YOUR SAVED DECKS
+= مجموعاتك المحفوظة
+Use
+= استخدم
+Load
+= حمّل
+Save
+= احفظ
+Close
+= إغلاق
+Empty
+= فارغ
+Slot {0}
+= خانة {0}
+Pyre
+= المحرقة
+Anvil
+= السندان
+Sparks
+= الشرر
+Overdrive
+= فرط الحرارة
+A plain deck of commons that works. Change anything.
+= مجموعة بسيطة من البطاقات العادية تعمل. غيّر ما تشاء.
+Set everything on fire and outlast it.
+= أشعل النار في كل شيء واصمد أكثر منه.
+Burn ignores Block and ticks every turn.
+= الحرق يتجاهل الدرع ويؤذي كل دور.
+Block everything, then hit back hard.
+= اصدّ كل شيء، ثم رد الضربة بقوة.
+Slow, and very hard to kill.
+= بطيئة، وصعب جدًا قتلها.
+Many cheap attacks a turn.
+= هجمات رخيصة كثيرة في الدور.
+Strength makes every one of them count.
+= والقوة تجعل كل واحدة منها مؤثرة.
+Build Heat on purpose, then spend it all at once.
+= ارفع الحرارة عمدًا، ثم أنفقها كلها دفعة واحدة.
+The hardest of the four to play.
+= الأصعب في اللعب بين الأربع.
+{0} cards    Attacks {1}    Skills {2}    Powers {3}
+= {0} بطاقة    هجمات {1}    مهارات {2}    قدرات {3}
+Copies allowed: starter cards 6, commons and uncommons 2, rares 1.
+= النسخ المسموحة: البطاقات الأساسية 6، العادية وغير الشائعة 2، النادرة 1.
+The deck is full
+= المجموعة ممتلئة
+Only 1 copy of a rare
+= نسخة واحدة فقط من النادرة
+Only {0} copies allowed
+= مسموح {0} نسخ فقط
+Decks has ready-made decks that work, and you can change any of them.
+= في «مجموعات» مجموعات جاهزة تعمل، وتقدر تغير أي شيء فيها.

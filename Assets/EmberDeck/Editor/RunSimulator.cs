@@ -56,7 +56,17 @@ namespace EmberDeck.EditorTools
         /// deck the screen opens on, and a legal deck thrown together at random.
         /// Starter is the old ten-card deck, kept as the reference every earlier number was measured at.
         /// </summary>
-        enum DeckMode { Suggested, Random, Starter, Best }
+        enum DeckMode { Suggested, Random, Starter, Best, Pyre, Anvil, Sparks, Overdrive }
+
+        /// <summary>The ready-made deck a mode stands for, or null. Order matches DeckBuilder.Presets.</summary>
+        static DeckBuilder.Preset PresetFor(DeckMode mode) => mode switch
+        {
+            DeckMode.Pyre      => DeckBuilder.Presets[0],
+            DeckMode.Anvil     => DeckBuilder.Presets[1],
+            DeckMode.Sparks    => DeckBuilder.Presets[2],
+            DeckMode.Overdrive => DeckBuilder.Presets[3],
+            _                  => null,
+        };
 
         sealed class Result
         {
@@ -125,6 +135,11 @@ namespace EmberDeck.EditorTools
                 ("[base game: suggested 30-card deck, normal difficulty]", null, 0, DeckMode.Suggested, 1),
                 ("[base game: the best 30-card deck the rules allow, normal difficulty]", null, 0, DeckMode.Best, 1),
                 ("[base game: random 30-card deck, normal difficulty]", null, 0, DeckMode.Random, 1),
+                // Every ready-made deck has to be a real way into the game, not a trap with a name on it.
+                ("[base game: the Pyre deck, normal difficulty]", null, 0, DeckMode.Pyre, 1),
+                ("[base game: the Anvil deck, normal difficulty]", null, 0, DeckMode.Anvil, 1),
+                ("[base game: the Sparks deck, normal difficulty]", null, 0, DeckMode.Sparks, 1),
+                ("[base game: the Overdrive deck, normal difficulty]", null, 0, DeckMode.Overdrive, 1),
                 ("[base game: old 10-card starter deck, normal difficulty — the reference]", null, 0, DeckMode.Starter, 1),
                 ("[everything unlocked, suggested 30-card deck, normal difficulty]", config.AllUnlockIds(), 0, DeckMode.Suggested, 1),
                 ("[act 2 alone: a deck that won Act 1, arriving at full health]", null, 0, DeckMode.Suggested, 2),
@@ -229,7 +244,8 @@ namespace EmberDeck.EditorTools
                 DeckMode.Suggested => DeckBuilder.Suggested(config, unlocked),
                 DeckMode.Random    => DeckBuilder.Randomised(config, unlocked, new DeterministicRng(seed ^ 0x2B7E15)),
                 DeckMode.Best      => DeckBuilder.Best(config, unlocked),
-                _                  => null,
+                DeckMode.Starter   => null,
+                _                  => DeckBuilder.Build(PresetFor(deckMode), config, unlocked),
             };
             var run = RunState.Start(config, seed, difficulty, unlocked, deck);
             if (startAct > 1) StartAtAct(run, config, startAct);

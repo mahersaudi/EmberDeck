@@ -24,6 +24,15 @@ namespace EmberDeck.Run
         /// rather than on an empty one. Cards no longer in the pool are dropped when it is read.
         /// </summary>
         public List<string> deck = new();
+        /// <summary>Three slots the player can save a deck into and load it back from.</summary>
+        public List<SavedDeck> savedDecks = new();
+    }
+
+    /// <summary>One saved deck. A class rather than a nested list because JsonUtility cannot serialise those.</summary>
+    [Serializable]
+    public sealed class SavedDeck
+    {
+        public List<string> cards = new();
     }
 
     /// <summary>What one finished run added to the profile, for the end-of-run screen.</summary>
@@ -78,6 +87,24 @@ namespace EmberDeck.Run
         public static void SetDeck(List<string> ids)
         {
             Data.deck = ids ?? new List<string>();
+            Save();
+        }
+
+        public const int DeckSlots = 3;
+
+        /// <summary>The card ids in a slot, or an empty list if nothing has been saved there.</summary>
+        public static List<string> SavedDeck(int slot)
+        {
+            var decks = Data.savedDecks;
+            return slot >= 0 && slot < decks.Count && decks[slot]?.cards != null ? decks[slot].cards : new List<string>();
+        }
+
+        public static void SaveDeck(int slot, List<string> ids)
+        {
+            if (slot < 0 || slot >= DeckSlots) return;
+            var decks = Data.savedDecks;
+            while (decks.Count <= slot) decks.Add(new SavedDeck());
+            decks[slot] = new SavedDeck { cards = new List<string>(ids ?? new List<string>()) };
             Save();
         }
 
@@ -136,6 +163,7 @@ namespace EmberDeck.Run
 
             _data ??= new ProfileData();
             _data.deck ??= new List<string>();
+            _data.savedDecks ??= new List<SavedDeck>();
             _data.embers = Mathf.Max(0, _data.embers);
             _data.maxDifficulty = Mathf.Clamp(_data.maxDifficulty, 0, DifficultyRules.Max);
             _data.difficulty = Mathf.Clamp(_data.difficulty, 0, _data.maxDifficulty);

@@ -147,6 +147,26 @@ namespace EmberDeck.View
                     yield return new WaitForSeconds(0.3f);
                     yield return Capture("00g-deck-builder-clean.png");
 
+                    // A full deck refuses another card, and says why over the tile.
+                    builder.DebugRefuseAdd();
+                    yield return new WaitForSeconds(0.15f);
+                    yield return Capture("00h-deck-refused.png");
+                    yield return new WaitForSeconds(0.9f);
+
+                    // The decks panel, a ready-made deck, and a save slot round trip.
+                    builder.DebugOpenDecks();
+                    yield return new WaitForSeconds(0.3f);
+                    yield return Capture("00i-decks-panel.png");
+                    Debug.Log($"[AutoCapture] preset: {builder.DebugUsePreset(0)}");
+                    yield return new WaitForSeconds(0.3f);
+                    yield return Capture("00j-deck-pyre.png");
+                    Debug.Log($"[AutoCapture] save: {builder.DebugSaveAndReload(0)}");
+                    builder.DebugOpenDecks();
+                    yield return new WaitForSeconds(0.3f);
+                    yield return Capture("00k-decks-saved.png");
+                    Click(FindButton("DecksClose"));
+                    yield return new WaitForSeconds(0.3f);
+
                     Click(FindButton("DeckStart"));
                     yield return new WaitForSeconds(0.4f);
                 }

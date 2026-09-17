@@ -22,6 +22,114 @@ namespace EmberDeck.Run
     {
         public const int DeckSize = 30;
 
+        /// <summary>A deck someone designed, offered whole: a way into the builder that is not a blank page.</summary>
+        public sealed class Preset
+        {
+            public string Id;
+            public string Name;
+            public string Description;
+            public (string Card, int Count)[] Cards;
+        }
+
+        /// <summary>
+        /// Four ready-made decks, one per way this game can be played, built only from cards every new
+        /// profile has — nothing here waits on an unlock.
+        ///
+        /// They exist because a deck thrown together without reading the cards loses every simulated
+        /// run, and the Suggested deck, which wins, teaches nothing about why. A preset has a name and a
+        /// sentence that says what it does, so a new player learns an archetype by playing one.
+        /// Each adds up to exactly thirty and respects the copy limits; if a card is ever renamed or
+        /// removed, Build fills the gap from the Suggested deck rather than leaving it short.
+        /// </summary>
+        public static readonly Preset[] Presets =
+        {
+            new()
+            {
+                Id = "pyre", Name = "Pyre",
+                Description = "Set everything on fire and outlast it. Burn ignores Block and ticks every turn.",
+                Cards = WithBackbone(("ember_lash", 4), ("scorch", 2), ("kindle", 2), ("fan_the_flames", 2),
+                                     ("smoulder", 2), ("immolate", 2), ("backdraft", 2)),
+            },
+            new()
+            {
+                Id = "anvil", Name = "Anvil",
+                Description = "Block everything, then hit back hard. Slow, and very hard to kill.",
+                Cards = WithBackbone(("strike", 2), ("anvil_strike", 2), ("reinforce", 2), ("counterweight", 2),
+                                     ("ash_armor", 2), ("heat_sink", 2), ("twin_fangs", 2), ("temper", 1),
+                                     ("ironhide", 1)),
+            },
+            new()
+            {
+                Id = "sparks", Name = "Sparks",
+                Description = "Many cheap attacks a turn. Strength makes every one of them count.",
+                // Rain of Sparks is out: with it this deck won 16-23% of simulated runs, three times the
+                // Suggested deck, and a starting preset that good is the only deck anyone would pick.
+                Cards = WithBackbone(("quick_jab", 2), ("twin_fangs", 2), ("flurry", 2), ("salvage", 2),
+                                     ("frenzy", 2), ("whetstone", 1), ("ember_lash", 2), ("scorch", 2),
+                                     ("cinder_storm", 1)),
+            },
+            new()
+            {
+                Id = "overdrive", Name = "Overdrive",
+                Description = "Build Heat on purpose, then spend it all at once. The hardest of the four to play.",
+                // The simulated player cannot play this deck and the numbers say so (under 5% of runs clear Act
+                // 1): its policy only makes Heat when nothing else is worth playing, so every card here that
+                // spends Heat finds none to spend. A person plays it the other way round, which is the whole
+                // archetype. It is kept, and its description warns that it is the hardest of the four.
+                // Heat made and Heat spent in balance, and two Thermal Mass to raise the ceiling. Tried both
+                // ways first: with too many cards that add Heat it cleared Act 1 in 10% of simulated runs,
+                // burning itself down; with too few, every card that spends Heat spent nothing, and it cleared
+                // Act 1 in none.
+                Cards = WithBackbone(("stoke", 3), ("bellows", 2), ("heat_sink", 2), ("flare", 2), ("detonate", 2),
+                                     ("vent", 2), ("thermal_mass", 2), ("strike", 1)),
+            },
+        };
+
+        /// <summary>
+        /// Fourteen cards every preset shares: two each of Strike, Guard, Second Wind, Bulwark, Brace, Focus and
+        /// Cremate. The first presets were pure archetypes and every one of them lost to the Suggested deck —
+        /// Overdrive cleared Act 1 in 6% of simulated runs against Suggested's 33% — because a deck built only
+        /// around its idea has no Block and nothing to draw with. The backbone is what the archetype stands on.
+        /// </summary>
+        static (string, int)[] WithBackbone(params (string, int)[] core)
+        {
+            var cards = new List<(string, int)>
+            {
+                ("strike", 2), ("guard", 2), ("second_wind", 2), ("bulwark", 2), ("brace", 2), ("focus", 2), ("cremate", 2),
+            };
+            foreach (var (id, count) in core)
+            {
+                int existing = cards.FindIndex(c => c.Item1 == id);
+                if (existing >= 0) cards[existing] = (id, cards[existing].Item2 + count);
+                else cards.Add((id, count));
+            }
+            return cards.ToArray();
+        }
+
+        /// <summary>A preset as cards. Always legal: anything missing from the pool is made up from Suggested.</summary>
+        public static List<CardData> Build(Preset preset, RunConfig config, ICollection<string> unlocked)
+        {
+            var deck = new List<CardData>();
+            if (preset == null || config == null) return deck;
+
+            var pool = Pool(config, unlocked);
+            foreach (var (id, count) in preset.Cards)
+            {
+                var card = pool.Find(c => c.Id == id);
+                for (int i = 0; i < count && card != null && CanAdd(deck, card); i++) deck.Add(card);
+            }
+
+            foreach (var card in Suggested(config, unlocked))
+            {
+                if (deck.Count >= DeckSize) break;
+                if (CanAdd(deck, card)) deck.Add(card);
+            }
+            return deck;
+        }
+
+        /// <summary>The copy limits as one line, for the screen that enforces them.</summary>
+        public const string LimitsText = "Copies allowed: starter cards 6, commons and uncommons 2, rares 1.";
+
         /// <summary>
         /// How many copies of one card a deck may hold: the rarer it is, the fewer.
         ///

@@ -19,6 +19,36 @@ on a screen that opens when New Run is pressed.
 All of this lives in `DeckBuilder`, not in the screen, because the balance simulator builds decks
 too — under the same rules, or the measurement is of a game nobody plays.
 
+## Ready-made and saved decks
+
+**Decks** opens a panel with the Suggested deck, four ready-made ones and three save slots. The
+ready-made decks are for the player who does not yet know what a good deck looks like — a deck
+thrown together without reading loses every simulated run — and each has a name and one sentence,
+so playing one teaches an archetype.
+
+| deck | the idea | run win% | Act 1 boss% |
+|---|---|---|---|
+| Suggested | plain commons, attacks and skills alternated | 3.7 – 6.0 | 31 – 36 |
+| **Pyre** | Burn, which ignores Block | 5.0 – 11.0 | 30 – 37 |
+| **Anvil** | Block, then hit back | 5.3 – 9.0 | 39 – 51 |
+| **Sparks** | many cheap attacks, with Strength | 2.0 – 7.7 | 32 – 38 |
+| **Overdrive** | build Heat, spend it at once | 0.0 – 0.3 | 4 – 5 |
+
+Every ready-made deck shares a fourteen-card backbone (two each of Strike, Guard, Second Wind,
+Bulwark, Brace, Focus and Cremate). The first versions were pure archetypes and all four lost to the
+Suggested deck, because a deck built only around its idea has no Block and nothing to draw with.
+Sparks lost Rain of Sparks after it won 16–23% of runs — a preset that good is the only deck anyone
+would pick.
+
+**Overdrive's number is the bot's, not the deck's.** The simulated player only makes Heat when
+nothing else is worth playing, so every card in this deck that spends Heat finds none. A person plays
+it the other way round, which is the archetype. It is kept, and its description says it is the
+hardest of the four; if playtesters confirm it is unplayable too, it gets reworked.
+
+Saved decks are three slots in `profile.json`; a card that is locked again drops out when a slot is
+read. The copy limits are now stated in one line at the top of the screen, and a tap that cannot add
+a card says why over the tile ("Only 1 copy of a rare", "The deck is full").
+
 ## The screen
 
 The pool is drawn as tiles, not as full cards. Sixty cards at card size is four screens of
@@ -98,5 +128,3 @@ that can be compared between builds.
 - **No search or sort order** on the pool: it filters by type and by what is in the deck, and within
   that it is ordered attacks, then skills, then powers, each by cost. With sixty-three cards that is
   readable; at two hundred it will want a search box.
-- **The copy limits are not explained anywhere but on the cards.** A player who wants four of
-  something has to work out from the tile that they cannot have it.
