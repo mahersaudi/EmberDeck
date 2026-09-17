@@ -62,6 +62,7 @@ namespace EmberDeck.View
             bus.Subscribe<TurnStartedEvent>(OnTurnStarted);
             bus.Subscribe<CombatEndedEvent>(OnCombatEnded);
             bus.Subscribe<PotionUsedEvent>(OnPotion);
+            bus.Subscribe<HeartFireEvent>(OnHeartFire);
         }
 
         void NewFrameCheck()
@@ -194,6 +195,17 @@ namespace EmberDeck.View
             if (!e.IsPlayerTurn) return;
             // After the enemy turn's staggered hits, not on top of them.
             Motion.After(NextDelay() + 0.15f, () => AudioDirector.Play(Sfx.TurnStart, 0.8f));
+        }
+
+        /// <summary>The Emberheart paid out: said over the player, after the turn's other news.</summary>
+        void OnHeartFire(HeartFireEvent e)
+        {
+            var anchor = _anchorFor(_state.Player);
+            if (anchor == null) return;
+            float delay = NextDelay() + 0.2f;
+            Motion.FloatText(_layer, PointAbove(anchor, 175f), $"+{e.Energy} Energy", Palette.Energy, 34, delay, rise: 46f);
+            Fx.Flare(_layer, Motion.PointIn(_layer, anchor), new Color(1f, 0.78f, 0.3f, 0.7f), 260f, delay);
+            Motion.After(delay, () => AudioDirector.Play(Sfx.Heat, 0.9f, 1.2f, 0f));
         }
 
         void OnPotion(PotionUsedEvent e)

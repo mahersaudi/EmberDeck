@@ -16,6 +16,7 @@ MonoBehaviour:
   DisplayName: Counterweight
   Type: 0
   Rarity: 2
+  MinAct: 1
   Cost: 2
   Target: 1
   Exhaust: 0

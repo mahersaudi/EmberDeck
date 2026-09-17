@@ -16,6 +16,7 @@ MonoBehaviour:
   DisplayName: Ember Lash
   Type: 0
   Rarity: 0
+  MinAct: 1
   Cost: 1
   Target: 1
   Exhaust: 0

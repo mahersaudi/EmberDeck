@@ -53,6 +53,14 @@ namespace EmberDeck.Combat
             State.Energy = State.EnergyPerTurn;
             State.CardsPlayedThisTurn = 0;
 
+            // The Heart's Fire. Checked after last turn's Overheat has already cost its HP, so the
+            // trade is the whole of it: burn at the end of one turn, act harder at the start of the next.
+            if (State.OverheatFeeds && State.Heat > State.OverheatThreshold)
+            {
+                State.Energy += 1;
+                State.Bus.Publish(new HeartFireEvent { Energy = 1 });
+            }
+
             DrawCards(State.CardsPerTurn);
 
             State.Bus.Publish(new TurnStartedEvent { IsPlayerTurn = true, TurnNumber = State.TurnNumber });

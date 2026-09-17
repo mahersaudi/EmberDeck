@@ -16,6 +16,7 @@ MonoBehaviour:
   DisplayName: Vent+
   Type: 1
   Rarity: 1
+  MinAct: 1
   Cost: 1
   Target: 0
   Exhaust: 0

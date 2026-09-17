@@ -425,6 +425,9 @@ CARDS = [
     ("cinder_trance", "spiral", "ashfall"),
     ("second_forge", "ring:anvil", "neutral"),
     ("last_ember", "greatsword", "neutral"),
+    # Found only in the Emberheart (Act 3).
+    ("heartfire", "heart", "overdrive"),
+    ("molten_core", "meltdown", "overdrive"),
 
     # Unlocked between runs
     ("crucible", "shield_layered", "forge"),

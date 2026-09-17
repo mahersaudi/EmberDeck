@@ -1302,3 +1302,33 @@ Only {0} copies allowed
 = مسموح {0} نسخ فقط
 Decks has ready-made decks that work, and you can change any of them.
 = في «مجموعات» مجموعات جاهزة تعمل، وتقدر تغير أي شيء فيها.
+
+# ── The Heart's Fire ────────────────────────────────────────────────────────────
+The Heart's Fire
+= نار القلب
+Down here the fire feeds you.
+= هنا في الأسفل تغذّيك النار.
+Start a turn overheated and you gain 1 extra Energy — but the Heat still burns you at the end of every turn.
+= ابدأ دورك وأنت فوق حد الحرارة وتكسب طاقة إضافية واحدة، لكن الحرارة تبقى تحرقك في نهاية كل دور.
+The enemies will heat you whether you want it or not.
+= والأعداء سيرفعون حرارتك شئت أم أبيت.
+The last act, and the source of the fire.
+= الفصل الأخير، ومنبع النار.
+Its enemies heat you, and here being overheated at the start of a turn gives you 1 extra Energy.
+= أعداؤه يرفعون حرارتك، وهنا بدء الدور فوق حد الحرارة يعطيك طاقة إضافية واحدة.
+The Emberheart waits at the top.
+= وقلب الجمر ينتظر في القمة.
++{0} Energy
+= +{0} طاقة
+{0} / {1}   −{2} HP  +1 Energy
+= {0} / {1}   −{2} صحة  +1 طاقة
+Adds {0} Heat to you.
+= يضيف {0} حرارة إليك.
+Heartfire
+= نار القلب المشتعلة
+Molten Core
+= اللب المنصهر
+Heartstone
+= حجر القلب
+While you are overheated, your attacks deal 3 more damage.
+= ما دمت فوق حد الحرارة، تسبب هجماتك 3 ضرر إضافي.

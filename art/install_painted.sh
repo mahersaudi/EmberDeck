@@ -45,8 +45,11 @@ for file in "$SRC"/*.png; do
   fi
 done
 
+# The card count comes from card_art.py, like the enemy ids above: a hard-coded 69 went stale the day
+# the Emberheart added two cards, and reported an enemy filed as a card when none was.
+CARD_COUNT="$(cd "$ROOT/art" && python3 -c 'import card_art; print(len(card_art.CARDS))')"
 echo "[painted] installed $cards card paintings, $enemies enemy portraits"
-echo "[painted] cards still on SVG symbols: $(( 69 - cards ))"
-if [ "$cards" -gt 69 ]; then
+echo "[painted] cards still on SVG symbols: $(( CARD_COUNT - cards ))"
+if [ "$cards" -gt "$CARD_COUNT" ]; then
   echo "[painted] WARNING: more card images than cards — an enemy is filed as a card" >&2
 fi

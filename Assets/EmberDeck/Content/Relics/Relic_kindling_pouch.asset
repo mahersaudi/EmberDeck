@@ -15,5 +15,6 @@ MonoBehaviour:
   Id: kindling_pouch
   DisplayName: Kindling Pouch
   Description: At the start of each combat, apply 3 Burn to ALL enemies.
+  MinAct: 1
   Effects:
   - {fileID: 11400000, guid: 0c8ad4932451d42758067424bb4fdd24, type: 2}

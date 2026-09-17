@@ -16,6 +16,7 @@ MonoBehaviour:
   DisplayName: Burnt Offering+
   Type: 0
   Rarity: 2
+  MinAct: 1
   Cost: 1
   Target: 1
   Exhaust: 0

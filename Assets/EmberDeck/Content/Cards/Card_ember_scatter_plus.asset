@@ -16,6 +16,7 @@ MonoBehaviour:
   DisplayName: Ember Scatter+
   Type: 0
   Rarity: 1
+  MinAct: 1
   Cost: 1
   Target: 2
   Exhaust: 0

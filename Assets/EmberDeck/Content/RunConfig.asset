@@ -136,6 +136,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 154aed0949622467b87e923de92f5ee3, type: 2}
   - {fileID: 11400000, guid: 31a5789600ba64a6d98e7a2baa274530, type: 2}
   - {fileID: 11400000, guid: 701d13a577d654ba18e6f13046ae160e, type: 2}
+  - {fileID: 11400000, guid: bc984ce9c00dc49f7b67f293cc8eeabe, type: 2}
+  - {fileID: 11400000, guid: bf796d53efa124c60926104a5924a9c2, type: 2}
   AllCards:
   - {fileID: 11400000, guid: 310b64e21620344eb81d6fc99298309b, type: 2}
   - {fileID: 11400000, guid: 813de3b82e2084685a635eddaf0ec8aa, type: 2}
@@ -197,6 +199,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 154aed0949622467b87e923de92f5ee3, type: 2}
   - {fileID: 11400000, guid: 31a5789600ba64a6d98e7a2baa274530, type: 2}
   - {fileID: 11400000, guid: 701d13a577d654ba18e6f13046ae160e, type: 2}
+  - {fileID: 11400000, guid: bc984ce9c00dc49f7b67f293cc8eeabe, type: 2}
+  - {fileID: 11400000, guid: bf796d53efa124c60926104a5924a9c2, type: 2}
   - {fileID: 11400000, guid: 954e914c93ea9497591bf3023f653b30, type: 2}
   - {fileID: 11400000, guid: b363b6bb21df24359b5d6b610b5afbb0, type: 2}
   - {fileID: 11400000, guid: 661c7e3dd5c104e2abcefab553734c86, type: 2}
@@ -266,6 +270,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 974fb7b7a101742b7aa8992d53bf7658, type: 2}
   - {fileID: 11400000, guid: 1c9b824635394406d9388b2c89a469f3, type: 2}
   - {fileID: 11400000, guid: 0f1d9c8199b6b4128ac9eb84c4dbfbeb, type: 2}
+  - {fileID: 11400000, guid: 34cb2955a01164d6893eea151351a789, type: 2}
+  - {fileID: 11400000, guid: 6db1dc70101f94c4692f79b537c95f4c, type: 2}
   - {fileID: 11400000, guid: a61feb52d440345d6ac6d9cf999a9cd9, type: 2}
   - {fileID: 11400000, guid: 167f6906ac3f84791914a6b2a90def4f, type: 2}
   - {fileID: 11400000, guid: 858f2eb99b3a14682b9dc0da0eb50e01, type: 2}
@@ -283,6 +289,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 5ef392e9e6d1244cfbc616e743b5eb87, type: 2}
   - {fileID: 11400000, guid: 33fd5c941321a493597868a5855b6993, type: 2}
   - {fileID: 11400000, guid: dbdcf216da1d64d79903de6adf4d2d69, type: 2}
+  - {fileID: 11400000, guid: d442ccbe8396c4f3eba5ec54fb776a45, type: 2}
   Unlocks:
   - Id: kiln_cards
     DisplayName: Kiln cards
@@ -340,5 +347,6 @@ MonoBehaviour:
   - 0.06
   - 0.04
   - 0.03
+  OverheatFeedsFromAct: 3
   EnemyHpFactor: 1.15
   StartingGold: 75

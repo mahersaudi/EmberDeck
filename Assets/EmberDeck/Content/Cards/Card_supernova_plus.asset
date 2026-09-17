@@ -16,6 +16,7 @@ MonoBehaviour:
   DisplayName: Supernova+
   Type: 0
   Rarity: 3
+  MinAct: 1
   Cost: 2
   Target: 2
   Exhaust: 1

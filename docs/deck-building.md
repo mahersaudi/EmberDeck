@@ -28,11 +28,14 @@ so playing one teaches an archetype.
 
 | deck | the idea | run win% | Act 1 boss% |
 |---|---|---|---|
-| Suggested | plain commons, attacks and skills alternated | 3.7 – 6.0 | 31 – 36 |
-| **Pyre** | Burn, which ignores Block | 5.0 – 11.0 | 30 – 37 |
-| **Anvil** | Block, then hit back | 5.3 – 9.0 | 39 – 51 |
-| **Sparks** | many cheap attacks, with Strength | 2.0 – 7.7 | 32 – 38 |
-| **Overdrive** | build Heat, spend it at once | 0.0 – 0.3 | 4 – 5 |
+| Suggested | plain commons, attacks and skills alternated | 2.7 – 5.0 | 31 – 36 |
+| **Pyre** | Burn, which ignores Block | 3.0 – 8.0 | 30 – 37 |
+| **Anvil** | Block, then hit back | 4.0 – 5.7 | 39 – 51 |
+| **Sparks** | many cheap attacks, with Strength | 1.3 – 6.3 | 32 – 38 |
+| **Overdrive** | build Heat, spend it at once | under 1 | 4 – 5 |
+
+Win rates are whole three-act runs, measured after the Heart's Fire and the early-row pass (below
+in `docs/act-three.md`).
 
 Every ready-made deck shares a fourteen-card backbone (two each of Strike, Guard, Second Wind,
 Bulwark, Brace, Focus and Cremate). The first versions were pure archetypes and all four lost to the

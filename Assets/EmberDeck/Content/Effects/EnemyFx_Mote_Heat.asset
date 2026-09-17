@@ -9,9 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 231f36ac22b6d496a89423536e4c04bc, type: 3}
-  m_Name: EnemyFx_Mote_Weak
-  m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.Effects.ApplyStatusEffect
-  Status: 3
-  Amount: 1
-  ApplyToSelf: 0
+  m_Script: {fileID: 11500000, guid: b5f13df49cd2f4a4f92d8eb2aecf917a, type: 3}
+  m_Name: EnemyFx_Mote_Heat
+  m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.Effects.GainHeatEffect
+  Amount: 2

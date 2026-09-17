@@ -17,3 +17,4 @@ MonoBehaviour:
   Act: 2
   Enemies:
   - {fileID: 11400000, guid: 9ba72e3a9b11e4907b8ab73b957f9172, type: 2}
+  - {fileID: 11400000, guid: 50032be7affad41b38f89fa3f38092d0, type: 2}

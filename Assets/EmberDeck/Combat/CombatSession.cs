@@ -53,6 +53,9 @@ namespace EmberDeck.Combat
             // them by the run's fight count as well put a 150 HP boss at about 250 by the time
             // anyone reached it, and 74 of 74 simulated runs that arrived there died.
             // Scaling counts fights within the act: Act 2's enemies are authored stronger instead.
+            // Where the fight is decides its rules as well as its enemies.
+            State.OverheatFeeds = Run != null && Config.OverheatFeedsFromAct > 0 && Run.Act >= Config.OverheatFeedsFromAct;
+
             float scale = Run != null && Run.IsBoss
                 ? 1f
                 : 1f + Config.ScalingPerFight(Run?.Act ?? 1) * (Run?.FightsIntoAct ?? 0);

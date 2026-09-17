@@ -15,5 +15,6 @@ MonoBehaviour:
   Id: thermal_core
   DisplayName: Thermal Core
   Description: Your Overheat threshold is 4 higher.
+  MinAct: 1
   Effects:
   - {fileID: 11400000, guid: 7d7e1840482a24b01a1c0741be098836, type: 2}

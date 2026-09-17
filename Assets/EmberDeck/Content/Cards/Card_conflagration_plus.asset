@@ -16,6 +16,7 @@ MonoBehaviour:
   DisplayName: Conflagration+
   Type: 1
   Rarity: 3
+  MinAct: 1
   Cost: 1
   Target: 2
   Exhaust: 0

@@ -15,5 +15,6 @@ MonoBehaviour:
   Id: tempered_buckler
   DisplayName: Tempered Buckler
   Description: Start each combat with 1 Dexterity.
+  MinAct: 1
   Effects:
   - {fileID: 11400000, guid: f7683818f83b64e36a86d740ae25aef8, type: 2}

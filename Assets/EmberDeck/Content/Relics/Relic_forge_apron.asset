@@ -15,5 +15,6 @@ MonoBehaviour:
   Id: forge_apron
   DisplayName: Forge Apron
   Description: At the end of your turn, gain 2 Block.
+  MinAct: 1
   Effects:
   - {fileID: 11400000, guid: 09899fe1b1fa54adaaa87f3fa6790dc2, type: 2}

@@ -281,6 +281,7 @@ namespace EmberDeck.View
                     ApplyStatusEffect status                             => Icons.For(status.Status),
                     DealDamageEffect hit when hit.PerHitStatusAmount > 0 => Icons.For(hit.PerHitStatus),
                     GainBlockEffect when intent.Kind != IntentKind.Block => Icons.Get("res_block"),
+                    GainHeatEffect                                       => Icons.Get("res_heat"),
                     _                                                    => null
                 };
                 if (icon != null) extras.Add(icon);
@@ -337,6 +338,7 @@ namespace EmberDeck.View
             }
 
             // Statuses the move is about to apply, defined before they land.
+            bool explainedHeat = false;
             if (acting)
             {
                 foreach (var effect in Enemy.CurrentIntent.Move.Effects)
@@ -347,6 +349,12 @@ namespace EmberDeck.View
                         DealDamageEffect hit when hit.PerHitStatusAmount > 0 => hit.PerHitStatus,
                         _                                                    => null
                     };
+                    if (effect is GainHeatEffect && !explainedHeat)
+                    {
+                        explainedHeat = true;
+                        var heatWord = Keywords.Find("Heat");
+                        if (heatWord != null) entries.Add(Tooltip.Entry.From(heatWord));
+                    }
                     if (status == null || explained.Contains(status.Value)) continue;
                     explained.Add(status.Value);
                     var keyword = Keywords.For(status.Value);
@@ -380,6 +388,11 @@ namespace EmberDeck.View
                         parts.Add(status.ApplyToSelf
                             ? $"Gains {status.Amount} {status.Status.DisplayName()}."
                             : $"Applies {status.Amount} {status.Status.DisplayName()} to you.");
+                        break;
+                    // Heat is the player's, whoever adds it. "Gain 3 Heat" in an enemy's intent reads as the
+                    // enemy gaining it.
+                    case GainHeatEffect heat:
+                        parts.Add($"Adds {heat.Amount} Heat to you.");
                         break;
                     default:
                         var text = effect != null ? effect.Describe() : null;

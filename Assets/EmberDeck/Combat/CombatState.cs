@@ -40,6 +40,12 @@ namespace EmberDeck.Combat
         public bool BlockPersists;      // Molten Armor
         public bool BurnDecays = true;  // Slow Roast sets this false
 
+        /// <summary>
+        /// The Emberheart's rule: starting a turn overheated gives 1 extra Energy. Set by the session
+        /// from the act, not by a card, so it belongs to the place rather than to the deck.
+        /// </summary>
+        public bool OverheatFeeds;
+
         public readonly List<CardInstance> DrawPile = new();
         public readonly List<CardInstance> Hand = new();
         public readonly List<CardInstance> DiscardPile = new();

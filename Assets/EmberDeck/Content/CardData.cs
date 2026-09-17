@@ -17,6 +17,10 @@ namespace EmberDeck.Content
         public CardType Type = CardType.Attack;
         public CardRarity Rarity = CardRarity.Common;
 
+        [Tooltip("The first act whose rewards can offer this card. Above 1, it is never in the deck builder: " +
+                 "it has to be found there.")]
+        public int MinAct = 1;
+
         [Header("Rules")]
         public int Cost = 1;
         public TargetMode Target = TargetMode.SingleEnemy;

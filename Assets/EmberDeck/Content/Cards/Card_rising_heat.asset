@@ -16,6 +16,7 @@ MonoBehaviour:
   DisplayName: Rising Heat
   Type: 2
   Rarity: 2
+  MinAct: 1
   Cost: 2
   Target: 0
   Exhaust: 0

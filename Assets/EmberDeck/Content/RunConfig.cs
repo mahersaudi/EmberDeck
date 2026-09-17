@@ -146,6 +146,9 @@ namespace EmberDeck.Content
         [Tooltip("Per-act overrides of EnemyScalingPerFight, first entry for Act 1. Missing entries use it.")]
         public List<float> ActScalingPerFight = new();
 
+        [Tooltip("The act from which starting a turn overheated grants 1 Energy (the Heart's Fire). 0 turns it off.")]
+        public int OverheatFeedsFromAct = 3;
+
         [Tooltip("Multiplies every enemy's rolled HP. One knob for the whole bestiary; see docs/deck-building.md.")]
         public float EnemyHpFactor = 1f;
 

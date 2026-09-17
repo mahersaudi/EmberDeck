@@ -16,6 +16,7 @@ MonoBehaviour:
   DisplayName: Phoenix Ash+
   Type: 2
   Rarity: 3
+  MinAct: 1
   Cost: 1
   Target: 0
   Exhaust: 0

@@ -15,4 +15,5 @@ MonoBehaviour:
   Id: ember_core
   DisplayName: Ember Core
   Description: The first attack you play each turn deals 3 additional damage.
+  MinAct: 1
   BonusDamage: 3

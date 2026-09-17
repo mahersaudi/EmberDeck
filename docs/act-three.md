@@ -65,15 +65,53 @@ the two bosses by 15% — which is what the table above is measured at. The alte
 multiplier, but an enemy's announced number has to stay exactly what lands, and only the authored
 values keep that promise.
 
+## The Heart's Fire
+
+Act 3 has one rule of its own: **start a turn overheated and you gain 1 extra Energy.** Overheat still
+costs its HP at the end of every turn, so the trade is exact — burn at the end of one turn, act harder
+at the start of the next.
+
+- It is the act's, not a card's: `CombatState.OverheatFeeds`, set by the session from
+  `RunConfig.OverheatFeedsFromAct` (3). The Heat bar says what it buys while it applies
+  ("−6 HP  +1 Energy"), a floating "+1 Energy" marks the turn it pays, and a first-run tip explains it
+  on the act's first fight.
+- **The act's enemies heat you**, so the rule reaches every deck and not only one built to chase it.
+  The Ash Priest's Censer and the Emberfly's Mote now add Heat to the player instead of Burn and Weak,
+  and the Emberheart's Pulse adds 4. An enemy intent that adds Heat shows the Heat icon and says
+  "Adds 3 Heat to you".
+- **Found only here** (`MinAct = 3` on cards and relics, filtered from the reward and relic pools
+  until the run reaches the act, and never in the deck builder):
+  - *Heartfire* — 0 cost, gain 6 Heat, draw a card. Gets you over the line for nothing.
+  - *Molten Core* — 2 cost, deal 8 + Heat damage. What the Heat you are carrying is for.
+  - *Heartstone* (relic) — while you are overheated, your attacks deal 3 more damage.
+
+Verified through the engine, not asserted: the capture harness overheats the player on the
+Emberheart, ends the turn, and reads back "rule on, energy 4 of 3 per turn, HP 50 → 48".
+
+The simulated player barely uses the rule — its policy vents Heat before it overheats — so the
+numbers below measure mostly the enemies' new Heat, not the Energy. The rule is for people.
+
+## The first floors of Acts 2 and 3
+
+Both acts' early rows were a formality: 0–1% deaths, 2–6 HP to win, against a player arriving at full
+health with a deck that has won ten or twenty fights. Six encounters gained an enemy — a Wisp in
+three of Act 2's, an Emberfly in three of Act 3's and in Priest and Revenant (which cost a median of 1
+HP). Now:
+
+| | deaths | median HP cost of a win |
+|---|---|---|
+| Act 2 early rows | 0 – 2.3% | 5 – 11 |
+| Act 3 early rows | 2.8 – 4.7% | 10 – 13 |
+
+The whole run with the Suggested deck wins 2.7–5.0% (was 3.7–6.0), the best legal deck 13.7–25.7%,
+and difficulty 5 0.3–3.0%.
+
 ## What is left
 
-- **Act 3's early rows kill nobody** (0–1.4%), like Act 2's did before its pass. Arriving at full
-  health with a deck that has won twenty fights makes the first three rows a formality; they need a
-  pass of their own.
-- **No new mechanic.** Act 3 recombines Strength, Burn, Block and healing. A third act is the natural
-  place for one new rule, and it has none.
-- **The act has no relic of its own** and no cards that belong to it: its rewards are the same pools
-  as Act 2's.
+- **The Living Flame kills 40% of the runs that meet it** (47 fights — a small sample, but twice the
+  other elites). It is the first thing to look at when playtest results come back.
+- **The simulated player cannot play Heat**, so neither the Heart's Fire nor the Overdrive deck is
+  really measured. Teaching the bot to overheat on purpose in Act 3 is the next simulator change.
 
 ## The art
 

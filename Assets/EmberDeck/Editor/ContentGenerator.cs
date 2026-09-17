@@ -277,6 +277,15 @@ namespace EmberDeck.EditorTools
                  Power("Pow_SecondForge", PowerTrigger.TurnStart, "Gain 1 Energy at the start of each turn.", false, energy1));
             Exhausting(Card(cards, "last_ember", "Last Ember", CardType.Attack, 3, TargetMode.SingleEnemy, CardRarity.Rare, dmg22));
 
+            // ── Found in the Emberheart ─────────────────────────────────────────────
+            // Two cards that only Act 3's rewards offer (MinAct 3), both about the act's rule: being
+            // overheated at the start of a turn gives 1 Energy. Heartfire gets you over the line for
+            // nothing; Molten Core is what the Heat you are carrying is for.
+            FromAct(3, Card(cards, "heartfire", "Heartfire", CardType.Skill, 0, TargetMode.Self, CardRarity.Uncommon,
+                            Heat("Heat_6_Heartfire", 6), draw1));
+            FromAct(3, Card(cards, "molten_core", "Molten Core", CardType.Attack, 2, TargetMode.SingleEnemy, CardRarity.Rare,
+                            Asset<ScaleWithHeatEffect>("ScaleHeat_Dmg8_MoltenCore", e => { e.Payout = HeatPayout.Damage; e.Base = 8; })));
+
             // ── Unlockable ──────────────────────────────────────────────────────────
             // Cards earned between runs (docs/meta-progression.md). Kept out of `cards`, so they reach a
             // reward pool only through RunConfig.Unlocks; built from existing effects like everything else.
@@ -510,8 +519,11 @@ namespace EmberDeck.EditorTools
             var moltenMaw = MakeEnemy("molten_maw", "Molten Maw", 30, 33, MovePattern.Sequence,
                                       new Color(0.72f, 0.22f, 0.24f), gape, swallow);
 
+            // The Emberheart heats you. Censer and Mote add Heat to the player rather than a debuff, so its
+            // rule — overheated at the start of a turn, gain 1 Energy — comes to every deck here, not only
+            // to the ones built to chase it. The Heat still burns at the end of the turn.
             var censer     = Move("Move_Censer", "Censer", IntentKind.Attack, 1,
-                                  Damage("EnemyFx_Censer", 5), Status("EnemyFx_Censer_Burn", StatusType.Burn, 2));
+                                  Damage("EnemyFx_Censer", 5), Heat("EnemyFx_Censer_Heat", 3));
             var absolution = Move("Move_Absolution", "Absolution", IntentKind.Buff, 1,
                                   Asset<HealEffect>("EnemyFx_Absolution", e => e.Amount = 8), Block("EnemyFx_Absolution_Block", 8));
             var doom       = Move("Move_Doom", "Doom", IntentKind.Attack, 1, Damage("EnemyFx_Doom", 10));
@@ -520,7 +532,7 @@ namespace EmberDeck.EditorTools
 
             var sting = Move("Move_Sting", "Sting", IntentKind.Attack, 1, Damage("EnemyFx_Sting", 3, hits: 3));
             var mote  = Move("Move_Mote", "Mote", IntentKind.Attack, 1,
-                             Damage("EnemyFx_Mote", 4), Status("EnemyFx_Mote_Weak", StatusType.Weak, 1));
+                             Damage("EnemyFx_Mote", 4), Heat("EnemyFx_Mote_Heat", 2));
             var emberfly = MakeEnemy("emberfly", "Emberfly", 12, 14, MovePattern.Sequence,
                                      new Color(0.95f, 0.72f, 0.30f), sting, mote);
 
@@ -544,7 +556,8 @@ namespace EmberDeck.EditorTools
             // pattern is six turns long so the player can learn it and plan two turns ahead, which is the
             // only way a fight this size can be won rather than survived.
             var pulse     = Move("Move_Pulse", "Pulse", IntentKind.Debuff, 1,
-                                 Status("EnemyFx_Pulse_Weak", StatusType.Weak, 1), Status("EnemyFx_Pulse_Vulnerable", StatusType.Vulnerable, 1));
+                                 Status("EnemyFx_Pulse_Weak", StatusType.Weak, 1), Status("EnemyFx_Pulse_Vulnerable", StatusType.Vulnerable, 1),
+                                 Heat("EnemyFx_Pulse_Heat", 4));
             var eruption  = Move("Move_Eruption", "Eruption", IntentKind.Attack, 1, Damage("EnemyFx_Eruption", 4, hits: 4, burnPerHit: 1));
             var cataclysm = Move("Move_Cataclysm", "Cataclysm", IntentKind.Attack, 1, Damage("EnemyFx_Cataclysm", 17));
             var reforge   = Move("Move_Reforge", "Reforge", IntentKind.Buff, 1,
@@ -571,11 +584,13 @@ namespace EmberDeck.EditorTools
 
                 Encounter("forge_tyrant", EncounterTier.Boss, tyrant),
 
-                // Act 2
+                // Act 2. The early pool gained an extra Wisp in two fights: a player arrives here at full
+                // health with a deck that has won ten fights, and at one enemy fewer these rows killed 0-1% of
+                // simulated runs and cost 2-6 HP — the act's first three floors were a formality.
                 EncounterIn(2, "wisp_trio", EncounterTier.Early, emberWisp, emberWisp, emberWisp),
-                EncounterIn(2, "leech_pair", EncounterTier.Early, magmaLeech, magmaLeech),
-                EncounterIn(2, "obsidian_sentinel", EncounterTier.Early, sentinel),
-                EncounterIn(2, "shaman_and_wisp", EncounterTier.Early, shaman, emberWisp),
+                EncounterIn(2, "leech_pair", EncounterTier.Early, magmaLeech, magmaLeech, emberWisp),
+                EncounterIn(2, "obsidian_sentinel", EncounterTier.Early, sentinel, emberWisp),
+                EncounterIn(2, "shaman_and_wisp", EncounterTier.Early, shaman, emberWisp, emberWisp),
 
                 EncounterIn(2, "knight_and_wisp", EncounterTier.Late, ashenKnight, emberWisp),
                 EncounterIn(2, "shaman_and_leech", EncounterTier.Late, shaman, magmaLeech),
@@ -588,14 +603,15 @@ namespace EmberDeck.EditorTools
 
                 EncounterIn(2, "cinder_wyrm", EncounterTier.Boss, wyrm),
 
-                // Act 3
+                // Act 3. Same correction as Act 2's early pool, for the same reason: an extra Emberfly in three
+                // early fights and in Priest and Revenant, which had been costing a median of 1 HP to win.
                 EncounterIn(3, "emberfly_swarm", EncounterTier.Early, emberfly, emberfly, emberfly),
-                EncounterIn(3, "revenant_pair", EncounterTier.Early, revenant, revenant),
-                EncounterIn(3, "maw_and_fly", EncounterTier.Early, moltenMaw, emberfly),
-                EncounterIn(3, "priest_and_fly", EncounterTier.Early, ashPriest, emberfly),
+                EncounterIn(3, "revenant_pair", EncounterTier.Early, revenant, revenant, emberfly),
+                EncounterIn(3, "maw_and_fly", EncounterTier.Early, moltenMaw, emberfly, emberfly),
+                EncounterIn(3, "priest_and_fly", EncounterTier.Early, ashPriest, emberfly, emberfly),
 
                 EncounterIn(3, "titan", EncounterTier.Late, slagTitan),
-                EncounterIn(3, "priest_and_revenant", EncounterTier.Late, ashPriest, revenant),
+                EncounterIn(3, "priest_and_revenant", EncounterTier.Late, ashPriest, revenant, emberfly),
                 EncounterIn(3, "maw_and_priest", EncounterTier.Late, moltenMaw, ashPriest),
                 EncounterIn(3, "revenant_and_flies", EncounterTier.Late, revenant, emberfly, emberfly),
 
@@ -638,6 +654,15 @@ namespace EmberDeck.EditorTools
                                  "Whenever you Exhaust a card, gain 3 Block.", false, blk3)),
                 RelicAsset("kindling_pouch", "Kindling Pouch", "At the start of each combat, apply 3 Burn to ALL enemies.",
                            Status("Burn_3_Relic", StatusType.Burn, 3)),
+                // The Emberheart's relic: only its elites and boss grant it.
+                Asset<HeartstoneRelic>("Relics/Relic_Heartstone", relic =>
+                {
+                    relic.Id = "heartstone";
+                    relic.DisplayName = "Heartstone";
+                    relic.Description = "While you are overheated, your attacks deal 3 more damage.";
+                    relic.BonusDamage = 3;
+                    relic.MinAct = 3;
+                }),
             };
 
             // Relics earned between runs: never in the pool above until unlocked.
@@ -1003,6 +1028,13 @@ namespace EmberDeck.EditorTools
                 relic.Description = description;
                 relic.Effects = new List<CardEffect>(effects);
             });
+
+        static CardData FromAct(int act, CardData card)
+        {
+            card.MinAct = act;
+            EditorUtility.SetDirty(card);
+            return card;
+        }
 
         static CardData Exhausting(CardData card)
         {

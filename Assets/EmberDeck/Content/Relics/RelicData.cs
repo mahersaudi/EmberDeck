@@ -17,6 +17,9 @@ namespace EmberDeck.Content.Relics
         public string DisplayName;
         [TextArea] public string Description;
 
+        [UnityEngine.Tooltip("The first act whose elites and bosses can grant this relic.")]
+        public int MinAct = 1;
+
         public abstract RelicBehaviour CreateBehaviour();
     }
 }

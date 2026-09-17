@@ -312,6 +312,12 @@ CARDS = {
     "mend": "a cracked iron heart being welded back together, molten seam",
     "second_forge": "a second furnace igniting beside the first, double forge glow",
     "last_ember": "a single last ember held in a dying hand, about to burst",
+    # Act 3 cards. Heartfire pushes Heat over the edge for Energy; Molten Core cashes the Heat carried.
+    "heartfire": "a burning heart-shaped core of white-gold fire flaring past its limit, heat waves pouring off it",
+    # The first render floated a planet in outer space, stars and all. It is thrown in a forge now, and
+    # the sky is named as what it is not.
+    "molten_core": "a glowing ball of molten metal flung from a crucible inside a dark stone forge, dripping "
+                   "white-hot droplets, trailing fire, not a planet, no stars, no space",
 
     # Unlocked between runs (docs/meta-progression.md)
     "crucible": "a glowing crucible of molten metal set into a heavy iron brace, heat shimmer rising",

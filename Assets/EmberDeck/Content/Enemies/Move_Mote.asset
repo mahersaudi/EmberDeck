@@ -17,4 +17,4 @@ MonoBehaviour:
   Weight: 1
   Effects:
   - {fileID: 11400000, guid: 6567964ae6261446eb84d88b52759660, type: 2}
-  - {fileID: 11400000, guid: 094077adafdc24676be45f85535a32e4, type: 2}
+  - {fileID: 11400000, guid: 00704efba25cd4d65b1f6de108226a1d, type: 2}

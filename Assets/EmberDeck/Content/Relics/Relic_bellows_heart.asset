@@ -15,5 +15,6 @@ MonoBehaviour:
   Id: bellows_heart
   DisplayName: Bellows Heart
   Description: At the start of your turn, gain 1 Heat.
+  MinAct: 1
   Effects:
   - {fileID: 11400000, guid: 010c273ef9c9848c5b65084d23f7fb62, type: 2}

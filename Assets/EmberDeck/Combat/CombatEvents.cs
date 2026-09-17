@@ -80,6 +80,12 @@ namespace EmberDeck.Combat
     }
 
     /// <summary>Raised after Heat is added. Ember Engine listens here.</summary>
+    /// <summary>The Emberheart's rule paid out: the player started a turn overheated and gained Energy.</summary>
+    public sealed class HeartFireEvent
+    {
+        public int Energy;
+    }
+
     public sealed class HeatGainedEvent
     {
         public int Amount;

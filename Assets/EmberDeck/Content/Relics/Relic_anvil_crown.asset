@@ -15,5 +15,6 @@ MonoBehaviour:
   Id: anvil_crown
   DisplayName: Anvil Crown
   Description: Whenever you gain Heat, gain 1 Block.
+  MinAct: 1
   Effects:
   - {fileID: 11400000, guid: d3c381c38f3c0467d8a887148ddd996a, type: 2}

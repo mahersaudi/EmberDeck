@@ -160,8 +160,9 @@ namespace EmberDeck.Run
             foreach (var entry in config.StarterDeck)
                 if (entry?.Card != null && !pool.Contains(entry.Card)) pool.Add(entry.Card);
 
+            // Cards that belong to a deeper act are found there, never built with.
             foreach (var card in config.RewardPoolFor(unlocked))
-                if (card != null && !pool.Contains(card)) pool.Add(card);
+                if (card != null && card.MinAct <= 1 && !pool.Contains(card)) pool.Add(card);
 
             pool.Sort((a, b) =>
             {

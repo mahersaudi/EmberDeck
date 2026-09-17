@@ -16,6 +16,7 @@ MonoBehaviour:
   DisplayName: Backdraft
   Type: 1
   Rarity: 2
+  MinAct: 1
   Cost: 1
   Target: 2
   Exhaust: 0

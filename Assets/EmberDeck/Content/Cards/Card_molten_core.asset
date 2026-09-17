@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b127717e197394e729d71394d4936d1f, type: 3}
+  m_Name: Card_molten_core
+  m_EditorClassIdentifier: Assembly-CSharp::EmberDeck.Content.CardData
+  Id: molten_core
+  DisplayName: Molten Core
+  Type: 0
+  Rarity: 3
+  MinAct: 3
+  Cost: 2
+  Target: 1
+  Exhaust: 0
+  Effects:
+  - {fileID: 11400000, guid: 4e7271d7de9f844c18013e1af9aa2d9f, type: 2}
+  TintColor: {r: 0.86, g: 0.42, b: 0.28, a: 1}
+  Art: {fileID: 21300000, guid: 00bb603ac847040dfbcc884324bfb6f3, type: 3}
+  Upgrade: {fileID: 11400000, guid: 6db1dc70101f94c4692f79b537c95f4c, type: 2}
+  IsUpgraded: 0

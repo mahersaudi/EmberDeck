@@ -286,7 +286,7 @@ namespace EmberDeck.View
                         Debug.Log($"[AutoCapture] pad after playing: {PadNavigator.FocusedName}");
                         yield return Capture("12d-pad-played.png");
                     }
-                    else Debug.LogError("[AutoCapture] no aimed card in hand for the pad test");
+                    else Debug.LogWarning("[AutoCapture] no aimed card in hand for the pad test");  // a warning: an error opens the development console over every later screenshot
                     pad.SetMouseMode();
                 }
 
@@ -538,6 +538,13 @@ namespace EmberDeck.View
                     actHost.DebugFightEncounter("emberheart");
                     yield return new WaitForSeconds(1.0f);
                     yield return Capture("11d-act3-boss.png");
+
+                    // The act's rule, through the engine rather than asserted: overheated at the end of a
+                    // turn, the next one starts with an extra Energy.
+                    Click(FindButton("CoachGotIt"));
+                    Debug.Log($"[AutoCapture] heart's fire: {actHost.DebugHeartFire()}");
+                    yield return new WaitForSeconds(1.2f);
+                    yield return Capture("11e-heart-fire.png");
                 }
 
                 // The end-of-run screen both ways, over the run the harness has been playing.

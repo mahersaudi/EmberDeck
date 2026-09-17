@@ -16,6 +16,7 @@ MonoBehaviour:
   DisplayName: Phoenix Plume+
   Type: 1
   Rarity: 2
+  MinAct: 1
   Cost: 1
   Target: 0
   Exhaust: 1

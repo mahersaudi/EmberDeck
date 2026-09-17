@@ -15,5 +15,6 @@ MonoBehaviour:
   Id: obsidian_shard
   DisplayName: Obsidian Shard
   Description: At the start of each combat, apply 1 Weak to ALL enemies.
+  MinAct: 1
   Effects:
   - {fileID: 11400000, guid: ab8d6e0cf142a46759527d441c3154c3, type: 2}

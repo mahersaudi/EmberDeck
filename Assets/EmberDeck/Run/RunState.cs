@@ -62,8 +62,9 @@ namespace EmberDeck.Run
         /// <summary>Set once the run's result has gone into the profile, so it is never counted twice.</summary>
         public bool ResultRecorded;
 
-        public List<CardData> RewardPool(RunConfig config) => config.RewardPoolFor(Unlocked);
-        public List<RelicData> RelicPool(RunConfig config) => config.RelicPoolFor(Unlocked);
+        // Filtered by act: a card or relic that belongs to a deeper act is only found once the run is there.
+        public List<CardData> RewardPool(RunConfig config) => config.RewardPoolFor(Unlocked).FindAll(c => c != null && c.MinAct <= Act);
+        public List<RelicData> RelicPool(RunConfig config) => config.RelicPoolFor(Unlocked).FindAll(r => r != null && r.MinAct <= Act);
 
         public int FightsIntoAct => FightNumber - ActStartFight;
 

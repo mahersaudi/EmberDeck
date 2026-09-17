@@ -15,5 +15,6 @@ MonoBehaviour:
   Id: cinder_ring
   DisplayName: Cinder Ring
   Description: Whenever you Exhaust a card, gain 3 Block.
+  MinAct: 1
   Effects:
   - {fileID: 11400000, guid: f627e172e81c747c8a54e77efaafc86b, type: 2}

@@ -15,5 +15,6 @@ MonoBehaviour:
   Id: iron_ward
   DisplayName: Iron Ward
   Description: At the start of your turn, gain 3 Block.
+  MinAct: 1
   Effects:
   - {fileID: 11400000, guid: e92d447d21a4740a3b574b822ac34c6a, type: 2}

@@ -16,6 +16,7 @@ MonoBehaviour:
   DisplayName: Smoulder
   Type: 1
   Rarity: 1
+  MinAct: 1
   Cost: 1
   Target: 1
   Exhaust: 1

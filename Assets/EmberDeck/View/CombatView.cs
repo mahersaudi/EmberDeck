@@ -846,6 +846,12 @@ namespace EmberDeck.View
         {
             if (State.IsOver) return;
 
+            if (State.OverheatFeeds)
+                Coach.Show("heartfire", "The Heart's Fire",
+                           "Down here the fire feeds you. Start a turn overheated and you gain 1 extra Energy — "
+                           + "but the Heat still burns you at the end of every turn. The enemies will heat you whether "
+                           + "you want it or not.",
+                           () => new[] { _heatPanel }, Coach.Side.Right);
             if (State.Heat > 0)
                 Coach.Show("heat", "Heat",
                            "Fire cards build Heat, and it stays between turns. At the end of your turn you lose 1 HP "
@@ -960,6 +966,11 @@ namespace EmberDeck.View
             _runLabel.text = $"Act {_run.Act}    Fight {_run.FightNumber}    Deck {_run.Deck.Count}    Relics {_run.Relics.Count}    Gold {_run.Gold}    HP {_run.Hp}/{_run.MaxHp}";
             _mapView.Show(_run.Map, _run.Act, _config.ActName(_run.Act), _config.BossOf(_run.Act)?.DisplayName,
                           finalAct: _run.Act >= _config.Acts);
+            if (_run.Act >= 3)
+                Coach.Show("act3", "The Emberheart",
+                           "The last act, and the source of the fire. Its enemies heat you, and here being overheated "
+                           + "at the start of a turn gives you 1 extra Energy. The Emberheart waits at the top.",
+                           null, Coach.Side.Below);
             if (_run.Act > 1)
                 Coach.Show("act2", "A deeper act",
                            "Beating the boss healed you to full. The enemies down here are stronger, and they grow "
@@ -1391,6 +1402,21 @@ namespace EmberDeck.View
             return $"hand {before} -> {State.Hand.Count}";
         }
 
+        /// <summary>
+        /// Capture-harness only: proves the Heart's Fire through the engine — overheats the player, ends the
+        /// turn, and reports the Energy the next turn started with against the normal amount.
+        /// </summary>
+        public string DebugHeartFire()
+        {
+            if (_session == null || State.IsOver) return null;
+            State.Heat = State.OverheatThreshold + 2;
+            int hpBefore = State.Player.Hp;
+            Engine.EndPlayerTurn();
+            Redraw();
+            return $"rule on={State.OverheatFeeds}, energy {State.Energy} of {State.EnergyPerTurn} per turn, " +
+                   $"HP {hpBefore} -> {State.Player.Hp}";
+        }
+
         /// <summary>Capture-harness only: a one-line description of the run, for save tests.</summary>
         public string DebugRunSummary() =>
             _run == null ? "none"
@@ -1622,8 +1648,11 @@ namespace EmberDeck.View
             UiFactory.SetBarFill(_heatFill, threshold > 0 ? Mathf.Clamp01((float)State.Heat / threshold) : 0f);
             _heatFill.color = overheating ? Palette.Overheat : Palette.Energy;
             _heatTrack.color = overheating ? Palette.OverheatTrack : Palette.HeatTrack;
+            // In the Emberheart the bar also says what overheating buys, not only what it costs.
             _heatLabel.text = overheating
-                ? $"{State.Heat} / {threshold}   OVERHEAT  −{State.Heat - threshold} HP"
+                ? (State.OverheatFeeds
+                    ? $"{State.Heat} / {threshold}   −{State.Heat - threshold} HP  +1 Energy"
+                    : $"{State.Heat} / {threshold}   OVERHEAT  −{State.Heat - threshold} HP")
                 : $"{State.Heat} / {threshold}";
             _turnLabel.text = $"Turn {State.TurnNumber}";
             _drawLabel.text = $"Draw {State.DrawPile.Count}";

@@ -15,5 +15,6 @@ MonoBehaviour:
   Id: whetstone_charm
   DisplayName: Whetstone Charm
   Description: Start each combat with 1 Strength.
+  MinAct: 1
   Effects:
   - {fileID: 11400000, guid: 15a0f35ea4ec648d3b289f2dc733c5f5, type: 2}

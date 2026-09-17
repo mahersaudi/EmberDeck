@@ -16,6 +16,7 @@ MonoBehaviour:
   DisplayName: Cinder Trance
   Type: 2
   Rarity: 3
+  MinAct: 1
   Cost: 2
   Target: 0
   Exhaust: 0
