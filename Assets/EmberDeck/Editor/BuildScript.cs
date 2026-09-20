@@ -25,7 +25,7 @@ namespace EmberDeck.EditorTools
 
         const string Scene = "Assets/EmberDeck/Scenes/Combat.unity";
 
-        enum Platform { MacOS, Windows, Android }
+        enum Platform { MacOS, Windows, Android, IOS }
 
         // BuildMac keeps its name: the capture and test commands already call it.
         [MenuItem("EmberDeck/Build/macOS (Development)")]
@@ -55,6 +55,13 @@ namespace EmberDeck.EditorTools
         [MenuItem("EmberDeck/Build/Android (Release)")]
         public static void BuildAndroidRelease() => Build(Platform.Android, development: false);
 
+        /// <summary>
+        /// Writes the Xcode project for iPhone and iPad. Not an app: Unity exports a project, and Xcode
+        /// builds, signs and installs it. See docs/ios.md.
+        /// </summary>
+        [MenuItem("EmberDeck/Build/iOS Xcode project")]
+        public static void BuildIOS() => Build(Platform.IOS, development: false);
+
         [MenuItem("EmberDeck/Build/All Release Builds")]
         public static void BuildAllRelease()
         {
@@ -68,9 +75,15 @@ namespace EmberDeck.EditorTools
             {
                 Platform.Windows => BuildTarget.StandaloneWindows64,
                 Platform.Android => BuildTarget.Android,
+                Platform.IOS     => BuildTarget.iOS,
                 _                => BuildTarget.StandaloneOSX,
             };
-            var group = platform == Platform.Android ? BuildTargetGroup.Android : BuildTargetGroup.Standalone;
+            var group = platform switch
+            {
+                Platform.Android => BuildTargetGroup.Android,
+                Platform.IOS     => BuildTargetGroup.iOS,
+                _                => BuildTargetGroup.Standalone,
+            };
 
             if (!File.Exists(Scene))
                 return Fail($"{Scene} does not exist. Run EmberDeck > Generate Content and Scene first.");
@@ -82,6 +95,7 @@ namespace EmberDeck.EditorTools
                 {
                     Platform.Windows => "Windows Build Support (Mono) is not installed for this editor. Install the module, then build again.",
                     Platform.Android => "Android Build Support (with its SDK and NDK) is not installed for this editor.",
+                    Platform.IOS     => "iOS Build Support is not installed for this editor.",
                     _                => "Mac Build Support is not installed for this editor.",
                 });
 
@@ -95,17 +109,21 @@ namespace EmberDeck.EditorTools
             ProjectSetup.ApplyFonts();
             PlayerSettings.macOS.buildNumber = Version;
             if (platform == Platform.Android) ProjectSetup.ApplyAndroid();
+            if (platform == Platform.IOS) ProjectSetup.ApplyIOS();
 
             string folder = platform switch
             {
                 Platform.Windows => "Windows",
                 Platform.Android => "Android",
+                Platform.IOS     => "iOS",
                 _                => "macOS",
             };
             string file = platform switch
             {
                 Platform.Windows => "EmberDeck.exe",
                 Platform.Android => "EmberDeck.apk",
+                // A folder, not a file: the Xcode project Unity writes.
+                Platform.IOS     => "Xcode",
                 _                => "EmberDeck.app",
             };
             string path = harness      ? $"Build/Shots/{folder}/{file}"

@@ -42,6 +42,10 @@ the face is where a shaking board and a ring of light at every hit stop being a 
 decoration stops and every piece of motion that carries information stays — the damage numbers, the
 cards dealing in, the portraits, the fades.
 
+**Not every touch screen is a phone.** An iPad is narrower than 16:9, where a phone is wider, so
+matching the canvas to the design's height — right for a phone — cuts the sides off a tablet.
+`ScalerFit` picks the axis from the device; see `docs/ios.md`.
+
 `TouchMode.Active` is the one switch behind all of it: `Application.isMobilePlatform`, or forced on
 by `-emberdeck-touch` so the phone layout can be captured and reviewed on a Mac.
 

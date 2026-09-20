@@ -104,11 +104,7 @@ namespace EmberDeck.EditorTools
         public static void ApplyAndroid()
         {
             PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, Identifier);
-            PlayerSettings.defaultInterfaceOrientation = UIOrientation.LandscapeLeft;
-            PlayerSettings.allowedAutorotateToLandscapeLeft = true;
-            PlayerSettings.allowedAutorotateToLandscapeRight = true;
-            PlayerSettings.allowedAutorotateToPortrait = false;
-            PlayerSettings.allowedAutorotateToPortraitUpsideDown = false;
+            LandscapeOnly();
 
             PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android, ScriptingImplementation.IL2CPP);
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
@@ -125,6 +121,52 @@ namespace EmberDeck.EditorTools
             // this build targets supports ASTC.
             PlayerSettings.Android.textureCompressionFormats = new[] { TextureCompressionFormat.ASTC };
             EditorUserBuildSettings.buildAppBundle = false;
+        }
+
+        /// <summary>
+        /// The iOS player's settings, for iPhone and iPad from one build.
+        ///
+        /// Landscape only, like Android: the board is a wide row of enemies above a wide hand. iOS 13 is
+        /// the floor Unity 6 supports, ARM64 and IL2CPP are the only choice Apple allows, and the build
+        /// is an Xcode project rather than an app — Unity cannot sign or install one, and Xcode does both
+        /// from the project this writes.
+        ///
+        /// No signing team is set here on purpose. A team id in the repository is someone's account, and
+        /// Xcode fills it in from whoever opens the project.
+        /// </summary>
+        public static void ApplyIOS()
+        {
+            PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.iOS, Identifier);
+            LandscapeOnly();
+
+            PlayerSettings.SetScriptingBackend(NamedBuildTarget.iOS, ScriptingImplementation.IL2CPP);
+            PlayerSettings.SetArchitecture(NamedBuildTarget.iOS, 1);   // ARM64
+            // 15.0 is this editor's floor; asking for 13 is silently raised, and then the setting and the
+            // Xcode project disagree — the same trap as Android's minimum SDK.
+            PlayerSettings.iOS.targetOSVersionString = "15.0";
+            PlayerSettings.iOS.targetDevice = iOSTargetDevice.iPhoneAndiPad;
+            PlayerSettings.iOS.appleEnableAutomaticSigning = true;
+            PlayerSettings.iOS.appleDeveloperTeamID = "";
+            // The status bar is hidden and the screen never sleeps: a fight can take a minute of reading
+            // with nothing touched.
+            PlayerSettings.statusBarHidden = true;
+            PlayerSettings.iOS.requiresFullScreen = true;
+        }
+
+        /// <summary>
+        /// Landscape, either way up. Setting a single default orientation locks the device to one of the
+        /// two landscapes — the iOS plist came out with only LandscapeRight, so a phone held the other way
+        /// showed the game upside down. Auto-rotation with only the landscape flags lets the device turn
+        /// and still never offers portrait, which the board cannot use.
+        /// </summary>
+        static void LandscapeOnly()
+        {
+            PlayerSettings.defaultInterfaceOrientation = UIOrientation.AutoRotation;
+            PlayerSettings.allowedAutorotateToLandscapeLeft = true;
+            PlayerSettings.allowedAutorotateToLandscapeRight = true;
+            PlayerSettings.allowedAutorotateToPortrait = false;
+            PlayerSettings.allowedAutorotateToPortraitUpsideDown = false;
+            PlayerSettings.useAnimatedAutorotation = true;
         }
 
         const string ArabicFontPath = "Assets/EmberDeck/Resources/Fonts/NotoNaskhArabicUI-Regular.ttf";

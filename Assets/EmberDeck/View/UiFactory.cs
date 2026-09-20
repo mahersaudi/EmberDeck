@@ -108,6 +108,8 @@ namespace EmberDeck.View
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1920f, 1080f);
             scaler.matchWidthOrHeight = TouchMode.Active ? 1f : 0.5f;
+            // On a touch screen the match has to follow the device: see ScalerFit.
+            if (TouchMode.Active && scaler.GetComponent<ScalerFit>() == null) scaler.gameObject.AddComponent<ScalerFit>();
         }
 
         /// <summary>Right-to-left text flushes to the other side of its box.</summary>
