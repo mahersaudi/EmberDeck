@@ -15,8 +15,20 @@ you that Windows and Android did not:
 
 Then, on this Mac:
 
-1. **Install Xcode** from the App Store (about 10 GB). The command-line tools already here are not
-   enough — they have no iOS SDK and no way to sign anything.
+1. **Install Xcode** (about 12 GB). The command-line tools already here are not enough — they have no
+   iOS SDK and no way to sign anything.
+
+   Xcode 27 needs macOS 26.6 or newer, and this machine was on 26.5.1, so the OS update comes first.
+   From the terminal, with `mas` (`brew install mas`) and the App Store already signed in:
+
+   ```bash
+   softwareupdate --list                      # what is available
+   softwareupdate --download 'macOS 27-26A428'
+   softwareupdate --install 'macOS 27-26A428' --restart    # reboots
+   mas get 497799835                          # Xcode, once the OS is new enough
+   sudo xcode-select -s /Applications/Xcode.app
+   sudo xcodebuild -license accept
+   ```
 2. Open `Build/Release/iOS/Xcode/Unity-iPhone.xcodeproj`.
 3. In **Signing & Capabilities**, choose a team. A free Apple ID works: it signs the app for seven
    days at a time, which is enough to play it on your own iPhone or iPad. An Apple Developer
