@@ -1332,3 +1332,11 @@ Heartstone
 = حجر القلب
 While you are overheated, your attacks deal 3 more damage.
 = ما دمت فوق حد الحرارة، تسبب هجماتك 3 ضرر إضافي.
+
+# ── Animation speed and the fight's replay ─────────────────────────────────────
+Animation speed
+= سرعة الحركة
+Fast
+= سريعة
+Blocked {0}
+= صُدّ {0}

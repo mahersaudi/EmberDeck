@@ -537,6 +537,14 @@ def sfx_debuff(rng):
 
 SFX = {name[4:]: fn for name, fn in globals().items() if name.startswith("sfx_") and callable(fn)}
 
+# The effects now played from recorded CC0 sounds (art/audio/install_kenney.sh) are not written any
+# more. The first playtest found the synthesised hits, draws and clicks harsh and repetitive; what
+# stays synthesised is what has no recording that fits — Burn, Heat, Overheat, the relic chime and
+# the two end-of-fight stings. The functions above are kept, so the old sounds can be compared.
+RECORDED = {"card_draw", "card_play", "hit", "heavy_hit", "blocked_hit", "block_gain", "enemy_death",
+            "player_hurt", "turn_start", "click", "map_select", "reward", "upgrade", "buff", "debuff"}
+SFX = {name: fn for name, fn in SFX.items() if name not in RECORDED}
+
 
 # ── Music ───────────────────────────────────────────────────────────────────────────────
 # All three tracks sit in D, so the crossfade between map and combat never lands on a clash.

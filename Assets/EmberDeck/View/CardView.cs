@@ -39,13 +39,13 @@ namespace EmberDeck.View
 
         Vector2 _restPosition;
         float _restRotation;
-        float _hold;
         CanvasGroup _group;
         bool _placed;
         bool _selected;
         bool _hovered;
         bool _leaving;
         bool _dragging;
+        bool _dealing;
         int _siblingBeforeHover = -1;
 
         /// <summary>
@@ -189,8 +189,87 @@ namespace EmberDeck.View
         public void DealIn(Vector2 from, float scale, float rotation, float delay)
         {
             SpawnAt(from, scale);
-            ((RectTransform)transform).localRotation = Quaternion.Euler(0f, 0f, rotation);
-            _hold = delay;
+            var rect = (RectTransform)transform;
+            rect.localRotation = Quaternion.Euler(0f, 0f, rotation);
+            _dealing = true;
+            _group.alpha = 0f;
+
+            // Waiting on the pile: hidden, so an undealt hand is not a stack of cards sitting there.
+            // Then one arc up and over into its place, turning face-up on the way — the card starts
+            // edge-on and widens, which reads as a flip without needing a card back to show.
+            float flight = Pace.DealFlight;
+            Motion.Run(this, "deal", flight, t =>
+            {
+                Vector2 to = _restPosition;
+                Vector2 control = (from + to) * 0.5f + new Vector2(0f, 230f);
+                float u = 1f - t;
+                rect.anchoredPosition = u * u * from + 2f * u * t * control + t * t * to;
+
+                float s = Mathf.Lerp(scale, 1f, t);
+                float flip = Mathf.Clamp01(t / 0.45f);
+                rect.localScale = new Vector3(s * Mathf.Lerp(0.08f, 1f, Motion.OutCubic(flip)), s, 1f);
+                rect.localRotation = Quaternion.Euler(0f, 0f, Mathf.Lerp(rotation, _restRotation, t));
+                _group.alpha = Mathf.Clamp01(t * 5f);
+            }, Motion.OutCubic, delay, () =>
+            {
+                if (this == null) return;
+                _dealing = false;
+                _group.alpha = 1f;
+            }, () => AudioDirector.Play(Sfx.CardDraw, 0.55f));
+        }
+
+        /// <summary>
+        /// Played: lifted out of the hand and drawn back, then thrown at <paramref name="to"/> — the enemy it
+        /// hits, the player it shields, or the middle of the board. It arrives at Pace.CardImpact, the
+        /// moment CombatFeedback lands its effects, and bursts there.
+        /// </summary>
+        public void Throw(Vector2 to)
+        {
+            if (_leaving) return;
+            _leaving = true;
+            _dragging = false;
+            _dealing = false;
+            _group.blocksRaycasts = false;
+            Tooltip.Hide(GetComponent<TooltipTrigger>());
+            transform.SetAsLastSibling();
+
+            var rect = (RectTransform)transform;
+            Vector2 from = rect.anchoredPosition;
+            Vector2 lifted = from + new Vector2(0f, 90f);
+            float fromScale = rect.localScale.x;
+            var fromRotation = rect.localRotation;
+            float windup = Pace.CardWindup, flight = Pace.CardFlight, burst = Pace.S(0.18f);
+
+            Motion.Run(this, "leave", windup + flight + burst, t =>
+            {
+                float at = t * (windup + flight + burst);
+                if (at < windup)
+                {
+                    // Lifted and held up to be read one last time, leaning back a little.
+                    float k = Motion.OutBack(at / windup);
+                    rect.anchoredPosition = Vector2.LerpUnclamped(from, lifted, k);
+                    float s = Mathf.LerpUnclamped(fromScale, 1.28f, k);
+                    rect.localScale = new Vector3(s, s, 1f);
+                    rect.localRotation = Quaternion.Slerp(fromRotation, Quaternion.Euler(0f, 0f, 6f), k);
+                }
+                else if (at < windup + flight)
+                {
+                    // Thrown: accelerating all the way in, shrinking as it goes.
+                    float k = Motion.InCubic((at - windup) / flight);
+                    rect.anchoredPosition = Vector2.LerpUnclamped(lifted, to, k);
+                    float s = Mathf.Lerp(1.28f, 0.75f, k);
+                    rect.localScale = new Vector3(s, s, 1f);
+                    rect.localRotation = Quaternion.Euler(0f, 0f, Mathf.Lerp(6f, -10f, k));
+                }
+                else
+                {
+                    // Landed: it bursts outward and is gone.
+                    float k = (at - windup - flight) / burst;
+                    float s = Mathf.Lerp(0.75f, 1.2f, k);
+                    rect.localScale = new Vector3(s, s, 1f);
+                    _group.alpha = 1f - k;
+                }
+            }, Motion.Linear, 0f, () => { if (this != null) Destroy(gameObject); });
         }
 
         /// <summary>Sends the card off — to the board when played, to the discard pile otherwise — and destroys it.</summary>
@@ -249,14 +328,7 @@ namespace EmberDeck.View
 
         void Update()
         {
-            if (_leaving || _dragging) return;
-
-            // Waiting its turn in the deal.
-            if (_hold > 0f)
-            {
-                _hold -= Time.unscaledDeltaTime;
-                return;
-            }
+            if (_leaving || _dragging || _dealing) return;
 
             // Exponential smoothing rather than a timed tween: the target changes whenever the hand
             // re-fans or the selection moves, and this follows a moving target without restarts.
@@ -283,7 +355,13 @@ namespace EmberDeck.View
         {
             if (!Draggable || _leaving) return;
             _dragging = true;
-            _hold = 0f;
+            if (_dealing)
+            {
+                // Picked up mid-deal: the finger wins, and the deal's tween is replaced by nothing.
+                Motion.Run(this, "deal", 0.0001f, null);
+                _dealing = false;
+                _group.alpha = 1f;
+            }
             Tooltip.Hide(GetComponent<TooltipTrigger>());
             transform.SetAsLastSibling();
             DragStarted?.Invoke(this);

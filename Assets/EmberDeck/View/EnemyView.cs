@@ -21,6 +21,7 @@ namespace EmberDeck.View
         CanvasGroup _group;
         Vector2 _recoil;
         bool _dying;
+        bool _dyingQueued;
 
         /// <summary>The row above the portrait showing the next move.</summary>
         public RectTransform IntentRect => _intentRow;
@@ -162,19 +163,57 @@ namespace EmberDeck.View
         /// </summary>
         public void Die(float delay = 0f)
         {
-            if (_dying) return;
-            _dying = true;
+            if (_dyingQueued) return;
+            _dyingQueued = true;
 
-            Motion.Run(this, "die", 0.75f, t =>
+            // Dead from the moment the tween starts, not from the moment it was queued: the killing blow
+            // lands first, and its knock-back has to play.
+            Motion.Run(this, "die", Pace.S(0.9f), t =>
             {
                 _group.alpha = 1f - 0.5f * t;
                 if (_body == null) return;
                 var rect = _body.rectTransform;
-                rect.anchoredPosition = _bodyRest + new Vector2(0f, -30f * t);
-                rect.localRotation = Quaternion.Euler(0f, 0f, -10f * t);
-                float s = 1f - 0.08f * t;
+                rect.anchoredPosition = _bodyRest + new Vector2(0f, -40f * t);
+                rect.localRotation = Quaternion.Euler(0f, 0f, -12f * t);
+                float s = 1f - 0.1f * t;
                 rect.localScale = new Vector3(s, s, 1f);
-            }, Motion.OutCubic, delay);
+            }, Motion.OutCubic, delay, null, () => _dying = true);
+        }
+
+        /// <summary>
+        /// The enemy attacks: the whole card draws back, then throws itself at the player, and the blow lands
+        /// at the end of the lunge. <paramref name="impact"/> is when that is — CombatFeedback schedules the
+        /// hit for the same moment, so the attacker arriving and the damage appearing are one event.
+        /// <paramref name="toward"/> is the direction of the player, in this card's parent's space.
+        /// </summary>
+        public void Lunge(float delay, float impact, Vector2 toward)
+        {
+            if (Enemy == null) return;
+            var rect = (RectTransform)transform;
+            Vector2 rest = Vector2.zero;
+            Vector2 dir = toward.sqrMagnitude > 0.001f ? toward.normalized : Vector2.down;
+            float windup = impact * 0.45f;
+            float strike = impact - windup;
+            float recover = Pace.S(0.4f);
+
+            Motion.Run(this, "lunge", windup + strike + recover, t =>
+            {
+                float at = t * (windup + strike + recover);
+                float reach;
+                if (at < windup) reach = -0.18f * Motion.OutCubic(at / windup);                               // draw back
+                else if (at < windup + strike) reach = -0.18f + 1.18f * Motion.InCubic((at - windup) / strike); // strike
+                else reach = 1f - Motion.OutCubic((at - windup - strike) / recover);                         // return
+                rect.anchoredPosition = rest + dir * (130f * reach);
+                float s = 1f + 0.12f * Mathf.Max(0f, reach);
+                rect.localScale = new Vector3(s, s, 1f);
+                // In front of the other enemies while it attacks.
+                if (at < windup + strike) transform.SetAsLastSibling();
+            }, Motion.Linear, delay, () =>
+            {
+                if (this == null) return;
+                rect.anchoredPosition = rest;
+                rect.localScale = Vector3.one;
+            }, () => rest = rect.anchoredPosition);
         }
 
         /// <summary>
@@ -183,7 +222,8 @@ namespace EmberDeck.View
         /// </summary>
         public void Recoil(float strength)
         {
-            if (Enemy == null || !Enemy.IsAlive) return;
+            // The view's idea of alive, not the model's: a killing blow still has to land and knock it back.
+            if (Enemy == null || _dying) return;
             _recoil = new Vector2(0f, Mathf.Clamp(strength, 4f, 26f));
         }
 
@@ -193,7 +233,7 @@ namespace EmberDeck.View
         /// </summary>
         void Update()
         {
-            if (Enemy == null || !Enemy.IsAlive || _body == null) return;
+            if (Enemy == null || _dying || _body == null) return;
             float t = Time.time * 1.7f + _breathPhase;
             var rect = _body.rectTransform;
 
@@ -205,9 +245,15 @@ namespace EmberDeck.View
             rect.localScale = new Vector3(s, s, 1f);
         }
 
-        public void Refresh(bool targetable)
+        public void Refresh(bool targetable) => Refresh(targetable, Enemy.Hp);
+
+        /// <summary>
+        /// Draws the enemy at <paramref name="shownHp"/> — the health the replay has reached. The model has
+        /// already applied a card's damage when the card leaves the hand; the bar waits for the card to land.
+        /// </summary>
+        public void Refresh(bool targetable, int shownHp)
         {
-            bool alive = Enemy.IsAlive;
+            bool alive = shownHp > 0;
             gameObject.SetActive(true);
 
             // A sprite is tinted white so its own colours show; only the placeholder
@@ -217,8 +263,8 @@ namespace EmberDeck.View
                 : (alive ? Enemy.Data.TintColor : Enemy.Data.TintColor * 0.3f);
             GetComponent<Image>().color = targetable && alive ? Palette.PanelRaised : Palette.PanelDark;
 
-            UiFactory.SetBarFill(_healthFill, Enemy.MaxHp > 0 ? (float)Enemy.Hp / Enemy.MaxHp : 0f);
-            _healthLabel.text = $"{Enemy.Hp} / {Enemy.MaxHp}";
+            UiFactory.SetBarFill(_healthFill, Enemy.MaxHp > 0 ? (float)Mathf.Max(0, shownHp) / Enemy.MaxHp : 0f);
+            _healthLabel.text = $"{Mathf.Max(0, shownHp)} / {Enemy.MaxHp}";
 
             _blockBadge.gameObject.SetActive(Enemy.Block > 0);
             _blockLabel.text = Enemy.Block.ToString();

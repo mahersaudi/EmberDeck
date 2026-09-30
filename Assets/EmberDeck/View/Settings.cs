@@ -40,6 +40,9 @@ namespace EmberDeck.View
         /// </summary>
         public static bool ReducedMotion;
 
+        /// <summary>Halves every combat animation. Off by default: see Pace.</summary>
+        public static bool FastAnimations;
+
         static bool _displayChosen;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -62,6 +65,7 @@ namespace EmberDeck.View
             Height = PlayerPrefs.GetInt(Prefix + "height", Screen.height);
             VSync = PlayerPrefs.GetInt(Prefix + "vsync", 1) == 1;
             ReducedMotion = PlayerPrefs.GetInt(Prefix + "reducedMotion", 0) == 1;
+            FastAnimations = PlayerPrefs.GetInt(Prefix + "fastAnimations", 0) == 1;
         }
 
         public static void ApplyAudio()
@@ -75,6 +79,7 @@ namespace EmberDeck.View
         public static void SaveReducedMotion()
         {
             PlayerPrefs.SetInt(Prefix + "reducedMotion", ReducedMotion ? 1 : 0);
+            PlayerPrefs.SetInt(Prefix + "fastAnimations", FastAnimations ? 1 : 0);
             PlayerPrefs.Save();
         }
 

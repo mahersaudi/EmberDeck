@@ -77,6 +77,18 @@ namespace EmberDeck.View
         Text _playerHealthLabel;
         Text _playerBlockLabel;
         Image _playerBlockBadge;
+
+        /// <summary>The replay of the fight, which the view waits on. See CombatFeedback.</summary>
+        CombatFeedback _feedback;
+
+        /// <summary>True while an enemy turn is being shown: input is held until it ends.</summary>
+        bool _replaying;
+
+        /// <summary>The player's Block as the enemy-turn replay has spent it; null outside a replay.</summary>
+        int? _replayBlock;
+
+        int _shownBlock;
+        Image _inputBlocker;
         StatusStrip _playerStatuses;
         Text _energyLabel;
         Image _heatFill;
@@ -127,7 +139,18 @@ namespace EmberDeck.View
                 _run.Stats.Seconds += Time.unscaledDeltaTime;
 
             // Escape, and B on a pad, arrive through PadNavigator: see OnNavCancel.
+
+            if (_replaying && _feedback != null && Time.unscaledTime >= _feedback.DealAt)
+            {
+                _replaying = false;
+                _replayBlock = null;
+                _inputBlocker.gameObject.SetActive(false);
+                Redraw();
+            }
         }
+
+        /// <summary>Capture-harness and pad use: an enemy turn, or a card, is still being shown.</summary>
+        public bool IsBusy => _replaying || (_feedback != null && _feedback.Remaining > 0f);
 
         void BuildMenus()
         {
@@ -372,6 +395,13 @@ namespace EmberDeck.View
             _fxLayer = UiFactory.Panel(_root, "Effects", new Color(0f, 0f, 0f, 0f));
             UiFactory.Stretch(_fxLayer);
             _fxLayer.GetComponent<Image>().raycastTarget = false;
+
+            // Invisible, and on only while an enemy turn is shown: a card played while the enemies are
+            // still visibly attacking would be played into a board the player cannot read yet.
+            var blocker = UiFactory.Panel(_root, "ReplayBlocker", new Color(0f, 0f, 0f, 0f));
+            UiFactory.Stretch(blocker);
+            _inputBlocker = blocker.GetComponent<Image>();
+            blocker.gameObject.SetActive(false);
 
             BuildScreens();
         }
@@ -645,7 +675,14 @@ namespace EmberDeck.View
             });
             // Attached after Begin so the views it animates exist. Nothing needs an effect
             // before the first turn: the opening hand already deals itself in.
-            new CombatFeedback(_session.State, _fxLayer, _root, AnchorFor, FlashFor, ViewFor);
+            _feedback = new CombatFeedback(_session.State, _fxLayer, _root, AnchorFor, FlashFor, ViewFor);
+            _feedback.Landed += RefreshCombatants;
+            _feedback.BlockSpent += (actor, amount) =>
+            {
+                if (actor.IsPlayer && _replayBlock.HasValue) _replayBlock = Mathf.Max(0, _replayBlock.Value - amount);
+            };
+            _replaying = false;
+            _replayBlock = null;
             TrackStats(_session.State);
             _run.Stats.FinalEncounter = DescribeEncounter(_session.State);
             AudioDirector.PlayMusic(_run.IsBoss ? MusicTrack.Boss : MusicTrack.Combat);
@@ -1074,7 +1111,9 @@ namespace EmberDeck.View
                 AudioDirector.PlayMusic(MusicTrack.None);
                 // The final blow and the defeat sting play out on the board before the summary covers it.
                 var lost = _run;
-                Motion.After(1.4f, () => { if (_run == lost) ShowEndOfRun(won: false); }, this);
+                // After the killing blow has visibly landed, however long the replay still runs.
+                Motion.After(Mathf.Max(1.4f, (_feedback?.Remaining ?? 0f) + 1.0f),
+                             () => { if (_run == lost) ShowEndOfRun(won: false); }, this);
                 return;
             }
 
@@ -1090,7 +1129,8 @@ namespace EmberDeck.View
             {
                 RunSave.Delete();
                 var won = _run;
-                Motion.After(1.2f, () => { if (_run == won) ShowEndOfRun(won: true); }, this);
+                Motion.After(Mathf.Max(1.2f, (_feedback?.Remaining ?? 0f) + 0.8f),
+                             () => { if (_run == won) ShowEndOfRun(won: true); }, this);
                 return;
             }
 
@@ -1109,7 +1149,13 @@ namespace EmberDeck.View
             var potion = PotionService.RollDrop(_run, _config);
             bool potionKept = PotionService.TryAdd(_run, potion);
 
-            ShowRewards(_run.IsBoss ? $"ACT {_run.Act} COMPLETE" : _run.IsElite ? "ELITE DEFEATED" : "VICTORY", relic, gold, potion, potionKept);
+            // The rewards wait for the last enemy to finish dying: a reward screen over a card still in the
+            // air takes the kill away from the player.
+            string title = _run.IsBoss ? $"ACT {_run.Act} COMPLETE" : _run.IsElite ? "ELITE DEFEATED" : "VICTORY";
+            var session = _session;
+            float wait = (_feedback?.Remaining ?? 0f) + Pace.S(0.3f);
+            if (wait <= 0.05f) ShowRewards(title, relic, gold, potion, potionKept);
+            else Motion.After(wait, () => { if (_session == session) ShowRewards(title, relic, gold, potion, potionKept); }, this);
         }
 
         void ShowRewards(string title, Content.Relics.RelicData relic = null, int gold = 0,
@@ -1197,6 +1243,7 @@ namespace EmberDeck.View
 
         void OnCardClicked(CardView view)
         {
+            if (_replaying) return;   // the enemy turn is still being shown
             if (_session == null || State.IsOver) return;
             _selectedPotion = -1;
 
@@ -1225,6 +1272,7 @@ namespace EmberDeck.View
 
             int index = _cardViews.IndexOf(view);
             _lastPlayTarget = null;
+            _feedback?.BeginCard();
             Engine.TryPlayCard(view.Card, State.Player);
             _selectedCard = null;
             Redraw();
@@ -1234,6 +1282,7 @@ namespace EmberDeck.View
         /// <summary>A card has been picked up: drop any other selection, and light up what it can hit.</summary>
         void OnCardDragStarted(CardView view)
         {
+            if (_replaying) return;   // the enemy turn is still being shown
             if (_session == null || State.IsOver) return;
             _selectedPotion = -1;
             _selectedCard = null;
@@ -1250,6 +1299,7 @@ namespace EmberDeck.View
         /// </summary>
         void OnCardDropped(CardView view, PointerEventData eventData)
         {
+            if (_replaying) return;   // the enemy turn is still being shown
             _dragCard = null;
             if (_session == null || State.IsOver || !_cardViews.Contains(view))
             {
@@ -1276,6 +1326,7 @@ namespace EmberDeck.View
 
                 int index = _cardViews.IndexOf(view);
                 _lastPlayTarget = (RectTransform)target.transform;
+                _feedback?.BeginCard();
                 Engine.TryPlayCard(view.Card, target.Enemy);
                 Redraw();
                 FocusHand(index);
@@ -1290,6 +1341,7 @@ namespace EmberDeck.View
 
             int slot = _cardViews.IndexOf(view);
             _lastPlayTarget = target != null ? (RectTransform)target.transform : null;
+            _feedback?.BeginCard();
             Engine.TryPlayCard(view.Card, State.Player);
             Redraw();
             FocusHand(slot);
@@ -1339,6 +1391,7 @@ namespace EmberDeck.View
 
         void OnEnemyClicked(EnemyView view)
         {
+            if (_replaying) return;   // the enemy turn is still being shown
             if (_session == null || State.IsOver || !view.Enemy.IsAlive) return;
 
             if (_selectedPotion >= 0)
@@ -1354,6 +1407,7 @@ namespace EmberDeck.View
 
             int index = _cardViews.IndexOf(_selectedCard);
             _lastPlayTarget = (RectTransform)view.transform;
+            _feedback?.BeginCard();
             Engine.TryPlayCard(_selectedCard.Card, view.Enemy);
             _selectedCard = null;
             Redraw();
@@ -1615,6 +1669,10 @@ namespace EmberDeck.View
             _selectedCard = null;
             _selectedPotion = -1;
             Coach.Complete("endturn");
+            if (_replaying) return;
+            _replayBlock = State.Player.Block;
+            _replaying = true;
+            _inputBlocker.gameObject.SetActive(true);
             Engine.EndPlayerTurn();
             Redraw();
         }
@@ -1628,16 +1686,7 @@ namespace EmberDeck.View
             SyncHand();
 
             RefreshPotions();
-            bool targeting = _selectedCard != null || _selectedPotion >= 0 || _dragCard != null;
-            foreach (var enemyView in _enemyViews)
-                enemyView.Refresh(targeting);
-
-            var player = State.Player;
-            UiFactory.SetBarFill(_playerHealthFill, player.MaxHp > 0 ? (float)player.Hp / player.MaxHp : 0f);
-            _playerHealthLabel.text = $"{player.Hp} / {player.MaxHp}";
-            _playerBlockBadge.gameObject.SetActive(player.Block > 0);
-            _playerBlockLabel.text = player.Block.ToString();
-            _playerStatuses.Set(player);
+            RefreshCombatants();
 
             _energyLabel.text = $"{State.Energy}/{State.EnergyPerTurn}";
 
@@ -1658,7 +1707,7 @@ namespace EmberDeck.View
             _drawLabel.text = $"Draw {State.DrawPile.Count}";
             _discardLabel.text = $"Discard {State.DiscardPile.Count}" +
                                  (State.ExhaustPile.Count > 0 ? $"    Exhaust {State.ExhaustPile.Count}" : "");
-            _endTurnButton.interactable = !State.IsOver;
+            _endTurnButton.interactable = !State.IsOver && !_replaying;
 
             bool anyPlayable = false;
             foreach (var cardView in _cardViews)
@@ -1699,7 +1748,7 @@ namespace EmberDeck.View
                     NavHint.On(view).Priority = 10;   // a fight opens with focus in the hand
                     // Face down on the pile, then dealt in turn. The stagger matches the draw sound's,
                     // so each card lands on its own click.
-                    view.DealIn(DrawPilePoint, 0.3f, -32f, 0.05f + dealt++ * 0.07f);
+                    view.DealIn(DrawPilePoint, 0.35f, -40f, DrawDelay() + dealt++ * Pace.DealInterval);
                 }
                 next.Add(view);
             }
@@ -1711,17 +1760,20 @@ namespace EmberDeck.View
                 bool played = view.Card == _lastPlayedCard;
                 if (played)
                 {
-                    // Thrown at whatever it was aimed at, so an attack visibly travels to the enemy it
-                    // hits. A card with no target flies to the middle of the board instead.
-                    var target = _lastPlayTarget != null && _lastPlayTarget.gameObject.activeInHierarchy
-                        ? Motion.PointIn(_handRow, _lastPlayTarget)
-                        : PlayedPoint;
-                    view.FlyAway(target, 1.15f, 0.3f);
+                    // Thrown at what it affects: the enemy it hits, every enemy at once, or the player it
+                    // shields or strengthens. The throw lands when CombatFeedback lands its effects.
+                    Vector2 target;
+                    if (view.Card.Data.Target == Content.TargetMode.AllEnemies) target = Motion.PointIn(_handRow, _enemyRow);
+                    else if (_lastPlayTarget != null && _lastPlayTarget.gameObject.activeInHierarchy)
+                        target = Motion.PointIn(_handRow, _lastPlayTarget);
+                    else target = Motion.PointIn(_handRow, _playerPanel);
+                    view.Throw(target);
                 }
                 else
                 {
                     // Swept to the discard pile in order, so a five-card discard reads as a sweep.
-                    view.FlyAway(DiscardPilePoint, 0.3f, 0.35f, delay: discarded++ * 0.05f);
+                    if (discarded == 0) AudioDirector.Play(Sfx.Discard, 0.6f);
+                    view.FlyAway(DiscardPilePoint, 0.3f, Pace.S(0.45f), delay: discarded++ * Pace.DiscardInterval);
                 }
             }
 
@@ -1730,6 +1782,46 @@ namespace EmberDeck.View
             if (_selectedCard != null && !_cardViews.Contains(_selectedCard)) _selectedCard = null;
 
             LayoutHand();
+        }
+
+        /// <summary>
+        /// How long a card drawn now waits before it is dealt: until the card that drew it has landed, or
+        /// until the enemy turn before this hand has finished, or — at the start of a fight — until the
+        /// enemies have walked on.
+        /// </summary>
+        float DrawDelay()
+        {
+            if (_feedback == null) return 0.05f;
+            float after = Mathf.Max(_feedback.DealAt - Time.unscaledTime, 0f);
+            if (State.TurnNumber <= 1 && after <= 0f) after = Pace.S(0.35f);   // the opening hand, after the enemies
+            return Mathf.Max(after, _feedback.Remaining > 0f && !_replaying ? Pace.CardImpact : 0f);
+        }
+
+        /// <summary>
+        /// The enemies' and the player's health and Block, at the point the replay has reached. Called on
+        /// every Redraw and again each time a blow lands, so a bar drops when the hit arrives rather than
+        /// when the card leaves the hand.
+        /// </summary>
+        void RefreshCombatants()
+        {
+            if (_session == null) return;
+
+            bool targeting = _selectedCard != null || _selectedPotion >= 0 || _dragCard != null;
+            foreach (var enemyView in _enemyViews)
+                enemyView.Refresh(targeting, _feedback != null ? _feedback.ShownHp(enemyView.Enemy) : enemyView.Enemy.Hp);
+
+            var player = State.Player;
+            int hp = _feedback != null ? _feedback.ShownHp(player) : player.Hp;
+            UiFactory.SetBarFill(_playerHealthFill, player.MaxHp > 0 ? (float)Mathf.Max(0, hp) / player.MaxHp : 0f);
+            _playerHealthLabel.text = $"{Mathf.Max(0, hp)} / {player.MaxHp}";
+
+            int block = _replayBlock ?? (_feedback != null ? _feedback.ShownBlock(player) : player.Block);
+            _playerBlockBadge.gameObject.SetActive(block > 0);
+            _playerBlockLabel.text = block.ToString();
+            // The badge answers the shield: it pops when Block arrives, not when it is merely due.
+            if (block > _shownBlock) Motion.Punch(_playerBlockBadge.transform, 0.35f, Pace.S(0.35f));
+            _shownBlock = block;
+            _playerStatuses.Set(player);
         }
 
         void LayoutHand()

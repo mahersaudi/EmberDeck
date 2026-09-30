@@ -81,6 +81,16 @@ namespace EmberDeck.Combat
 
     /// <summary>Raised after Heat is added. Ember Engine listens here.</summary>
     /// <summary>The Emberheart's rule paid out: the player started a turn overheated and gained Energy.</summary>
+    /// <summary>
+    /// One enemy is about to carry out its intent. The view needs it to tell one enemy's action from
+    /// the next — the engine resolves the whole enemy turn in one call, and nothing else marks where
+    /// one attacker stops and the next begins. The rules never read it.
+    /// </summary>
+    public sealed class EnemyActionEvent
+    {
+        public Enemy Enemy;
+    }
+
     public sealed class HeartFireEvent
     {
         public int Energy;

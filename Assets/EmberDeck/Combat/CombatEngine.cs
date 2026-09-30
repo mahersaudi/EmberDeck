@@ -91,6 +91,7 @@ namespace EmberDeck.Combat
                 if (!enemy.IsAlive) continue;
 
                 enemy.Block = 0;
+                State.Bus.Publish(new EnemyActionEvent { Enemy = enemy });
                 ExecuteIntent(enemy);
                 TickEndOfTurn(enemy);
 

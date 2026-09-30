@@ -1,6 +1,27 @@
 # Audio and motion
 
-## Sound: synthesised, not sampled or generated
+## Sound: recorded where it counts, synthesised where nothing fits
+
+**The first playtest said the sounds were harsh and grating**, and the table below said why before
+anyone listened: every effect came from a synthesiser, and nobody had heard them. The effects a
+player hears every turn — cards dealt, lifted and thrown, hits, blocks, deaths, clicks — are now
+recorded sounds from four of Kenney's packs (casino, impact, RPG and interface audio), all **CC0**:
+public domain, commercial use allowed, no attribution required (it is given anyway, in
+`docs/third-party/`).
+
+```bash
+./art/audio/install_kenney.sh <folder the four packs were unzipped into>
+```
+
+- **Several takes per effect** (`sfx_hit_1` … `sfx_hit_5`), and `AudioDirector` never plays the same
+  take twice running. Five cards dealt are five different slides.
+- **Heat is heard only when it crosses the Overheat line.** It used to sound on every gain, and a
+  Heat deck gains it three times a turn — the sound singled out as the one that grated.
+- What stays synthesised is what no recording fits: Burn, Heat, Overheat, the relic chime and the
+  two end-of-fight stings. `synth.py` no longer writes the replaced effects (its `RECORDED` set), so a
+  re-run cannot put a stale synthesised take back among the recorded ones.
+
+## The synthesiser
 
 Every sound effect and all three music loops come from `art/audio/synth.py`, using only the
 Python standard library, with ffmpeg for measurement.
@@ -59,7 +80,38 @@ first thing to check in a play session.
 - Music crossfades over 1.4 s: map, combat, and boss (which is faster and heavier).
 - **M** mutes. Volume settings belong to the settings screen, which does not exist yet.
 
-## Motion
+## Motion: a fight told in beats
+
+The second complaint from the same playtest was that drawing, attacking and blocking all felt weak.
+They did, because they were over before they could be seen: the engine resolves a card or a whole
+enemy turn instantly, and the view showed the result in the same frame. `CombatFeedback` now keeps a
+**timeline** and replays the fight on it. Every duration is in `Pace`, and Settings has
+**Animation speed: Normal / Fast** (Fast halves all of it).
+
+| beat | what the player sees | Normal |
+|---|---|---|
+| a card played | lifted out of the hand and held up, then thrown, accelerating, at what it affects — the enemy it hits, every enemy, or the player it shields — and bursts on arrival | 0.22 s lift, 0.30 s throw |
+| its effects | land when the card does: the hit, the shield, the status; several hits of one card follow each other | 0.16 s apart |
+| an enemy attacking | the whole enemy card draws back, then lunges at the player, and the blow lands at the end of the lunge | 0.26 s |
+| the next enemy | waits its turn | 0.85 s |
+| a hand dealt | after the enemy turn's last blow, one card at a time, each arcing up from the draw pile and turning face-up on the way | 0.17 s apart, 0.45 s flight |
+| Block gained | a shield swells over whoever raised it, holds, and fades; the Block badge pops when it arrives | 0.75 s |
+| a blow on Block | the shield takes it first, visibly, with "Blocked N" and a clang | — |
+
+**Numbers wait for the blows.** The model has already applied a card's damage when the card leaves
+the hand, so health bars would drop before anything had landed. `ShownHp` is the model's health plus
+every blow still in the air; each blow releases its share as it lands, and the bars redraw then. The
+player's Block during an enemy turn is the Block they ended the turn with, spent hit by hit.
+
+**Input waits too.** While an enemy turn is being shown, an invisible blocker covers the board and
+End Turn is disabled, and the pad cannot play a card — a card played into a board still being
+resolved on screen is a card played blind. Rewards and the end-of-run screen wait for the killing
+blow to finish landing.
+
+The engine gained one event for this, `EnemyActionEvent`, published as each enemy begins its action:
+nothing else marked where one attacker stops and the next begins. The rules never read it.
+
+## Motion (the tween runner)
 
 `View/Motion.cs` is a small tween runner, written instead of importing DOTween: the game needs
 move, punch, shake, flash, floating text and delay, and nothing else. It is view-only and never

@@ -107,6 +107,49 @@ namespace EmberDeck.View
             }, Motion.Linear, delay, () => { if (image != null) Object.Destroy(image.gameObject); });
         }
 
+        /// <summary>
+        /// A shield raised: the Block icon swells over whoever gained it, holds, then shrinks away. Not
+        /// decoration — it is how the player sees that the card they played did something, and a Block
+        /// card that only changes a small number in a badge feels like it did nothing at all. Shown with
+        /// reduced motion too, without the swell.
+        /// </summary>
+        public static void Shield(RectTransform layer, Vector2 position, float size, float delay = 0f, bool shatter = false)
+        {
+            if (layer == null) return;
+            var sprite = Icons.Get("res_block");
+            if (sprite == null) return;
+
+            var image = Image(layer, shatter ? "ShieldHit" : "Shield", sprite, Palette.Block, position, size);
+            var rect = image.rectTransform;
+            float duration = Pace.S(shatter ? 0.45f : 0.75f);
+            bool still = Settings.ReducedMotion;
+
+            Motion.Run(image, null, duration, t =>
+            {
+                // Raised: swell past full size and settle, hold, then shrink toward nothing.
+                // Struck: already up, jolt outward, and break away faster.
+                float scale, alpha;
+                if (shatter)
+                {
+                    scale = still ? 1f : 1f + 0.35f * Motion.OutCubic(t);
+                    alpha = 1f - t;
+                }
+                else
+                {
+                    scale = still ? 1f : t < 0.3f ? Motion.OutBack(t / 0.3f) : t < 0.7f ? 1f : 1f - 0.6f * ((t - 0.7f) / 0.3f);
+                    alpha = t < 0.15f ? t / 0.15f : t < 0.7f ? 1f : 1f - (t - 0.7f) / 0.3f;
+                }
+                rect.localScale = new Vector3(scale, scale, 1f);
+                var c = Palette.Block;
+                c.a = 0.9f * alpha;
+                image.color = c;
+            }, Motion.Linear, delay, () => { if (image != null) Object.Destroy(image.gameObject); });
+
+            if (!still)
+                Burst(layer, position, new Color(Palette.Block.r, Palette.Block.g, Palette.Block.b, shatter ? 0.9f : 0.6f),
+                      size * (shatter ? 1.6f : 1.3f), delay + (shatter ? 0f : Pace.S(0.12f)), Pace.S(0.5f));
+        }
+
         static Image Image(RectTransform layer, string name, Sprite sprite, Color color, Vector2 position, float size)
         {
             var host = new GameObject(name, typeof(RectTransform), typeof(Image));

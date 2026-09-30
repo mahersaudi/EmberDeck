@@ -10,7 +10,7 @@ namespace EmberDeck.View
     {
         CardDraw, CardPlay, Hit, HeavyHit, BlockedHit, BlockGain, Burn, Heat, Overheat,
         EnemyDeath, PlayerHurt, TurnStart, Victory, Defeat, Click, MapSelect, Reward,
-        Upgrade, Relic, Buff, Debuff
+        Upgrade, Relic, Buff, Debuff, Throw, Discard, Potion
     }
 
     /// <summary>Music loops. File names are music_ plus the lowercase name.</summary>
@@ -42,7 +42,8 @@ namespace EmberDeck.View
 
         static AudioDirector _instance;
 
-        readonly Dictionary<Sfx, AudioClip> _clips = new();
+        readonly Dictionary<Sfx, List<AudioClip>> _clips = new();
+        readonly Dictionary<Sfx, int> _lastVariant = new();
         readonly Dictionary<Sfx, float> _lastPlayed = new();
         readonly List<AudioSource> _voices = new();
         readonly List<float> _voiceGain = new();
@@ -82,10 +83,21 @@ namespace EmberDeck.View
             _instance._music = NewMusicSource(host);
             _instance._musicOutgoing = NewMusicSource(host);
 
+            // Each effect is sfx_name, or several takes of it as sfx_name_1, sfx_name_2 ...: a card dealt five
+            // times a turn is five different slides, not one recording played five times.
             foreach (Sfx sfx in Enum.GetValues(typeof(Sfx)))
             {
-                var clip = Resources.Load<AudioClip>($"Audio/sfx_{Snake(sfx.ToString())}");
-                if (clip != null) _instance._clips[sfx] = clip;
+                string name = $"Audio/sfx_{Snake(sfx.ToString())}";
+                var takes = new List<AudioClip>();
+                var single = Resources.Load<AudioClip>(name);
+                if (single != null) takes.Add(single);
+                for (int i = 1; i <= 12; i++)
+                {
+                    var take = Resources.Load<AudioClip>($"{name}_{i}");
+                    if (take == null) break;
+                    takes.Add(take);
+                }
+                if (takes.Count > 0) _instance._clips[sfx] = takes;
             }
 
             if (_instance._clips.Count == 0)
@@ -104,7 +116,14 @@ namespace EmberDeck.View
         public static void Play(Sfx sfx, float volume = 1f, float pitch = 1f, float pitchJitter = 0.04f)
         {
             var director = Instance;
-            if (!director._clips.TryGetValue(sfx, out var clip)) return;
+            if (!director._clips.TryGetValue(sfx, out var takes)) return;
+
+            // A different take from last time, when there is more than one.
+            int pick = UnityEngine.Random.Range(0, takes.Count);
+            if (takes.Count > 1 && director._lastVariant.TryGetValue(sfx, out int previous) && pick == previous)
+                pick = (pick + 1) % takes.Count;
+            director._lastVariant[sfx] = pick;
+            var clip = takes[pick];
 
             float now = Time.unscaledTime;
             if (director._lastPlayed.TryGetValue(sfx, out float last) && now - last < MinRepeatGap) return;

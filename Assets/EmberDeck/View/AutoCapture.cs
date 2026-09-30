@@ -293,20 +293,31 @@ namespace EmberDeck.View
                 // Drive one full turn cycle through the real button, so the shot exercises
                 // enemy resolution and the redraw path rather than just the initial render.
                 var endTurn = FindButton("EndTurn");
+                // Let every card played above land first, so the enemy turn starts on a known beat:
+                // it opens 0.45 s after the click, and the first blow lands at the bottom of a 0.26 s lunge.
+                var settling = FindFirstObjectByType<CombatView>();
+                for (int guard = 0; guard < 200 && settling != null && settling.IsBusy; guard++)
+                    yield return new WaitForSeconds(0.05f);
                 if (endTurn != null)
                 {
                     // Never let a fault in the game skip the quit below: an unattended
                     // capture run that hangs costs far more than a missing screenshot.
                     try { endTurn.onClick.Invoke(); }
                     catch (System.Exception e) { Debug.LogError($"[AutoCapture] end turn threw: {e}"); }
-                    // Two frames mid-replay: the enemy turn resolves in one call and the view
-                    // replays it staggered, so a shot taken after everything settles cannot show
-                    // whether anything moved. These catch the numbers and shakes in flight.
-                    yield return new WaitForSeconds(0.12f);
-                    yield return Capture("03a-motion-0.12s.png");
-                    yield return new WaitForSeconds(0.23f);
-                    yield return Capture("03b-motion-0.35s.png");
-                    yield return new WaitForSeconds(0.65f);
+                    // Frames mid-replay: the enemy turn resolves in one call and the view replays it
+                    // beat by beat, so a shot taken after it settles cannot show whether anything moved.
+                    // The first catches the first enemy lunging, the second its blow landing, the third
+                    // the next hand being dealt.
+                    yield return new WaitForSeconds(0.62f);
+                    yield return Capture("03a-enemy-lunge.png");
+                    yield return new WaitForSeconds(0.14f);
+                    yield return Capture("03b-enemy-blow.png");
+                    var replaying = FindFirstObjectByType<CombatView>();
+                    for (int guard = 0; guard < 200 && replaying != null && replaying.IsBusy; guard++)
+                        yield return new WaitForSeconds(0.05f);
+                    yield return new WaitForSeconds(0.3f);
+                    yield return Capture("03g-hand-dealing.png");
+                    yield return new WaitForSeconds(1.2f);
                     yield return Capture("03-after-end-turn.png");
                 }
                 else
@@ -369,8 +380,11 @@ namespace EmberDeck.View
                             yield return new WaitForSeconds(0.25f);
                             yield return Capture("03e-drag-held.png");
                             Debug.Log($"[AutoCapture] dropped: {dragView.DebugReleaseDrag()}");
-                            yield return new WaitForSeconds(0.5f);
-                            yield return Capture("03f-drag-played.png");
+                            // The throw: lifted and flying at 0.35 s, landed and bursting at 0.6 s.
+                            yield return new WaitForSeconds(0.35f);
+                            yield return Capture("03f-card-thrown.png");
+                            yield return new WaitForSeconds(0.25f);
+                            yield return Capture("03h-card-landed.png");
                         }
                     }
 
@@ -401,6 +415,9 @@ namespace EmberDeck.View
                     if (endOfTurn == null || !endOfTurn.interactable) break;
                     Click(endOfTurn);
                     yield return new WaitForSeconds(0.1f);
+                    var afterTurn = FindFirstObjectByType<CombatView>();
+                    for (int guard = 0; guard < 200 && afterTurn != null && afterTurn.IsBusy; guard++)
+                        yield return new WaitForSeconds(0.05f);
                 }
 
                 // Force the win so the reward screen can be captured. See
@@ -409,6 +426,9 @@ namespace EmberDeck.View
                 {
                     var view = FindFirstObjectByType<CombatView>();
                     if (view != null) view.DebugWinFight();
+                    yield return new WaitForSeconds(0.2f);
+                    for (int guard = 0; guard < 200 && view != null && view.IsBusy; guard++)
+                        yield return new WaitForSeconds(0.05f);
                     yield return new WaitForSeconds(0.8f);
                 }
 
