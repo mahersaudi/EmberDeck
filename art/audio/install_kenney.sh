@@ -6,11 +6,11 @@
 # The packs (all CC0 — public domain, no attribution required, commercial use allowed):
 #   https://kenney.nl/assets/casino-audio      card slides, places, shoves, fans, the shuffle
 #   https://kenney.nl/assets/impact-sounds     punches, metal, plate, soft thuds, glass
-#   https://kenney.nl/assets/rpg-audio         a blade drawn, cloth
+#   https://kenney.nl/assets/rpg-audio         cloth
 #   https://kenney.nl/assets/interface-sounds  clicks, selects, confirmations
 #
 # Each effect becomes sfx_<name>_1 ... sfx_<name>_N in Resources/Audio; AudioDirector picks a different
-# take each time. Everything the synthesiser used to make for these is removed first, so a stale
+# take each time. Any older file for these effects is removed first, so a stale
 # sfx_<name>.wav cannot join the takes.
 set -euo pipefail
 
@@ -44,7 +44,6 @@ install enemy_death impactSoft_heavy_000 impactSoft_heavy_001 impactSoft_heavy_0
 install player_hurt impactSoft_medium_000 impactSoft_medium_001 impactSoft_medium_002 impactSoft_medium_003 impactSoft_medium_004
 install upgrade     impactMetal_heavy_000 impactMetal_heavy_001 impactMetal_heavy_002
 install potion      impactGlass_light_000 impactGlass_light_001 impactGlass_light_002
-install buff        drawKnife1 drawKnife2 drawKnife3
 install debuff      cloth1 cloth2 cloth3 cloth4
 install click       click_001 click_002 click_003 click_004 click_005
 install map_select  select_001 select_002 select_003

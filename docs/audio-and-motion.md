@@ -1,73 +1,58 @@
 # Audio and motion
 
-## Sound: recorded where it counts, synthesised where nothing fits
+## Sound: every sound is a recording
 
-**The first playtest said the sounds were harsh and grating**, and the table below said why before
-anyone listened: every effect came from a synthesiser, and nobody had heard them. The effects a
-player hears every turn — cards dealt, lifted and thrown, hits, blocks, deaths, clicks — are now
-recorded sounds from four of Kenney's packs (casino, impact, RPG and interface audio), all **CC0**:
-public domain, commercial use allowed, no attribution required (it is given anyway, in
-`docs/third-party/`).
+**The playtests said the sounds were harsh, then that they were still bad on a phone.** The first
+round replaced the synthesised effects heard every turn with Kenney recordings; the second replaced
+everything the synthesiser still made — Burn, Overheat, the relic chime, the end-of-fight stings and
+all three music loops — so nothing in the game is generated any more. The synthesiser
+(`art/audio/synth.py`) is gone; git history has it.
+
+Everything is **CC0**: public domain, commercial use allowed, no attribution required (given anyway,
+in `docs/third-party/`).
 
 ```bash
-./art/audio/install_kenney.sh <folder the four packs were unzipped into>
+./art/audio/install_kenney.sh <folder the four Kenney packs were unzipped into>
+./art/audio/install_cc0.sh                  # downloads the rest itself
 ```
+
+| sound | source |
+|---|---|
+| cards dealt, lifted, thrown, discarded, shuffled | Kenney Casino Audio |
+| hits, blocked hits, block, deaths, hurt, upgrade, potion | Kenney Impact Sounds |
+| debuff | Kenney RPG Audio |
+| clicks, map select, reward | Kenney Interface Sounds |
+| burn | a fire crackle by AntumDeluge (OpenGameArt), cut into four 0.8 s takes |
+| overheat, relic, buff | "80 CC0 RPG SFX" by rubberduck (OpenGameArt): fire spells, gems, spells |
+| victory, defeat | Kenney Music Jingles, pizzicato: a rising run and a falling one |
+| combat music | "Cynic Battle Loop" by Ferk (OpenGameArt) |
+| boss music | "Epic Boss Battle" by Juhani Junkala (OpenGameArt) |
+| map music | "Dark Shrine Loop" by qubodup and yd (OpenGameArt) |
 
 - **Several takes per effect** (`sfx_hit_1` … `sfx_hit_5`), and `AudioDirector` never plays the same
   take twice running. Five cards dealt are five different slides.
+- **Levelled for a phone speaker.** The three music files arrived 15 LU apart (map −22 LUFS, boss
+  −7); `install_cc0.sh` sets combat to −16, boss to −15 and the map, which should sit behind, to −18,
+  by plain gain so each loop's seam is untouched. Effects from the new sources are peak-normalised to
+  −1 dBFS. The old buff take (a drawn knife) peaked at −24 dBFS and was close to inaudible.
 - **Heat is heard only when it crosses the Overheat line.** It used to sound on every gain, and a
-  Heat deck gains it three times a turn — the sound singled out as the one that grated.
-- What stays synthesised is what no recording fits: Burn, Heat, Overheat, the relic chime and the
-  two end-of-fight stings. `synth.py` no longer writes the replaced effects (its `RECORDED` set), so a
-  re-run cannot put a stale synthesised take back among the recorded ones.
+  Heat deck gains it three times a turn. `sfx_heat` no longer exists; nothing plays it.
+- Files are stored as WAV, decoded from the sources once. `AudioImportSettings` compresses music to
+  Vorbis and streams it, and keeps effects as decompressed PCM so nothing is decoded the moment a
+  card lands.
 
-## The synthesiser
+### Finding more sounds
 
-Every sound effect and all three music loops come from `art/audio/synth.py`, using only the
-Python standard library, with ffmpeg for measurement.
+Free sources that allow a commercial release, checked before anything here was used:
 
-```bash
-python3 -u art/audio/synth.py            # everything, about 25 seconds
-python3 -u art/audio/synth.py --only hit # one sound
-```
-
-**Why not a model.** The one audio model on this machine is `facebook/musicgen-small`, in the
-Hugging Face cache. Its weights are licensed CC-BY-NC, non-commercial only, so its output cannot
-ship in a game sold on Steam. The Stable Audio templates in ComfyUI have no model downloaded. A
-synthesiser in the repo means the game owns every sound outright, and changing one is an edit and
-a re-run rather than a hunt for a replacement sample.
-
-| layer | technique |
-|---|---|
-| hits, thumps | sine with an exponential pitch drop, plus lowpassed noise, saturated |
-| block, anvil, upgrade | inharmonic partials with separate decays (the difference between "metal" and "tone") |
-| bells: turn start, reward, relic | two-operator FM, with modulation fading faster than the tone |
-| burn | sparse filtered crackles over a hiss |
-| music pads and bass | detuned lowpassed sawtooth pairs |
-| music arpeggios | Karplus-Strong plucked strings |
-| space | Schroeder reverb, offset per channel for stereo width |
-
-**The loops have no seam.** Each track renders past its loop point, then adds that tail back onto
-the start, so the reverb and the pads ringing over the end become the sound the next pass begins
-in. All three tracks are in D, so the crossfade between the map and a fight never clashes.
-
-Music is stored as WAV because this machine's ffmpeg has no Vorbis encoder. The repository size
-is the only cost: `AudioImportSettings` compresses music to Vorbis and streams it at import, and
-keeps effects as decompressed PCM so that nothing is decoded at the moment a card lands.
-
-### Checked without listening
-
-Nobody has listened to these yet, so they were checked by measurement:
-
-- **Levels.** Every file peaks between −0.4 and −9.9 dB: nothing clips, nothing is silent.
-- **Loop seams.** At each wrap point, the jump between the last and first sample is smaller than
-  the 99th-percentile step inside the track (e.g. combat: 82 against 706), so there is no click.
-- **Shapes.** Waveforms were drawn with ffmpeg: hits have sharp attacks and decays, bells ring
-  long, and the combat loop pulses regularly on the kick.
-- **Import.** Music `.meta` shows streaming and Vorbis; effects show decompress-on-load and mono.
-
-What measurement cannot say is whether any of it sounds *good*. That needs ears, and it is the
-first thing to check in a play session.
+- **kenney.nl** — CC0 packs, no account.
+- **opengameart.org** — filter by licence; take CC0 only, or CC-BY with a credit line. Avoid
+  anything "NC" (non-commercial) or GPL for game assets.
+- **freesound.org** — free account; filter the licence to "Creative Commons 0".
+- **pixabay.com/sound-effects** and **pixabay.com/music** — Pixabay licence, commercial use allowed.
+- **Sonniss GDC bundles** (sonniss.com/gameaudiogdc) — tens of gigabytes of professional effects,
+  royalty free for commercial games.
+- **Audacity** (audacityteam.org) for trimming, fades and loudness, all free.
 
 ## AudioDirector
 

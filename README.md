@@ -122,7 +122,7 @@ That is the practical payoff: balance becomes measurable instead of a matter of 
 | UI generated in code | Prefabs and scenes are YAML: unreviewable in a diff, and they merge badly while layout changes hourly | Authored prefabs once the layout settles |
 | Legacy `Text`, not TextMeshPro | TMP needs its Essential Resources imported through a dialog before any text renders — that breaks a fresh clone and headless runs | TMP, after importing TMP Essentials once |
 | Legacy Input Manager, not the Input System package | Every Input System version available for this Editor fails to compile against it (deprecated APIs are errors in 6000.5) | The Input System package, once a version compiles. Gamepad play works on the legacy manager (`docs/controller.md`); rebinding and per-controller layouts still need the package |
-| ~~No animation or audio~~ | Done: code tweens and synthesised audio | See `docs/audio-and-motion.md` |
+| ~~No animation or audio~~ | Done: code tweens and recorded CC0 audio | See `docs/audio-and-motion.md` |
 | No `.asmdef` files | Everything compiles into Assembly-CSharp with no configuration to get wrong | Split runtime/editor assemblies when compile times bite |
 | Content generated, not committed | Asset YAML carries hand-assigned GUIDs; a wrong one is a silent null at runtime | Hand-authoring, once content stops being regenerated wholesale |
 
